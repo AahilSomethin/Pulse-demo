@@ -1,0 +1,368 @@
+{
+  "status": "ready",
+  "generatedAt": "2026-10-21T21:04:34.652Z",
+  "fileCount": 31,
+  "bytes": 1892689637,
+  "rowsKept": 17243987,
+  "rowsDuplicate": 197769,
+  "rowsOutOfBox": 20993,
+  "rowsBadTime": 0,
+  "rowsBlank": 0,
+  "devices": 1776,
+  "zeroDurationMoves": 15043,
+  "implausibleJumps": 151677,
+  "identicalConsecutive": 1933899,
+  "medianIntervalSec": 30,
+  "medianLagSec": 2,
+  "minuteQuantizedShare": 0.018472468113087767,
+  "medianMovingKn": 9,
+  "maxSpeed": 770,
+  "headingVaries": true,
+  "network": {
+    "dhiraagu": 16852999,
+    "ooredoo": 457839,
+    "other": 130918,
+    "missing": 0
+  },
+  "parseMs": 70654,
+  "rowsPerSecond": 244062,
+  "t0": "2025-08-01T00:00:00.000Z",
+  "t1": "2025-08-31T23:59:59.000Z",
+  "speedBuckets": [
+    {
+      "label": "under 0.5",
+      "count": 3246253
+    },
+    {
+      "label": "0.5–5",
+      "count": 2126351
+    },
+    {
+      "label": "5–15",
+      "count": 6550492
+    },
+    {
+      "label": "15–40",
+      "count": 5258938
+    },
+    {
+      "label": "over 40",
+      "count": 61953
+    }
+  ],
+  "intervalBuckets": [
+    {
+      "label": "under 30 s",
+      "count": 6741800
+    },
+    {
+      "label": "30–60 s",
+      "count": 4155075
+    },
+    {
+      "label": "1–5 min",
+      "count": 4492381
+    },
+    {
+      "label": "5–20 min",
+      "count": 728809
+    },
+    {
+      "label": "20–60 min",
+      "count": 1014820
+    },
+    {
+      "label": "over 60 min",
+      "count": 48152
+    }
+  ],
+  "days": [
+    {
+      "day": "1",
+      "bytes": 47866451,
+      "rowsKept": 435033,
+      "devices": 1432,
+      "duplicates": 6090,
+      "implausibleJumps": 3212,
+      "milliseconds": 1632
+    },
+    {
+      "day": "2",
+      "bytes": 57883993,
+      "rowsKept": 528287,
+      "devices": 1478,
+      "duplicates": 5545,
+      "implausibleJumps": 3277,
+      "milliseconds": 1914
+    },
+    {
+      "day": "3",
+      "bytes": 62676422,
+      "rowsKept": 569985,
+      "devices": 1499,
+      "duplicates": 8157,
+      "implausibleJumps": 3851,
+      "milliseconds": 2021
+    },
+    {
+      "day": "4",
+      "bytes": 56887093,
+      "rowsKept": 516833,
+      "devices": 1482,
+      "duplicates": 6811,
+      "implausibleJumps": 2184,
+      "milliseconds": 1808
+    },
+    {
+      "day": "5",
+      "bytes": 48871646,
+      "rowsKept": 446775,
+      "devices": 1451,
+      "duplicates": 3465,
+      "implausibleJumps": 2076,
+      "milliseconds": 1522
+    },
+    {
+      "day": "6",
+      "bytes": 61093681,
+      "rowsKept": 559877,
+      "devices": 1499,
+      "duplicates": 3711,
+      "implausibleJumps": 3715,
+      "milliseconds": 1994
+    },
+    {
+      "day": "7",
+      "bytes": 71583183,
+      "rowsKept": 654326,
+      "devices": 1536,
+      "duplicates": 6162,
+      "implausibleJumps": 5372,
+      "milliseconds": 2272
+    },
+    {
+      "day": "8",
+      "bytes": 54427417,
+      "rowsKept": 497363,
+      "devices": 1500,
+      "duplicates": 4665,
+      "implausibleJumps": 5429,
+      "milliseconds": 1726
+    },
+    {
+      "day": "9",
+      "bytes": 65477487,
+      "rowsKept": 598674,
+      "devices": 1540,
+      "duplicates": 4851,
+      "implausibleJumps": 8064,
+      "milliseconds": 2131
+    },
+    {
+      "day": "10",
+      "bytes": 64219874,
+      "rowsKept": 584966,
+      "devices": 1530,
+      "duplicates": 6616,
+      "implausibleJumps": 5660,
+      "milliseconds": 2128
+    },
+    {
+      "day": "11",
+      "bytes": 64800973,
+      "rowsKept": 592327,
+      "devices": 1514,
+      "duplicates": 5558,
+      "implausibleJumps": 4053,
+      "milliseconds": 2183
+    },
+    {
+      "day": "12",
+      "bytes": 62901444,
+      "rowsKept": 574514,
+      "devices": 1507,
+      "duplicates": 5450,
+      "implausibleJumps": 4169,
+      "milliseconds": 2015
+    },
+    {
+      "day": "13",
+      "bytes": 65339350,
+      "rowsKept": 598942,
+      "devices": 1533,
+      "duplicates": 3113,
+      "implausibleJumps": 4896,
+      "milliseconds": 2161
+    },
+    {
+      "day": "14",
+      "bytes": 66491288,
+      "rowsKept": 606288,
+      "devices": 1535,
+      "duplicates": 5597,
+      "implausibleJumps": 4125,
+      "milliseconds": 2174
+    },
+    {
+      "day": "15",
+      "bytes": 54337369,
+      "rowsKept": 494417,
+      "devices": 1500,
+      "duplicates": 6727,
+      "implausibleJumps": 4936,
+      "milliseconds": 1756
+    },
+    {
+      "day": "16",
+      "bytes": 63994401,
+      "rowsKept": 584312,
+      "devices": 1538,
+      "duplicates": 5581,
+      "implausibleJumps": 5134,
+      "milliseconds": 2127
+    },
+    {
+      "day": "17",
+      "bytes": 63897330,
+      "rowsKept": 584433,
+      "devices": 1537,
+      "duplicates": 4582,
+      "implausibleJumps": 3959,
+      "milliseconds": 2104
+    },
+    {
+      "day": "18",
+      "bytes": 63253748,
+      "rowsKept": 577984,
+      "devices": 1538,
+      "duplicates": 4642,
+      "implausibleJumps": 4658,
+      "milliseconds": 1921
+    },
+    {
+      "day": "19",
+      "bytes": 61124670,
+      "rowsKept": 558027,
+      "devices": 1542,
+      "duplicates": 4957,
+      "implausibleJumps": 3784,
+      "milliseconds": 1296
+    },
+    {
+      "day": "20",
+      "bytes": 62858491,
+      "rowsKept": 573727,
+      "devices": 1541,
+      "duplicates": 6008,
+      "implausibleJumps": 6221,
+      "milliseconds": 1354
+    },
+    {
+      "day": "21",
+      "bytes": 69661419,
+      "rowsKept": 634784,
+      "devices": 1566,
+      "duplicates": 6475,
+      "implausibleJumps": 7476,
+      "milliseconds": 1673
+    },
+    {
+      "day": "22",
+      "bytes": 54416197,
+      "rowsKept": 492670,
+      "devices": 1518,
+      "duplicates": 8470,
+      "implausibleJumps": 5128,
+      "milliseconds": 5021
+    },
+    {
+      "day": "23",
+      "bytes": 64242775,
+      "rowsKept": 582824,
+      "devices": 1552,
+      "duplicates": 8922,
+      "implausibleJumps": 7693,
+      "milliseconds": 9537
+    },
+    {
+      "day": "24",
+      "bytes": 63372307,
+      "rowsKept": 578252,
+      "devices": 1545,
+      "duplicates": 5324,
+      "implausibleJumps": 7597,
+      "milliseconds": 2093
+    },
+    {
+      "day": "25",
+      "bytes": 61931329,
+      "rowsKept": 560158,
+      "devices": 1544,
+      "duplicates": 10483,
+      "implausibleJumps": 4325,
+      "milliseconds": 2003
+    },
+    {
+      "day": "26",
+      "bytes": 61875975,
+      "rowsKept": 563581,
+      "devices": 1518,
+      "duplicates": 5869,
+      "implausibleJumps": 5095,
+      "milliseconds": 2135
+    },
+    {
+      "day": "27",
+      "bytes": 62587709,
+      "rowsKept": 567863,
+      "devices": 1520,
+      "duplicates": 8551,
+      "implausibleJumps": 4312,
+      "milliseconds": 2057
+    },
+    {
+      "day": "28",
+      "bytes": 66316943,
+      "rowsKept": 595126,
+      "devices": 1524,
+      "duplicates": 15809,
+      "implausibleJumps": 6403,
+      "milliseconds": 2256
+    },
+    {
+      "day": "29",
+      "bytes": 48744941,
+      "rowsKept": 444805,
+      "devices": 1485,
+      "duplicates": 4253,
+      "implausibleJumps": 4704,
+      "milliseconds": 1594
+    },
+    {
+      "day": "30",
+      "bytes": 57854380,
+      "rowsKept": 523242,
+      "devices": 1497,
+      "duplicates": 9678,
+      "implausibleJumps": 6145,
+      "milliseconds": 1982
+    },
+    {
+      "day": "31",
+      "bytes": 61699351,
+      "rowsKept": 563592,
+      "devices": 1518,
+      "duplicates": 5647,
+      "implausibleJumps": 4024,
+      "milliseconds": 2064
+    }
+  ],
+  "notes": [
+    "Counts describe the August 2025 FollowMe extract only.",
+    "device_date is the observation clock. timestamp breaks ties and is not treated as a second position.",
+    "Reported speed has no documented unit. Figures are unconverted.",
+    "A jump is a consecutive pair on one device whose straight-line speed exceeds 40 knots. It is a data-quality flag, not a passage.",
+    "Median interval, lag, and moving speed are deterministic samples of up to 80,000 values, not a sort of every ping.",
+    "No IMEI or coordinate is stored in this file."
+  ]
+}

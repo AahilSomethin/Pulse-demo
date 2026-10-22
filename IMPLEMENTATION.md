@@ -1,0 +1,68 @@
+# Implementation
+
+SeaPulse lives under `src/`. The original HTML file and the Insight project are untouched.
+
+## Modules
+
+- `src/lib/parsing/csv.ts` — quote-aware CSV, named FollowMe headers or the original positional columns, UTC parsing, and duplicate detection.
+- `src/lib/parsing/days.ts` — daily file order and titles.
+- `src/lib/vessels/dataset.ts` — time-sorted typed arrays, per-device tracks, and day quality.
+- `src/workers/parse-csv.ts` — same parser off the main thread. The worker accepts text or a file and transfers the typed-array buffers. If it cannot start, the caller uses the same function directly.
+- `src/lib/vessels/frame.ts` — window `[t - W, t + 1)`, last ping per device, speed mask, hub grid, and the `(t - W, t]` trail.
+- `src/lib/parsing/geojson.ts` — land polygons, plus medical and Coast Guard sites.
+- `src/lib/analytics/journeys.ts` — dwells, inferred activity cells, and the passages between dwells.
+- `src/lib/analytics/network.ts` — named directions and inferred-area directions. A named link requires a polygon name at both ends.
+- `src/lib/analytics/corpus.ts` — the offline August summary. Counts only. No device identifiers and no coordinates.
+- `src/lib/analytics/population.ts` — empty census adapter.
+- `src/lib/simulation/emergency.ts` — straight-line comparison against historical positions.
+- `src/lib/simulation/routes.ts` — observed duration, distance, and a straight-line reference at the file’s median reported moving value. Typed minutes stay hypothetical.
+- `src/app/api/dev-followme/[day]/route.ts` — development-only stream of one local day. Other environments return 404.
+- `src/components/map/SeaMapInner.tsx` — MapLibre layers for land, hubs, vessels, trails, inferred links, named links, and scenario lines.
+- `scripts/audit-followme.mjs` — rebuilds the committed August summary. It does not write tracks or device identifiers.
+
+## Workspace
+
+`src/app/(workspace)/layout.tsx` mounts one shell. Explore, Network, and Simulate only swap the sidebar and the markers published through `src/lib/workspace/overlay.ts`. A hidden section releases its overlay with a token, so a newer section is not cleared when the previous effect cleans up. `next.config.ts` applies the temporary redirects in `src/config/redirects.ts`.
+
+`MaritimeContext` splits settings (window, speed, selection, playing) from the clock (cursor and frame). Panels that do not need the frame avoid subscribing to every tick. `WorkspaceContext` is an external store for the sidebar, details card, layers, presentation view, and the clock zone. The first client snapshot matches the server until a microtask applies `localStorage`, so a stored sidebar mode does not break hydration.
+
+`src/lib/vessels/playback.ts` turns wall time into one timeline step. 1× commits every 90 ms and advances by `window / 6`. Faster speeds commit no sooner than 33 ms. `advancePlayback` returns a single cursor. A step past the end of the day stops on that timestamp and returns the unused remainder; the next commit wraps that remainder with modulo. It does not emit the GPS reports inside the jump. The animation frame ignores time while `document.hidden` is true. `advanceCursor` in `frame.ts` is unchanged.
+
+Hub paint is `src/lib/vessels/hub-style.ts`: soft fill from 3% to a 25% cap, with a separate outline. The map resizes from a `ResizeObserver` on its container after the sidebar changes width.
+
+Playback stores a millisecond cursor. The context keeps the active day and one previous day.
+
+## What is raw
+
+Ping time, latitude, longitude, reported speed, heading, network, and IMEI are stored as parsed. Hub cells, the speed mask, and the current-window marker are the original definitions:
+
+- Stopped hub ping: reported speed under 0.5.
+- Cell score: unique devices in the window, not ping density.
+- Speed filter: at least three pings in the whole file at or above the threshold. Zero disables it. The selected vessel is exempt and still affects hubs.
+- Top five cells: stable sort by device count. The label is the cell centre to three decimals.
+
+Reported speed is not converted. The unit is not in the file.
+
+## What is inferred
+
+Dwells are a separate layer. A dwell is at least two slow pings spanning 10 minutes, staying within 400 metres, with no sample gap over 20 minutes. Each dwell also carries an activity-cell id from a 0.05° grid. A journey is the time and straight-line distance from the end of one dwell to the start of the next on the same device. If the implied speed is above 40 knots, or the clock does not move, the jump is a coverage gap and is excluded from Sea Network medians.
+
+Island names come only from the loaded GeoJSON. A ping inside a polygon is not treated as a harbour call. An activity cell is never promoted to an island.
+
+## Emergency comparison
+
+For a map-clicked incident the page lists:
+
+- Up to five historical positions inside the chosen radius. Speed is the reported ping when it is at least 1, otherwise the assumed vessel speed.
+- Every loaded Coast Guard point. `verified: true` is labelled verified. Anything else is labelled unverified.
+- An optional Coast Guard origin the user places on the map. That origin is hypothetical.
+
+If a medical feature is marked verified, each option adds a second straight-line leg from the incident to the nearest such site, at the same speed used for the first leg. The list is sorted by that combined estimate. The sort is not a dispatch order. The page states that the dots are August 2025 reports.
+
+## Route Lab
+
+The default pair is an inferred activity direction from the loaded day. The page shows observed count, median duration, shortest and longest duration, median straight-line distance, and the straight-line time at the file’s median reported moving value. The user can still type a hypothetical duration. Named polygons are a separate choice and stay empty until a polygon file is loaded.
+
+## Checks
+
+`tests/maritime.test.ts` covers quoted FollowMe rows, duplicates, activity areas, the hub cell, hub opacity, the speed mask, dwell journeys, the response comparison, and the route reference, using synthetic rows. `tests/playback.test.ts` covers the speed step and large end-of-day jumps. `tests/workspace-state.test.ts` covers the details card, the sidebar, and a repeated network-tab update. `tests/overlay.test.ts` covers a newer section surviving an older release. `tests/redirects.test.ts` covers the compatibility redirects. `tests/followme-day.test.ts` parses local day 1 when that file is present and checks the kept-row and device counts against `src/data/followme-quality.json`. It does not embed a device identifier. `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` are the project checks. The production build prerenders `/explore`, `/network`, and `/simulate`. The day route is dynamic and is not available in production.

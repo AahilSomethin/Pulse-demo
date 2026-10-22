@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Synthetic North", "synthetic": true },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[73.50, 4.17], [73.52, 4.17], [73.52, 4.185], [73.50, 4.185], [73.50, 4.17]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Synthetic South", "synthetic": true },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[73.55, 4.20], [73.57, 4.20], [73.57, 4.22], [73.55, 4.22], [73.55, 4.20]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Synthetic Quiet", "synthetic": true },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[73.40, 4.00], [73.42, 4.00], [73.42, 4.02], [73.40, 4.02], [73.40, 4.00]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Synthetic Clinic", "kind": "medical", "verified": true, "synthetic": true },
+      "geometry": { "type": "Point", "coordinates": [73.54, 4.19] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Synthetic Coast Guard", "kind": "coast_guard", "verified": true, "synthetic": true },
+      "geometry": { "type": "Point", "coordinates": [73.53, 4.19] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Ignore me" },
+      "geometry": { "type": "Point", "coordinates": [73.51, 4.17] }
+    }
+  ]
+}

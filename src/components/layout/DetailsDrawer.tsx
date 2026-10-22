@@ -1,0 +1,201 @@
+"use client";
+
+import { X } from "lucide-react";
+
+import { CELL_OPTIONS, STOP_SPEED_KN, WINDOW_OPTIONS } from "@/config/constants";
+import { useDataset, usePlaybackClock, usePlaybackSettings } from "@/context/MaritimeContext";
+import { useWorkspace } from "@/context/WorkspaceContext";
+import { formatCount, formatDuration, formatKm, formatMinutes, formatMvt, formatUtc, historicalLabel, maskDevice } from "@/lib/format";
+import { coverageGapsFor, findLink, placeKindLabel } from "@/lib/workspace/connection";
+import { trailIndexes } from "@/lib/vessels/frame";
+import { compareResponses } from "@/lib/simulation/emergency";
+import type { HubMode } from "@/types/maritime";
+
+const MODE_LABEL: Record<HubMode, string> = {
+  stop: "Stopped devices (reported speed under 0.5)",
+  move: "Moving devices",
+  all: "All pings",
+};
+
+const EVIDENCE = {
+  observed_position: "Historical observation",
+  verified_coast_guard: "Verified Coast Guard site",
+  unverified_coast_guard: "Unverified loaded site",
+  hypothetical_coast_guard: "Hypothetical origin",
+} as const;
+
+export function DetailsDrawer() {
+  const { state, closeDetail } = useWorkspace();
+  if (!state.detailsOpen || !state.detail) return null;
+  const tallSheet = state.sidebar === "expanded";
+
+  return (
+    <aside
+      aria-label="Selection details"
+      className={`absolute top-3 right-3 z-20 flex w-[min(22rem,calc(100%-1.5rem))] max-h-[min(70dvh,36rem)] flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-panel max-lg:left-3 max-lg:max-h-[min(40dvh,20rem)] ${tallSheet ? "max-lg:max-h-40" : ""}`}
+    >
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border-soft px-3 py-2">
+        <h2 className="text-sm font-semibold">Details</h2>
+        <button type="button" className="btn btn-ghost" aria-label="Close details" onClick={closeDetail}>
+          <X size={16} aria-hidden />
+        </button>
+      </div>
+      <div className="scroll-thin min-h-0 flex-1 overflow-y-auto p-3 text-sm leading-6">
+        <DetailBody />
+      </div>
+    </aside>
+  );
+}
+
+function DetailBody() {
+  const { state } = useWorkspace();
+  const detail = state.detail;
+  if (!detail) return null;
+  if (detail.type === "vessel") return <VesselDetail device={detail.device} />;
+  if (detail.type === "hub") return <HubDetail fx={detail.fx} fy={detail.fy} />;
+  if (detail.type === "connection") return <ConnectionDetail id={detail.id} />;
+  return <ScenarioDetail id={detail.id} />;
+}
+
+function VesselDetail({ device }: { device: number }) {
+  const { dataset } = useDataset();
+  const { frame } = usePlaybackClock();
+  const { state } = useWorkspace();
+  if (!dataset || device < 0 || device >= dataset.names.length) return <p className="text-fg-muted">That vessel is not in the loaded day.</p>;
+  const position = frame?.positions.find((item) => item.device === device);
+  const index = position?.index;
+  const when = index == null ? null : dataset.timeMs[index];
+  const clock = when == null ? null : state.clock === "mvt" ? formatMvt(when) : formatUtc(when);
+  const windowCount = frame ? trailIndexes(dataset, device, frame.cursorMs, frame.windowMs).length : 0;
+  const network = index == null ? -1 : dataset.network[index];
+  const heading = index == null ? -1 : dataset.heading[index];
+  const gsm = index == null ? -1 : dataset.gsm[index];
+
+  return (
+    <div>
+      <p className="text-xs text-ocean">Vessel observation</p>
+      <p className="font-semibold text-primary">{maskDevice(dataset.names[device] ?? "")}</p>
+      {index == null || when == null ? (
+        <p className="mt-2 text-fg-muted">No ping in this window.</p>
+      ) : (
+        <dl className="mt-2 space-y-1">
+          <Row label="Observation" value={clock ?? "—"} />
+          <Row label="Reported speed" value={`${dataset.speed[index].toFixed(1)} (unit unverified)`} />
+          <Row label="Position" value={`${dataset.lat[index].toFixed(4)}°, ${dataset.lon[index].toFixed(4)}°`} />
+          {heading >= 0 ? <Row label="Heading" value={`${heading}°`} /> : null}
+          {network >= 0 ? <Row label="Network field" value={network === 1 ? "Dhiraagu" : network === 2 ? "Ooredoo" : "Other"} /> : null}
+          {gsm >= 0 ? <Row label="GSM level" value={String(gsm)} /> : null}
+        </dl>
+      )}
+      <p className="mt-2 text-fg-secondary">{windowCount} pings fall in the bold trail window. {formatCount(dataset.tracks[device]?.length ?? 0)} pings are in this day.</p>
+      <p className="text-xs text-fg-muted">The trail is the tracker’s own reports. Playback speed does not change these values.</p>
+    </div>
+  );
+}
+
+function HubDetail({ fx, fy }: { fx: number; fy: number }) {
+  const { frame, cursor } = usePlaybackClock();
+  const { windowMs, mode, cellDeg } = usePlaybackSettings();
+  const { state } = useWorkspace();
+  const hub = frame?.hubs.find((item) => item.fx === fx && item.fy === fy);
+  const windowLabel = WINDOW_OPTIONS.find((option) => option.ms === windowMs)?.label ?? `${Math.round(windowMs / 60_000)} min`;
+  const cellLabel = CELL_OPTIONS.find((option) => option.deg === cellDeg)?.label ?? `${cellDeg}°`;
+  const clock = state.clock === "mvt" ? formatMvt(cursor) : formatUtc(cursor);
+
+  return (
+    <div>
+      <p className="text-xs text-ocean">Activity cell</p>
+      <p className="font-semibold">{hub ? `${hub.devices} unique ${hub.devices === 1 ? "vessel" : "vessels"}` : "No devices in this window"}</p>
+      <dl className="mt-2 space-y-1">
+        <Row label="Window end" value={clock} />
+        <Row label="Window" value={windowLabel} />
+        <Row label="Classification" value={MODE_LABEL[mode]} />
+        <Row label="Grid" value={cellLabel} />
+        {hub ? <Row label="Cell centre" value={`${hub.centerLat.toFixed(3)}°, ${hub.centerLon.toFixed(3)}°`} /> : null}
+      </dl>
+      <p className="mt-2 text-xs text-fg-muted">A cell counts unique tracked devices. Stopped means reported speed under {STOP_SPEED_KN}. It is not a harbour.</p>
+    </div>
+  );
+}
+
+function ConnectionDetail({ id }: { id: string }) {
+  const { links, areaLinks, journeys } = useDataset();
+  const { state } = useWorkspace();
+  const link = findLink([...areaLinks, ...links], id);
+  if (!link) return <p className="text-fg-muted">That connection is not in the loaded day.</p>;
+  const gaps = coverageGapsFor(journeys, link);
+  const inferred = link.placeKind === "inferred_activity";
+
+  return (
+    <div>
+      <p className={`text-xs ${inferred ? "text-cyan" : "text-primary"}`}>{placeKindLabel(link.placeKind)}</p>
+      <p className="font-semibold">{link.origin} → {link.destination}</p>
+      <dl className="mt-2 space-y-1">
+        <Row label="Observed passages" value={formatCount(link.tripCount)} />
+        <Row label="Median duration" value={formatDuration(link.medianDurationMs)} />
+        <Row label="Straight-line distance" value={formatKm(link.medianDistanceM)} />
+        <Row label="Shortest to longest" value={`${formatDuration(link.shortestDurationMs)} – ${formatDuration(link.longestDurationMs)}`} />
+        <Row label="Coverage gaps excluded" value={formatCount(gaps)} />
+      </dl>
+      <p className="mt-2 text-xs text-fg-muted">
+        {inferred
+          ? "Inferred from GPS clusters. This is not a verified route, harbour, or terminal."
+          : "Both ends use names from the loaded geography file. The name is only as reliable as that file."}
+        {" "}
+        Medians leave out jumps above 40 reported speed or a clock that did not advance.
+      </p>
+      {state.networkTab === "routes" ? (
+        <p className="mt-2 rounded-md border border-warning bg-warning-soft px-2 py-1 text-xs">
+          A typed duration in Route Lab is a hypothetical check against this median. It is not a schedule.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function ScenarioDetail({ id }: { id: string }) {
+  const { dataset, geography } = useDataset();
+  const { frame } = usePlaybackClock();
+  const { state } = useWorkspace();
+  const { scenario } = state;
+  if (!dataset || !frame || !scenario.incident) return <p className="text-fg-muted">Place a hypothetical incident to compare response times.</p>;
+  const facilities = geography?.facilities ?? [];
+  const option = compareResponses({
+    dataset,
+    frame,
+    incident: scenario.incident,
+    radiusM: scenario.radiusKm * 1000,
+    vesselSpeedKn: scenario.vesselKn,
+    coastGuardSpeedKn: scenario.coastGuardKn,
+    facilities,
+    hypotheticalCoastGuard: scenario.coastGuard,
+  }).find((item) => item.id === id);
+  const clock = state.clock === "mvt" ? formatMvt(frame.cursorMs) : formatUtc(frame.cursorMs);
+  if (!option) return <p className="text-fg-muted">That comparison is not in the current window.</p>;
+
+  return (
+    <div>
+      <p className="text-xs text-danger">{EVIDENCE[option.evidence]}</p>
+      <h3 className="font-semibold">{option.evidence === "observed_position" ? maskDevice(option.label) : option.label}</h3>
+      <dl className="mt-2 space-y-1">
+        <Row label="Historical time" value={clock} />
+        <Row label="Distance" value={`${formatKm(option.distanceM)} straight line`} />
+        <Row label="Speed used" value={`${option.assumedSpeedKn.toFixed(1)} ${option.speedSource === "reported_ping" ? "reported on that ping" : "assumed"}`} />
+        <Row label="To incident" value={formatMinutes(option.etaMin)} />
+        <Row label="Then to care" value={option.medicalLegMin == null ? "Not available" : formatMinutes(option.medicalLegMin)} />
+      </dl>
+      <p className="mt-2 rounded-md border border-warning bg-warning-soft px-2 py-1 text-xs">
+        {historicalLabel(dataset.periodLabel)}. Straight-line time is not a dispatch. Coast Guard speed is an assumption. The speed unit is unverified. {option.note}
+      </p>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt className="text-fg-muted">{label}</dt>
+      <dd className="text-right tabular-nums">{value}</dd>
+    </div>
+  );
+}
