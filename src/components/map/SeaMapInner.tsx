@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import MapGL, { Layer, NavigationControl, Popup, ScaleControl, Source, type MapLayerMouseEvent, type MapRef } from "react-map-gl/maplibre";
 
 import { MAP_CENTER } from "@/config/constants";
+import { connectionRankBudget, visibleConnectionLines } from "@/lib/analytics/map-links";
 import { MAP_COLORS, type MapTheme } from "@/config/map-colors";
 import { loadMaritimeStyle, type MaritimeStyle } from "@/lib/map/basemap";
 import { trailIndexes } from "@/lib/vessels/frame";
@@ -33,6 +34,7 @@ interface SeaMapProps {
   lines?: MapLine[];
   locations?: MapLocation[];
   selectedHubId?: string | null;
+  selectedIslandId?: string | null;
   focus?: MapFocus | null;
   onSelectDevice?: (device: number) => void;
   onSelectHub?: (hub: { fx: number; fy: number }) => void;
@@ -118,6 +120,7 @@ export default function SeaMapInner({
   lines = [],
   locations = [],
   selectedHubId = null,
+  selectedIslandId = null,
   focus = null,
   onSelectDevice,
   onSelectHub,
@@ -126,6 +129,8 @@ export default function SeaMapInner({
 }: SeaMapProps) {
   const colors = MAP_COLORS[theme];
   const mapRef = useRef<MapRef>(null);
+  const [zoom, setZoom] = useState<number>(MAP_CENTER.zoom);
+  const islandState = useRef<string | null>(null);
   const hoverRef = useRef<string | null>(null);
   const viewRef = useRef<SavedView | null>(null);
   const styleSeen = useRef<string | null>(null);
@@ -141,13 +146,22 @@ export default function SeaMapInner({
   const mapStyle = styleFailed ? fallback : maritimeStyle ?? previousStyle ?? fallback;
   const styleKey = styleFailed ? `failed:${theme}` : maritimeStyle ? theme : previousStyle ? `holding:${theme}` : `loading:${theme}`;
   const waitingForStyle = !styleFailed && !maritimeStyle && !previousStyle;
+  const labelFont = useMemo(() => {
+    const layer = maritimeStyle?.layers.find((item) => {
+      const font = (item.layout as { "text-font"?: unknown } | undefined)?.["text-font"];
+      return item.type === "symbol" && Array.isArray(font) && font.every((name) => typeof name === "string");
+    });
+    const font = (layer?.layout as { "text-font"?: string[] } | undefined)?.["text-font"];
+    return font && font.length > 0 ? font : ["Open Sans Regular"];
+  }, [maritimeStyle]);
 
   const land = useMemo<FeatureCollection<Polygon>>(
     () => ({
       type: "FeatureCollection",
       features: polygons.map((polygon) => ({
         type: "Feature",
-        properties: { name: polygon.name ?? "Unnamed polygon" },
+        id: polygon.id,
+        properties: { id: polygon.id, name: polygon.name ?? "" },
         geometry: { type: "Polygon", coordinates: polygon.rings },
       })),
     }),
@@ -248,10 +262,11 @@ export default function SeaMapInner({
     [facilities, markers],
   );
 
+  const drawnLines = useMemo(() => visibleConnectionLines(lines, zoom), [lines, zoom]);
   const lineData = useMemo<FeatureCollection<LineString>>(
     () => ({
       type: "FeatureCollection",
-      features: lines.filter((line) => line.coordinates.length > 1).map((line) => ({
+      features: drawnLines.filter((line) => line.coordinates.length > 1).map((line) => ({
         type: "Feature" as const,
         properties: {
           kind: line.kind,
@@ -259,11 +274,13 @@ export default function SeaMapInner({
           weight: line.weight ?? 0.45,
           offset: line.offset ?? 0,
           opacity: line.opacity ?? 0.9,
+          rank: line.rank ?? 0,
+          gated: line.gated ?? 0,
         },
         geometry: { type: "LineString" as const, coordinates: line.coordinates },
       })),
     }),
-    [lines],
+    [drawnLines],
   );
 
   const locationData = useMemo<FeatureCollection<Point>>(
@@ -386,13 +403,31 @@ export default function SeaMapInner({
     const map = mapRef.current?.getMap();
     if (!map) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const duration = reduced ? 0 : 450;
+    if (focus.bounds) {
+      map.fitBounds(
+        [[focus.bounds.west, focus.bounds.south], [focus.bounds.east, focus.bounds.north]],
+        { padding: 48, maxZoom: 12, duration, essential: true },
+      );
+      return;
+    }
     map.easeTo({
       center: [focus.lon, focus.lat],
-      zoom: Math.max(map.getZoom(), 8),
-      duration: reduced ? 0 : 450,
+      zoom: focus.zoom ?? Math.max(map.getZoom(), 8),
+      duration,
       essential: true,
     });
   }, [focus, ready]);
+
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map || !ready || !map.getSource("land")) return;
+    if (islandState.current && islandState.current !== selectedIslandId) {
+      map.setFeatureState({ source: "land", id: islandState.current }, { selected: false });
+    }
+    if (selectedIslandId) map.setFeatureState({ source: "land", id: selectedIslandId }, { selected: true });
+    islandState.current = selectedIslandId ?? null;
+  }, [selectedIslandId, ready, land]);
 
   useEffect(() => {
     const map = mapRef.current?.getMap();
@@ -488,13 +523,20 @@ export default function SeaMapInner({
     const hub = event.features?.find((feature) => feature.layer?.id === "hub-fill");
     const fx = Number(hub?.properties?.fx);
     const fy = Number(hub?.properties?.fy);
-    if (hub && Number.isInteger(fx) && Number.isInteger(fy)) onSelectHub?.({ fx, fy });
+    if (hub && Number.isInteger(fx) && Number.isInteger(fy)) {
+      onSelectHub?.({ fx, fy });
+      return;
+    }
+    const landHit = event.features?.find((feature) => feature.layer?.id === "land-fill");
+    const landId = landHit?.properties?.id;
+    if (typeof landId === "string" && landId) onSelectLocation?.(landId);
   }
 
   const interactiveLayerIds = [
     ...(clickMode === "vessel" && (layers.vessels || selected >= 0) ? ["vessel-hit"] : []),
     ...(locations.length > 0 && layers.connections ? ["location-hit"] : []),
     ...(layers.hubs ? ["hub-fill"] : []),
+    ...(layers.islands ? ["land-fill"] : []),
   ];
 
   useEffect(() => {
@@ -530,6 +572,14 @@ export default function SeaMapInner({
       onClick={onClick}
       onMouseMove={onMouseMove}
       onMouseLeave={() => clearHover()}
+      onMove={(event) => {
+        const next = event.viewState.zoom;
+        setZoom((current) => {
+          const before = connectionRankBudget(current);
+          const after = connectionRankBudget(next);
+          return before.lines === after.lines && before.perEndpoint === after.perEndpoint ? current : next;
+        });
+      }}
       onLoad={() => {
         styleReady.current = true;
         setReady(true);
@@ -554,8 +604,47 @@ export default function SeaMapInner({
       <NavigationControl position="top-left" showCompass={false} />
       <ScaleControl position="bottom-left" />
       <Source id="land" type="geojson" data={land}>
-        <Layer id="land-fill" type="fill" layout={{ visibility: visibility(layers.islands) }} paint={{ "fill-color": colors.land, "fill-opacity": 0.35 }} />
-        <Layer id="land-line" type="line" layout={{ visibility: visibility(layers.islands) }} paint={{ "line-color": colors.landLine, "line-width": 1 }} />
+        <Layer
+          id="land-fill"
+          type="fill"
+          layout={{ visibility: visibility(layers.islands) }}
+          paint={{
+            "fill-color": ["case", ["boolean", ["feature-state", "selected"], false], colors.selected, colors.land],
+            "fill-opacity": ["case", ["boolean", ["feature-state", "selected"], false], 0.62, 0.35],
+          }}
+        />
+        <Layer
+          id="land-line"
+          type="line"
+          layout={{ visibility: visibility(layers.islands) }}
+          paint={{
+            "line-color": ["case", ["boolean", ["feature-state", "selected"], false], colors.selected, colors.landLine],
+            "line-width": ["case", ["boolean", ["feature-state", "selected"], false], 2.25, 1],
+          }}
+        />
+        {maritimeStyle ? (
+          <Layer
+            id="land-label"
+            type="symbol"
+            minzoom={7}
+            layout={{
+              visibility: visibility(layers.islands),
+              "text-field": ["get", "name"],
+              "text-font": labelFont,
+              "text-size": ["interpolate", ["linear"], ["zoom"], 7, 10, 11, 13, 14, 15],
+              "text-padding": 8,
+              "text-optional": true,
+              "text-max-width": 8,
+              "text-allow-overlap": false,
+            }}
+            paint={{
+              "text-color": colors.hubLine,
+              "text-halo-color": colors.markerStroke,
+              "text-halo-width": 1.25,
+              "text-opacity": ["interpolate", ["linear"], ["zoom"], 7, 0.55, 9, 0.9],
+            }}
+          />
+        ) : null}
       </Source>
       <Source id="hubs" type="geojson" data={hubs}>
         <Layer
@@ -636,9 +725,9 @@ export default function SeaMapInner({
           layout={{ visibility: visibility(layers.connections) }}
           paint={{
             "line-color": colors.inferred,
-            "line-width": ["+", ["case", ["==", ["get", "active"], 1], 1.5, 0], ["interpolate", ["linear"], ["get", "weight"], 0, 1.25, 1, 5]],
+            "line-width": ["interpolate", ["linear"], ["zoom"], 5, ["case", ["==", ["get", "active"], 1], 2, 0.7], 9, ["case", ["==", ["get", "active"], 1], 2.6, 1], 13, ["case", ["==", ["get", "active"], 1], 3.4, 1.35]],
             "line-offset": ["get", "offset"],
-            "line-opacity": ["get", "opacity"],
+            "line-opacity": ["case", ["==", ["get", "active"], 1], 0.95, ["get", "opacity"]],
             "line-dasharray": [2, 2],
           }}
         />
@@ -649,9 +738,9 @@ export default function SeaMapInner({
           layout={{ visibility: visibility(layers.connections) }}
           paint={{
             "line-color": colors.route,
-            "line-width": ["+", ["case", ["==", ["get", "active"], 1], 1.5, 0], ["interpolate", ["linear"], ["get", "weight"], 0, 1.5, 1, 5.5]],
+            "line-width": ["interpolate", ["linear"], ["zoom"], 5, ["case", ["==", ["get", "active"], 1], 2.2, 0.85], 9, ["case", ["==", ["get", "active"], 1], 2.8, 1.15], 13, ["case", ["==", ["get", "active"], 1], 3.6, 1.5]],
             "line-offset": ["get", "offset"],
-            "line-opacity": ["get", "opacity"],
+            "line-opacity": ["case", ["==", ["get", "active"], 1], 0.95, ["get", "opacity"]],
           }}
         />
         <Layer
@@ -668,7 +757,7 @@ export default function SeaMapInner({
         <Layer
           id="link-arrows"
           type="symbol"
-          filter={["!=", ["get", "kind"], "response"]}
+          filter={["all", ["!=", ["get", "kind"], "response"], ["==", ["get", "active"], 1]]}
           layout={{
             visibility: visibility(layers.connections),
             "symbol-placement": "line",
@@ -688,9 +777,9 @@ export default function SeaMapInner({
           type="circle"
           layout={{ visibility: visibility(layers.connections) }}
           paint={{
-            "circle-radius": ["interpolate", ["linear"], ["get", "passages"], 1, 4, 40, 9],
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3, 10, 6],
             "circle-color": colors.selected,
-            "circle-opacity": 0.85,
+            "circle-opacity": 0.7,
             "circle-stroke-color": colors.markerStroke,
             "circle-stroke-width": 1,
           }}

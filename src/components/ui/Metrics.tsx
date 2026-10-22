@@ -15,7 +15,7 @@ export function Notice({ tone = "info", children }: { tone?: "info" | "warning";
   return <p className={`rounded-lg border px-3 py-2 text-sm ${toneClass}`}>{children}</p>;
 }
 
-export function MapLegend({ items }: { items: { swatch: string; label: string; pattern?: "dot" | "solid" | "dashed" }[] }) {
+export function MapLegend({ items, note }: { items: { swatch: string; label: string; pattern?: "dot" | "solid" | "dashed" }[]; note?: string }) {
   return (
     <ul data-tour="map-legend" className="pointer-events-none absolute bottom-10 left-14 z-10 max-w-[16rem] rounded-lg border border-border bg-overlay px-3 py-2 text-xs leading-5 text-fg-secondary">
       {items.map((item) => (
@@ -24,6 +24,7 @@ export function MapLegend({ items }: { items: { swatch: string; label: string; p
           {item.label}
         </li>
       ))}
+      {note ? <li className="mt-1 text-fg-muted">{note}</li> : null}
     </ul>
   );
 }

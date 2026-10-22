@@ -1,4 +1,5 @@
 import { CONNECTIVITY, DWELL_MAX_GAP_MS, DWELL_MIN_MS, DWELL_RADIUS_M, IMPLAUSIBLE_KN, STOP_SPEED_KN, AREA_CELL_DEG } from "@/config/constants";
+import { dwellsSameIsland } from "@/lib/analytics/same-island";
 import { createPlaceLocator, type PlaceLocator } from "@/lib/geo/matching";
 import { distanceM, impliedKnots } from "@/lib/geo/distance";
 import type { Dwell, HarbourPoint, Journey, LandPolygon, PassageFlag, VesselDataset } from "@/types/maritime";
@@ -185,6 +186,7 @@ function toJourney(device: number, origin: Dwell, destination: Dwell, measured: 
   if (impliedKn > IMPLAUSIBLE_KN) flags.push("implausible_speed");
   if (measured.maxGapMs > CONNECTIVITY.sparseGapMs) flags.push("sparse_tracking");
   if (origin.areaId === destination.areaId) flags.push("same_area");
+  if (origin.areaId !== destination.areaId && dwellsSameIsland(origin, destination)) flags.push("same_island");
   const coverageGap = flags.includes("clock_static") || flags.includes("implausible_speed");
   return {
     device,

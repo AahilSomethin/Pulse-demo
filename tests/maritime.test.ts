@@ -37,10 +37,14 @@ describe("parseCsv", () => {
     expect(parsed.rows[0].lon).toBeCloseTo(73.51, 4);
   });
 
-  it("drops timestamps that already carry a zone suffix", () => {
-    const parsed = parseCsv("imei,device_date,latitude,longitude,speed\n111,2024-01-01 00:00:00Z,4.175,73.510,1\n");
-    expect(parsed.rows).toHaveLength(0);
-    expect(parsed.rejected.badTime).toBe(1);
+  it("parses an explicit offset and still reads a naive timestamp as UTC", () => {
+    const zoned = parseCsv("imei,device_date,latitude,longitude,speed\n111,2024-01-01 00:00:00+05:00,4.175,73.510,1\n");
+    expect(zoned.rows).toHaveLength(1);
+    expect(zoned.rows[0].timeMs).toBe(Date.parse("2023-12-31T19:00:00Z"));
+    const naive = parseCsv("imei,device_date,latitude,longitude,speed\n111,2024-01-01 00:00:00,4.175,73.510,1\n");
+    expect(naive.rows[0].timeMs).toBe(Date.parse("2024-01-01T00:00:00Z"));
+    const suffixed = parseCsv("imei,device_date,latitude,longitude,speed\n111,2024-01-01 00:00:00Z,4.175,73.510,1\n");
+    expect(suffixed.rows[0].timeMs).toBe(Date.parse("2024-01-01T00:00:00Z"));
   });
 
   it("reads quoted FollowMe columns, drops a duplicate, and breaks ties with timestamp", () => {

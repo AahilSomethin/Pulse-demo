@@ -87,12 +87,12 @@ Users load a CSV in the browser. In development, `GET /api/dev-followme/[day]` s
 
 Do not commit raw tracks, device identifiers, or coordinates from the extract. `src/data/followme-quality.json` and `src/lib/analytics/corpus.ts` store counts only. Mask IMEIs in the UI. `public/fixtures/` is synthetic and must stay labelled as synthetic.
 
-`device_date` is the observation clock. `timestamp` is the database save time and only breaks ties. The reported speed unit is not in the file. Do not convert it.
+`device_date` is the observation clock. `timestamp` is the database save time and only breaks ties. A value with no zone is UTC, matching the August extract. A value that already has `Z` or a numeric offset keeps that instant. The reported speed unit is not in the file. Do not convert it. The 0.5 stop threshold uses the recorded number. The 40-knot gate uses straight-line distance over time.
 
 ## Observed, inferred, simulated
 
 - **Observed.** Parsed ping time, latitude, longitude, reported speed, heading, network, and IMEI. Dwell-to-dwell counts, durations, and straight-line distances are summaries of those pings.
-- **Inferred.** Hub cells, dwells, 0.05° activity areas, and the links between them. An activity cell is not a harbour or an island. A named link exists only when both ends fall in a loaded polygon that has a name.
+- **Inferred.** Hub cells, dwells, 0.05° activity areas, and the links between them. An activity cell is not a harbour or an island. A named link exists only when both ends fall in a polygon that has a name. Two cells on the same named island are not an inter-island connection. Search results for those cells stay labelled inferred.
 - **Simulated.** A map-clicked incident, an optional user-placed Coast Guard origin, a typed Route Lab duration, and straight-line times at assumed or unverified speeds. Label them as hypothetical. They are not a schedule and not a dispatch order.
 
 Hub rules differ from dwell rules. A hub ping is reported speed under 0.5 in the window `[t - W, t + 1)`. A dwell needs at least two slow pings, 10 minutes, 400 metres, and no gap over 20 minutes. The bold trail is `(t - W, t]`. Keep those edges.
@@ -136,6 +136,8 @@ npm run build
 - Releasing an overlay without its token clears a section that just published.
 - Playback above 1× commits one sample per frame. It does not draw the GPS reports inside the jump. The clock pauses while `document.hidden` is true.
 - Census population is shown only after an atoll-and-name or unique-name match against Table P5. Do not invent a match, a demand figure, or an isolation score. Ambiguous names stay blank.
-- Team Guide targets use `data-tour` on a visible element. The guide is started from the header. It does not auto-start and it does not store progress. Steps that need a loaded day or a connection fall back to centred text when that data is absent.
+- Team Guide targets use `data-tour` on a visible element. The guide is started from the header. It does not auto-start and it does not store progress. Steps cover search, island selection, vessel frequency, and the connectivity report, and fall back to centred text when that data is absent.
+- Header search does not render the device list. Vessel hits need at least four characters and show a masked id. Do not export IMEIs, trajectories, or connection coordinates. The August connectivity file stays gitignored until redistribution is allowed.
+- Census population on a profile says whether the match was atoll and name, a unique name, or an official code. Do not collapse those into one confirmation.
 - No verified medical or Coast Guard file ships with the app. An evacuation leg runs only when a loaded feature has `kind: "medical"` and `verified: true`.
 - Old paths redirect in `src/config/redirects.ts`: `/` and `/explorer` to `/explore`, `/emergency` to `/simulate`, `/routes` to `/network?tab=routes`. Emergency Simulation stays at `/simulate` and opens from the Experimental menu, not as a third primary section.

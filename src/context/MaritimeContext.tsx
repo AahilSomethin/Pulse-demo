@@ -5,7 +5,8 @@ import { createContext, useCallback, useContext, useEffect, useLayoutEffect, use
 import { DEFAULT_CELL_DEG, DEFAULT_WINDOW_MS } from "@/config/constants";
 import { aggregateAreaLinks, aggregateLinks } from "@/lib/analytics/network";
 import { buildConnectionIndicators, type ConnectionIndicator } from "@/lib/analytics/connectivity";
-import { indicatorsFromMonth, parseStoredMonth, type StoredMonth } from "@/lib/analytics/month";
+import { indicatorsFromMonth, parseStoredMonth, sameIslandPassageCount, type StoredMonth } from "@/lib/analytics/month";
+import { countSameIslandJourneys } from "@/lib/analytics/same-island";
 import { inferDwells, inferJourneys, summarizeAreas } from "@/lib/analytics/journeys";
 import { canonicalAtoll } from "@/lib/reference/atolls";
 import { joinCensus, type CensusIsland, type CensusJoin, type CensusPlace } from "@/lib/reference/census";
@@ -25,8 +26,10 @@ interface DatasetValue {
   areaLinks: AreaLink[];
   areas: ActivityArea[];
   indicators: ConnectionIndicator[];
+  sameIslandPassages: number;
   month: StoredMonth | null;
   monthIndicators: ConnectionIndicator[];
+  monthSameIslandPassages: number;
   census: CensusJoin | null;
   harbours: HarbourPoint[];
   loading: boolean;
@@ -419,6 +422,7 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
         areaLinks: [] as AreaLink[],
         areas: [] as ActivityArea[],
         indicators: [] as ConnectionIndicator[],
+        sameIslandPassages: 0,
       };
     }
     const polygons = geography?.polygons ?? [];
@@ -431,10 +435,12 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
       areaLinks: aggregateAreaLinks(journeys),
       areas: summarizeAreas(dwells),
       indicators: buildConnectionIndicators(journeys, { scope: "day", periodLabel, observationDays: 1 }),
+      sameIslandPassages: countSameIslandJourneys(journeys),
     };
   }, [dataset, geography, harbours]);
 
   const monthIndicators = useMemo(() => (month ? indicatorsFromMonth(month) : []), [month]);
+  const monthSameIslandPassages = useMemo(() => (month ? sameIslandPassageCount(month) : 0), [month]);
 
   const mask = useMemo(() => (dataset ? buildSpeedMask(dataset, threshold) : null), [dataset, threshold]);
   const frame = useMemo(() => {
@@ -451,8 +457,10 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
       areaLinks: movement.areaLinks,
       areas: movement.areas,
       indicators: movement.indicators,
+      sameIslandPassages: movement.sameIslandPassages,
       month,
       monthIndicators,
+      monthSameIslandPassages,
       census,
       harbours,
       loading,
@@ -469,7 +477,7 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
       loadSample,
       loadMonth,
     }),
-    [dataset, geography, movement, month, monthIndicators, census, harbours, loading, loadingLabel, error, days, activeDay, loadCsvText, loadCsvFile, loadCsvFiles, loadLocalAugust, selectDay, loadGeoText, loadSample, loadMonth],
+    [dataset, geography, movement, month, monthIndicators, monthSameIslandPassages, census, harbours, loading, loadingLabel, error, days, activeDay, loadCsvText, loadCsvFile, loadCsvFiles, loadLocalAugust, selectDay, loadGeoText, loadSample, loadMonth],
   );
   const settingsValue = useMemo<PlaybackSettings>(
     () => ({

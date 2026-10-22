@@ -10,6 +10,7 @@ import { useDataset } from "@/context/MaritimeContext";
 import { useWorkspace } from "@/context/WorkspaceContext";
 import { filterIndicators } from "@/lib/analytics/filters";
 import { connectionOverlay } from "@/lib/analytics/map-links";
+import { FrequencyReport } from "@/components/network/FrequencyReport";
 import { findOpportunities, type Opportunity } from "@/lib/analytics/opportunities";
 import { formatCount, formatMinutes } from "@/lib/format";
 import { compareScenario, describeBaseline } from "@/lib/simulation/routes";
@@ -17,12 +18,25 @@ import type { NetworkTab } from "@/lib/workspace/state";
 import type { ConnectionIndicator } from "@/lib/analytics/connectivity";
 
 export function NetworkPanel() {
-  const { dataset, indicators, month, monthIndicators, loadMonth, loading } = useDataset();
+  const { dataset, indicators, month, monthIndicators, loadMonth, loading, sameIslandPassages, monthSameIslandPassages } = useDataset();
   const { state, setNetworkTab, patchNetwork, patchRoute, openDetail, focusOn } = useWorkspace();
   const source = state.network.scope === "month" ? monthIndicators : indicators;
   const filtered = useMemo(() => filterIndicators(source, state.network), [source, state.network]);
   const activeId = state.detail?.type === "connection" ? state.detail.id : state.route.pair || null;
-  const overlay = useMemo(() => connectionOverlay(filtered, activeId, CONNECTIVITY.mapLinkCap), [filtered, activeId]);
+  const opportunities = useMemo(() => findOpportunities(filtered), [filtered]);
+  const overlay = useMemo(() => {
+    if (state.networkTab === "routes") {
+      const selected = filtered.find((indicator) => indicator.id === state.route.pair) ?? filtered[0] ?? null;
+      return connectionOverlay(selected ? [selected] : [], selected?.id ?? null, "selected");
+    }
+    if (state.networkTab === "opportunities") {
+      const flagged = opportunities.flagged.map((item) => item.indicator);
+      const selected = flagged.find((indicator) => indicator.id === activeId) ?? null;
+      return connectionOverlay(selected ? [selected] : flagged.slice(0, 8), selected?.id ?? null, "opportunity");
+    }
+    if (state.networkTab === "frequency") return connectionOverlay([], null, "selected");
+    return connectionOverlay(filtered, activeId, "overview");
+  }, [state.networkTab, state.route.pair, filtered, activeId, opportunities]);
   const mapOverlay = useMemo(
     () => ({ clickMode: "vessel" as const, markers: [], lines: overlay.lines, locations: overlay.locations }),
     [overlay],
@@ -31,26 +45,17 @@ export function NetworkPanel() {
 
   useEffect(() => {
     const tab = new URLSearchParams(window.location.search).get("tab");
-    if ((tab === "routes" || tab === "observed" || tab === "opportunities") && tab !== state.networkTab) setNetworkTab(tab);
+    if ((tab === "routes" || tab === "observed" || tab === "opportunities" || tab === "frequency") && tab !== state.networkTab) setNetworkTab(tab);
   }, [setNetworkTab, state.networkTab]);
 
   useEffect(() => {
     if (state.network.scope === "month" && !month && !loading) void loadMonth();
   }, [state.network.scope, month, loading, loadMonth]);
 
-  const opportunities = useMemo(() => findOpportunities(filtered), [filtered]);
-
   function chooseTab(tab: NetworkTab) {
     setNetworkTab(tab);
     const query = tab === "observed" ? "" : `?tab=${tab}`;
     window.history.replaceState(window.history.state, "", `/network${query}`);
-  }
-
-  function showOpportunities(selectFirst: boolean) {
-    chooseTab("opportunities");
-    if (!selectFirst) return;
-    const first = opportunities.flagged[0];
-    if (first) choose(first.indicator);
   }
 
   function choose(indicator: ConnectionIndicator) {
@@ -61,23 +66,26 @@ export function NetworkPanel() {
 
   return (
     <>
-      <header className="flex flex-col gap-2">
+      <header className="no-print flex flex-col gap-2">
         <div>
           <h1 className="text-lg font-semibold tracking-tight">Network</h1>
           <p className="mt-1 text-sm leading-6 text-fg-secondary">Observed passages between places where tracked vessels stopped. A missing line is not proof that no service exists.</p>
         </div>
-        <button type="button" className="btn btn-primary self-start" data-tour="find-opportunities" onClick={() => showOpportunities(true)}>
-          Find opportunities
-        </button>
       </header>
       {!dataset && state.network.scope === "day" ? <Notice>Load a tracker day in Explore, or switch the window to the August summary after it has been built.</Notice> : null}
       {dataset?.synthetic ? <Notice tone="warning">Synthetic test geometry. Do not read these links as real atoll services.</Notice> : null}
       <ConnectionFilters filters={state.network} atolls={atollsFor(source)} onChange={patchNetwork} />
       {state.network.scope === "month" && !month ? <Notice>The August summary is read from this computer. It is not included in the published app until redistribution of the derived file is confirmed.</Notice> : null}
-      {overlay.hidden > 0 ? <p className="text-xs text-fg-muted">Map shows the {CONNECTIVITY.mapLinkCap} busiest connections in the current filters. {formatCount(overlay.hidden)} more stay in the list only.</p> : null}
-      <div role="tablist" aria-label="Network" className="flex flex-wrap gap-1">
+      {state.networkTab === "observed" ? <p className="text-xs leading-5 text-fg-muted">Every matching connection stays in the list. The map draws them as thin lines and reveals more as you zoom in. A selected line stays visible.</p> : null}
+      {state.networkTab === "opportunities" ? <p className="text-xs leading-5 text-fg-muted">The map shows investigation candidates. The selected candidate stays in front, and other network lines stay off the map. Those connections are still in the data.</p> : null}
+      {state.networkTab === "routes" ? <p className="text-xs leading-5 text-fg-muted">The map shows the selected connection. The rest of the network stays in the list.</p> : null}
+      {(state.network.scope === "month" ? monthSameIslandPassages : sameIslandPassages) > 0 ? (
+        <p className="text-xs leading-5 text-fg-muted">{formatCount(state.network.scope === "month" ? monthSameIslandPassages : sameIslandPassages)} passages moved between activity cells on the same named island. They stay in the record and are not shown as inter-island connections.</p>
+      ) : null}
+      <div role="tablist" aria-label="Network" className="no-print flex flex-wrap gap-1">
         <button type="button" role="tab" aria-selected={state.networkTab === "observed"} className={state.networkTab === "observed" ? "btn btn-primary" : "btn"} onClick={() => chooseTab("observed")}>Connections</button>
-        <button type="button" role="tab" aria-selected={state.networkTab === "opportunities"} className={state.networkTab === "opportunities" ? "btn btn-primary" : "btn border-primary text-primary"} onClick={() => chooseTab("opportunities")}>Find opportunities</button>
+        <button type="button" role="tab" data-tour="find-opportunities" aria-selected={state.networkTab === "opportunities"} className={state.networkTab === "opportunities" ? "btn btn-primary" : "btn"} onClick={() => chooseTab("opportunities")}>Find opportunities</button>
+        <button type="button" role="tab" data-tour="network-tab-frequency" aria-selected={state.networkTab === "frequency"} className={state.networkTab === "frequency" ? "btn btn-primary" : "btn"} onClick={() => chooseTab("frequency")}>Frequency</button>
         <button type="button" role="tab" data-tour="network-tab-routes" aria-selected={state.networkTab === "routes"} className={state.networkTab === "routes" ? "btn btn-primary" : "btn"} onClick={() => chooseTab("routes")}>Route Lab</button>
       </div>
       {state.networkTab === "observed" ? <ConnectionList indicators={filtered} activeId={activeId} onChoose={choose} /> : null}
@@ -90,6 +98,7 @@ export function NetworkPanel() {
         />
       ) : null}
       {state.networkTab === "routes" ? <RouteLab indicators={filtered} onChoose={choose} /> : null}
+      {state.networkTab === "frequency" ? <FrequencyReport indicators={filtered} /> : null}
     </>
   );
 }
@@ -99,15 +108,17 @@ function ConnectionList({ indicators, activeId, onChoose }: { indicators: Connec
     <section className="space-y-2">
       <h2 className="text-sm font-semibold">Observed connections</h2>
       {indicators.length === 0 ? <p className="text-sm text-fg-muted">No connection matches these filters.</p> : (
-        <ul className="space-y-2">
-          {indicators.slice(0, 12).map((indicator) => (
-            <li key={indicator.id}>
-              <ConnectionCard indicator={indicator} active={indicator.id === activeId} onChoose={onChoose} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <p className="text-xs text-fg-muted">{formatCount(indicators.length)} matching {indicators.length === 1 ? "connection" : "connections"}. The map keeps every one and draws the busiest first.</p>
+          <ul className="space-y-2">
+            {indicators.map((indicator) => (
+              <li key={indicator.id}>
+                <ConnectionCard indicator={indicator} active={indicator.id === activeId} onChoose={onChoose} />
+              </li>
+            ))}
+          </ul>
+        </>
       )}
-      {indicators.length > 12 ? <p className="text-xs text-fg-muted">{formatCount(indicators.length - 12)} more match. Raise the minimum journeys to narrow the list.</p> : null}
     </section>
   );
 }
@@ -129,7 +140,7 @@ function OpportunityList({
       <Notice>Each result is a planning question. It is not a recommendation to build or change a route.</Notice>
       {flagged.length === 0 ? <p className="text-sm text-fg-muted">No connection in the current filters has both enough repeated journeys and one of the investigation rules.</p> : (
         <ul className="space-y-2">
-          {flagged.slice(0, 8).map((item) => (
+          {flagged.map((item) => (
             <li key={item.indicator.id} className="space-y-2">
               <ConnectionCard indicator={item.indicator} active={item.indicator.id === activeId} onChoose={onChoose} />
               <ul className="space-y-1 px-1 text-sm leading-6 text-fg-secondary">
@@ -167,7 +178,7 @@ function RouteLab({ indicators, onChoose }: { indicators: ConnectionIndicator[];
             const indicator = indicators.find((item) => item.id === event.target.value);
             if (indicator) onChoose(indicator);
           }}>
-            {indicators.slice(0, 40).map((indicator) => (
+            {indicators.map((indicator) => (
               <option key={indicator.id} value={indicator.id}>{indicator.origin.label} → {indicator.destination.label} ({indicator.passages})</option>
             ))}
           </select>

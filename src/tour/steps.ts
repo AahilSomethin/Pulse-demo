@@ -21,7 +21,7 @@ export interface GuideStep {
   target: string | null;
   route: "/explore" | "/network" | "/simulate" | null;
   exploreTab: "data" | null;
-  networkTab: "observed" | "opportunities" | "routes" | null;
+  networkTab: "observed" | "opportunities" | "routes" | "frequency" | null;
   openConnection: boolean;
   disableMap: boolean;
 }
@@ -49,7 +49,7 @@ function dataCopy(snapshot: GuideSnapshot): string {
   const month = snapshot.monthLoaded ? " The August summary is loaded on this computer." : "";
   const census = snapshot.censusMatched == null
     ? "Census 2022 is not loaded, so resident population is not shown."
-    : `Census 2022 matched ${snapshot.censusMatched} reference islands by atoll and English name. ${snapshot.censusAmbiguous ?? 0} are ambiguous and ${snapshot.censusUnmatched ?? 0} census islands are unmatched. Unmatched places stay blank.`;
+    : `Census 2022 matched ${snapshot.censusMatched} reference islands. A match is by official code, by atoll and name, or by a unique name, and the profile says which. ${snapshot.censusAmbiguous ?? 0} are ambiguous and ${snapshot.censusUnmatched ?? 0} census islands are unmatched. Unmatched places stay blank.`;
   return `The evidence is historical GPS from tracked devices in the August 2025 FollowMe extract, plus OpenStreetMap islands and harbours. It is not a live vessel feed. ${session}${month} ${census}`;
 }
 
@@ -73,7 +73,7 @@ function profileCopy(snapshot: GuideSnapshot): { description: string; fallback: 
   };
 }
 
-/** Nine team-guide steps. Counts come only from the snapshot captured when the guide starts. */
+/** Team-guide steps. Counts come only from the snapshot captured when the guide starts. */
 export function buildGuideSteps(snapshot: GuideSnapshot = EMPTY): GuideStep[] {
   const profile = profileCopy(snapshot);
   const playbackReady = snapshot.datasetLoaded;
@@ -129,6 +129,18 @@ export function buildGuideSteps(snapshot: GuideSnapshot = EMPTY): GuideStep[] {
       disableMap: false,
     },
     {
+      id: "search",
+      title: "Search",
+      description: "Search is in the header. It finds islands by English or Dhivehi name, atolls, OpenStreetMap harbour points, inferred activity areas, and a vessel from the loaded day. Vessel results stay masked, and an empty search does not list device identifiers. Choosing an island frames it and opens its connectivity profile. Choosing a vessel shows that device's historical track. Maldives returns to a nationwide view. Atoll zoom works only where this reference file has geometry.",
+      fallbackDescription: "Search is in the header. It finds islands, atolls, harbour reference points, inferred activity areas, and a vessel from a loaded day. Vessel identifiers stay masked. Island coverage is the OpenStreetMap file, not a complete official list.",
+      target: "global-search",
+      route: null,
+      exploreTab: null,
+      networkTab: null,
+      openConnection: false,
+      disableMap: false,
+    },
+    {
       id: "network",
       title: "Network",
       description: snapshot.connectionCount === 0
@@ -155,6 +167,18 @@ export function buildGuideSteps(snapshot: GuideSnapshot = EMPTY): GuideStep[] {
       disableMap: false,
     },
     {
+      id: "frequency",
+      title: "Vessel frequency",
+      description: "Frequency summarises observed passages, distinct tracked vessels when the loaded day can de-duplicate them, active days, and journey times. A day range changes passage counts only. It does not rebuild typical times from a month total. These figures are tracked movements, not a scheduled ferry timetable.",
+      fallbackDescription: "Frequency is a Network tab. It summarises observed passages in the current window. It is not a ferry timetable, and GPS pings are not vessel visits.",
+      target: "network-tab-frequency",
+      route: "/network",
+      exploreTab: null,
+      networkTab: "frequency",
+      openConnection: false,
+      disableMap: false,
+    },
+    {
       id: "opportunities",
       title: "Find opportunities",
       description: opportunityCopy(snapshot),
@@ -175,6 +199,18 @@ export function buildGuideSteps(snapshot: GuideSnapshot = EMPTY): GuideStep[] {
       route: "/network",
       exploreTab: null,
       networkTab: "routes",
+      openConnection: false,
+      disableMap: false,
+    },
+    {
+      id: "report",
+      title: "Connectivity report",
+      description: "Export CSV or print the frequency view for the current filters. The file includes the period, method, evidence rules, and limitations. It omits coordinates, device identifiers, and trajectories.",
+      fallbackDescription: "The frequency view can export a CSV or a printed summary of the current filters. Coordinates and device identifiers are left out.",
+      target: "network-report",
+      route: "/network",
+      exploreTab: null,
+      networkTab: "frequency",
       openConnection: false,
       disableMap: false,
     },

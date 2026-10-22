@@ -6,7 +6,11 @@ export const MALDIVES_BOX = {
   maxLon: 73.9,
 } as const;
 
-/** Instantaneous stop threshold from the original hub mode. Not a dwell. */
+/**
+ * Instantaneous stop threshold from the original hub mode. Not a dwell.
+ * The FollowMe file does not name the speed unit. This compares the recorded number.
+ * It is not a confirmed knot value, and it is not converted.
+ */
 export const STOP_SPEED_KN = 0.5;
 
 export const WINDOW_OPTIONS = [
@@ -32,7 +36,10 @@ export const DWELL_MIN_MS = 10 * 60 * 1000;
 export const DWELL_RADIUS_M = 400;
 export const DWELL_MAX_GAP_MS = 20 * 60 * 1000;
 
-/** Straight-line speed above this is treated as a tracker gap, not a passage. */
+/**
+ * Straight-line speed above this is treated as a tracker gap, not a passage.
+ * The check uses nautical miles from the coordinates and the clock. It does not read or convert the speed column.
+ */
 export const IMPLAUSIBLE_KN = 40;
 
 /**

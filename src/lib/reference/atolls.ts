@@ -116,3 +116,31 @@ export function canonicalAtoll(value: string | null | undefined): AtollCode | nu
   const words = normalisePlaceName(trimmed).replace(/\batolls?\b/g, "").replace(/\s+/g, " ").trim();
   return NAME_ALIASES[words] ?? null;
 }
+
+export const ATOLL_TITLES: Record<AtollCode, string> = {
+  HA: "Haa Alifu",
+  HDh: "Haa Dhaalu",
+  Sh: "Shaviyani",
+  N: "Noonu",
+  R: "Raa",
+  B: "Baa",
+  Lh: "Lhaviyani",
+  K: "Kaafu",
+  AA: "Alif Alifu",
+  Adh: "Alif Dhaalu",
+  V: "Vaavu",
+  M: "Meemu",
+  F: "Faafu",
+  Dh: "Dhaalu",
+  Th: "Thaa",
+  L: "Laamu",
+  GA: "Gaafu Alifu",
+  GDh: "Gaafu Dhaalu",
+  Gn: "Gnaviyani",
+  S: "Seenu",
+};
+
+export function atollQueryText(code: AtollCode): string {
+  const aliases = Object.entries(NAME_ALIASES).filter(([, value]) => value === code).map(([name]) => name);
+  return [code, ATOLL_TITLES[code], ...aliases].join(" ");
+}

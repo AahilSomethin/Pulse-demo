@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 
 import { DetailsDrawer } from "@/components/layout/DetailsDrawer";
+import { GlobalSearch } from "@/components/layout/GlobalSearch";
 import { ExperimentalMenu } from "@/components/layout/ExperimentalMenu";
 import { TourLauncher } from "@/components/tour/TourLauncher";
 import { MapStage } from "@/components/layout/MapStage";
@@ -25,7 +26,7 @@ const PRIMARY = [
 export function WorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
-  const { dataset, loading } = useDataset();
+  const { dataset, month, loading } = useDataset();
   const { playing, setPlaying, speed, setSpeed } = usePlaybackSettings();
   const { state, setPresenting, closeDetail } = useWorkspace();
 
@@ -63,7 +64,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
       {state.presenting ? null : (
-        <header className="z-40 flex shrink-0 flex-wrap items-center gap-3 border-b border-border bg-surface px-3 py-2 sm:px-4">
+        <header className="no-print z-40 flex shrink-0 flex-wrap items-center gap-3 border-b border-border bg-surface px-3 py-2 sm:px-4">
           <Link href="/explore" className="flex items-center gap-2 font-semibold tracking-tight">
             <Anchor className="text-primary" size={18} aria-hidden />
             SeaPulse
@@ -85,8 +86,9 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             })}
             <ExperimentalMenu variant="nav" />
           </nav>
+          <GlobalSearch />
           <p className="hidden min-w-0 truncate text-xs text-fg-muted xl:block">
-            {loading ? "Reading tracker file…" : dataset ? `${historicalLabel(dataset.periodLabel)} · ${dataset.names.length} devices · ${dataset.sourceLabel}` : "No dataset loaded"}
+            {loading ? "Reading tracker file…" : dataset ? `${historicalLabel(dataset.periodLabel)} · ${dataset.names.length} devices · ${dataset.sourceLabel}` : month ? "August 2025 summary · local derived file" : "No dataset loaded"}
             {dataset?.synthetic ? " · synthetic test data" : ""}
           </p>
           <TourLauncher />

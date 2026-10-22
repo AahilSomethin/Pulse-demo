@@ -8,6 +8,7 @@ import path from "node:path";
 
 import { CONNECTIVITY, DWELL_MAX_GAP_MS, DWELL_MIN_MS, DWELL_RADIUS_M, IMPLAUSIBLE_KN, SPARSE_GAP_MS, STOP_SPEED_KN } from "../src/config/constants";
 import { emptyCarry, finish, ingest, type PassageCarry } from "../src/lib/analytics/passages";
+import { dwellsSameIsland } from "../src/lib/analytics/same-island";
 import type { StoredConnection, StoredMonth } from "../src/lib/analytics/month";
 import { createPlaceLocator } from "../src/lib/geo/matching";
 import { parseHarbourGeoJson } from "../src/lib/reference/harbours";
@@ -69,6 +70,7 @@ const carries = new Map<string, PassageCarry>();
 const groups = new Map<string, Accumulator>();
 const devices = new Set<string>();
 let rowsKept = 0;
+let sameIslandPassages = 0;
 const dayReports: StoredMonth["days"] = [];
 
 function augustIndex(ms: number): number {
@@ -80,6 +82,10 @@ function augustIndex(ms: number): number {
 function record(journeys: Journey[], vessel: string) {
   for (const journey of journeys) {
     if (journey.origin.areaId === journey.destination.areaId) continue;
+    if (dwellsSameIsland(journey.origin, journey.destination)) {
+      sameIslandPassages += 1;
+      continue;
+    }
     const key = `${journey.origin.areaId}\u0000${journey.destination.areaId}`;
     let group = groups.get(key);
     if (!group) {
@@ -196,6 +202,7 @@ const report: StoredMonth & { config: Record<string, number | string>; notes: st
   rowsKept,
   devices: devices.size,
   minVessels: CONNECTIVITY.monthMinVessels,
+  sameIslandPassages,
   connections,
   config: {
     stopSpeed: STOP_SPEED_KN,
@@ -211,6 +218,7 @@ const report: StoredMonth & { config: Record<string, number | string>; notes: st
   },
   notes: [
     "Cell centres are 0.05 degree activity areas, not harbours.",
+    "Passages between cells on the same named island are counted in sameIslandPassages and omitted from connections.",
     "Vessel identities are counted in memory and are not written.",
     "A passage that crosses midnight is emitted once, when the arrival dwell closes.",
     "This file is derived from a private extract. Keep it local unless redistribution is explicitly allowed.",

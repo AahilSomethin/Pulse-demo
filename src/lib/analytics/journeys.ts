@@ -1,4 +1,5 @@
 import { AREA_CELL_DEG, DWELL_MAX_GAP_MS, DWELL_MIN_MS, DWELL_RADIUS_M, IMPLAUSIBLE_KN, STOP_SPEED_KN } from "@/config/constants";
+import { dwellsSameIsland } from "@/lib/analytics/same-island";
 import { passagesFromDataset } from "@/lib/analytics/passages";
 import { distanceM, impliedKnots } from "@/lib/geo/distance";
 import { locateIsland } from "@/lib/geo/point-in-polygon";
@@ -117,10 +118,12 @@ export function journeysFromDwells(dwells: readonly Dwell[]): Journey[] {
       const straightLineM = distanceM(origin.lon, origin.lat, destination.lon, destination.lat);
       const impliedKn = impliedKnots(straightLineM, durationMs);
       const coverageGap = !(durationMs > 0) || impliedKn > IMPLAUSIBLE_KN;
+      const sameIsland = origin.areaId !== destination.areaId && dwellsSameIsland(origin, destination);
       const flags = [
         ...(durationMs > 0 ? [] : ["clock_static" as const]),
         ...(impliedKn > IMPLAUSIBLE_KN ? ["implausible_speed" as const] : []),
         ...(origin.areaId === destination.areaId ? ["same_area" as const] : []),
+        ...(sameIsland ? ["same_island" as const] : []),
       ];
       journeys.push({
         device,
@@ -134,7 +137,7 @@ export function journeysFromDwells(dwells: readonly Dwell[]): Journey[] {
         impliedKn,
         flags,
         coverageGap,
-        credible: !coverageGap && origin.areaId !== destination.areaId,
+        credible: !coverageGap && origin.areaId !== destination.areaId && !sameIsland,
       });
     }
   }

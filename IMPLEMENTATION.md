@@ -4,25 +4,29 @@ SeaPulse lives under `src/`. The original HTML file and the Insight project are 
 
 ## Modules
 
-- `src/lib/parsing/csv.ts` — quote-aware CSV, named FollowMe headers or the original positional columns, UTC parsing, and duplicate detection.
+- `src/lib/parsing/csv.ts` — quote-aware CSV, named FollowMe headers or the original positional columns, naive-UTC parsing with support for an explicit offset, and duplicate detection.
 - `src/lib/parsing/days.ts` — daily file order and titles.
 - `src/lib/vessels/dataset.ts` — time-sorted typed arrays, per-device tracks, and day quality.
 - `src/workers/parse-csv.ts` — same parser off the main thread. The worker accepts text or a file and transfers the typed-array buffers. If it cannot start, the caller uses the same function directly.
 - `src/lib/vessels/frame.ts` — window `[t - W, t + 1)`, last ping per device, speed mask, hub grid, and the `(t - W, t]` trail.
 - `src/lib/parsing/geojson.ts` — land polygons, plus medical and Coast Guard sites.
 - `src/lib/analytics/journeys.ts` — dwells and inferred activity cells.
-- `src/lib/analytics/passages.ts` — the same dwell rule with path length, quality flags, and a carry across midnight.
-- `src/lib/analytics/connectivity.ts` — pooled indicators. Median, interquartile range, and 90th percentile come from one duration list.
+- `src/lib/analytics/passages.ts` — the same dwell rule with path length, quality flags, and a carry across midnight. A passage between two cells on one named island is flagged `same_island` and kept out of inter-island indicators.
+- `src/lib/analytics/same-island.ts` — same polygon id, or the same island name when the atolls do not conflict.
+- `src/lib/analytics/connectivity.ts` — pooled indicators. Median, interquartile range, and 90th percentile come from one duration list. `credibleVessels` is the devices on unflagged passages. The month file cannot split that count.
+- `src/lib/analytics/frequency.ts` — passage counts by day for the current filter. A shorter day range does not recalculate durations.
+- `src/lib/analytics/export-report.ts` — CSV of those aggregates. No coordinates, device ids, or trajectories.
+- `src/lib/search/query.ts` — grouped search over islands, atolls, harbour points, loaded-day vessels, and inferred areas.
 - `src/lib/analytics/opportunities.ts` — evidence gate and separate investigation rules. No combined score.
 - `src/lib/analytics/network.ts` — named directions and inferred-area directions. Credible passages only.
 - `src/lib/analytics/month.ts` — reads the local August summary and recomputes quantiles from stored seconds.
-- `src/lib/reference/census.ts` — exact code or name join. No fuzzy match.
+- `src/lib/reference/census.ts` — exact code, atoll plus name, or a unique name. The lookup records which of those three matched. No fuzzy match.
 - `src/lib/analytics/population.ts` — empty census adapter when no table is loaded.
 - `src/lib/simulation/routes.ts` — observed baseline, histogram, and a hypothetical typed duration.
 - `src/app/api/dev-connectivity/route.ts` — development-only read of `data/derived/connectivity-august-2025.json`.
 - `scripts/aggregate-connectivity.ts` — one-day-at-a-time month summary. Gitignored output. No device identifiers.
 - `src/app/api/dev-followme/[day]/route.ts` — development-only stream of one local day. Other environments return 404.
-- `src/components/map/SeaMapInner.tsx` — MapLibre layers for land, hubs, vessels, trails, inferred links, named links, and scenario lines. The CARTO style is recolored in `src/lib/map/basemap.ts` without changing its zoom limits or filters.
+- `src/components/map/SeaMapInner.tsx` — MapLibre layers for land, island labels, hubs, vessels, trails, inferred links, named links, and scenario lines. Unselected Network lines stay thin. On Connections the map draws a zoom-limited subset, with a cap on how many lines share one endpoint; the connection list still contains every match. Find opportunities and Route Lab draw only the relevant line. The CARTO style is recolored in `src/lib/map/basemap.ts` without changing its zoom limits or filters.
 - `scripts/audit-followme.mjs` — rebuilds the committed August summary. It does not write tracks or device identifiers.
 
 ## Workspace

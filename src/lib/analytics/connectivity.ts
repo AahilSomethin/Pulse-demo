@@ -1,4 +1,5 @@
 import { CONNECTIVITY } from "@/config/constants";
+import { dwellsSameIsland } from "@/lib/analytics/same-island";
 import { coefficientOfVariation, quantile, quartileRange } from "@/lib/analytics/stats";
 import { connectionId } from "@/lib/workspace/state";
 import type { GeoConfidence, Journey } from "@/types/maritime";
@@ -22,7 +23,10 @@ export interface ConnectionIndicator {
   destination: ConnectionEndpoint;
   /** Credible passages only. */
   passages: number;
+  /** Distinct devices on any passage between the cells, including flagged ones. */
   vessels: number;
+  /** Devices with at least one credible passage. Null when the source cannot separate them. */
+  credibleVessels: number | null;
   /** Credible plus flagged passages between these areas. */
   attempted: number;
   /** Flagged passages kept out of the duration distribution. */
@@ -77,6 +81,7 @@ interface Group {
   origin: ConnectionEndpoint;
   destination: ConnectionEndpoint;
   vessels: Set<string>;
+  credibleVessels: Set<string>;
   attempted: number;
   excluded: number;
   durationsMs: number[];
@@ -90,6 +95,7 @@ function emptyGroup(origin: ConnectionEndpoint, destination: ConnectionEndpoint,
     origin,
     destination,
     vessels: new Set(),
+    credibleVessels: new Set(),
     attempted: 0,
     excluded: 0,
     durationsMs: [],
@@ -104,6 +110,7 @@ export function buildConnectionIndicators(journeys: readonly Journey[], options:
   const groups = new Map<string, Group>();
   for (const journey of journeys) {
     if (journey.origin.areaId === journey.destination.areaId) continue;
+    if (dwellsSameIsland(journey.origin, journey.destination)) continue;
     const origin = endpointOf(journey, "origin");
     const destination = endpointOf(journey, "destination");
     const id = connectionId("inferred_activity", origin.id, destination.id);
@@ -112,11 +119,13 @@ export function buildConnectionIndicators(journeys: readonly Journey[], options:
     if (origin.confidence !== "inferred") group.origin = origin;
     if (destination.confidence !== "inferred") group.destination = destination;
     group.attempted += 1;
-    group.vessels.add(options.vesselKey?.(journey) ?? String(journey.device));
+    const vessel = options.vesselKey?.(journey) ?? String(journey.device);
+    group.vessels.add(vessel);
     if (!journey.credible) {
       group.excluded += 1;
       continue;
     }
+    group.credibleVessels.add(vessel);
     group.durationsMs.push(journey.durationMs);
     group.distances.push(journey.straightLineM);
     const ratio = journey.straightLineM > 1 ? journey.pathM / journey.straightLineM : 1;
@@ -135,6 +144,7 @@ export function buildConnectionIndicators(journeys: readonly Journey[], options:
         destination: group.destination,
         passages,
         vessels: group.vessels.size,
+        credibleVessels: group.credibleVessels.size,
         attempted: group.attempted,
         excluded: group.excluded,
         activeDays: group.dayCounts.filter((count) => count > 0).length,

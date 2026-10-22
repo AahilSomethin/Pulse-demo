@@ -76,11 +76,16 @@ export function splitCsvLine(line: string): string[] {
   return cells;
 }
 
-/** UTC, matching the original viewer. A zone suffix makes the value unreadable. */
+/**
+ * A naive timestamp is UTC, matching the original viewer and the August extract.
+ * A value that already ends in Z or a numeric offset keeps that instant.
+ */
 export function parseUtcTimestamp(raw: string): number {
   const trimmed = raw.trim();
-  if (!trimmed || /[zZ]|[+-]\d{2}:?\d{2}$/.test(trimmed)) return Number.NaN;
-  return Date.parse(`${trimmed.replace(" ", "T")}Z`);
+  if (!trimmed) return Number.NaN;
+  const zoned = /(?:[zZ]|[+-]\d{2}:?\d{2})$/.test(trimmed);
+  const iso = trimmed.replace(" ", "T");
+  return Date.parse(zoned ? iso : `${iso}Z`);
 }
 
 function insideBox(lat: number, lon: number): boolean {

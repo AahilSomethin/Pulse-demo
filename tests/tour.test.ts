@@ -17,17 +17,20 @@ const loaded: GuideSnapshot = {
 };
 
 describe("team guide steps", () => {
-  it("keeps the nine-step order and centred fallbacks when nothing is loaded", () => {
+  it("keeps the guide order and centred fallbacks when nothing is loaded", () => {
     const steps = buildGuideSteps();
     expect(steps.map((step) => step.id)).toEqual([
       "why",
       "data",
       "explore",
       "playback",
+      "search",
       "network",
       "profile",
+      "frequency",
       "opportunities",
       "routes",
+      "report",
       "limits",
     ]);
     expect(steps.find((step) => step.id === "why")?.target).toBeNull();

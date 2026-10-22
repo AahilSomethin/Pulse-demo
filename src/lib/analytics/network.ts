@@ -1,13 +1,14 @@
+import { dwellsSameIsland } from "@/lib/analytics/same-island";
 import { median } from "@/lib/format";
 import type { AreaLink, IslandLink, Journey, LandPolygon } from "@/types/maritime";
 
 export function aggregateLinks(journeys: readonly Journey[]): IslandLink[] {
   const groups = new Map<string, { origin: string; destination: string; durations: number[]; distances: number[] }>();
   for (const journey of journeys) {
-    if (!journey.credible) continue;
+    if (!journey.credible || dwellsSameIsland(journey.origin, journey.destination)) continue;
     const origin = journey.origin.islandName;
     const destination = journey.destination.islandName;
-    if (!origin || !destination || origin === destination) continue;
+    if (!origin || !destination) continue;
     const key = `${origin}\u0000${destination}`;
     const group = groups.get(key);
     if (group) {
@@ -35,7 +36,7 @@ export function aggregateLinks(journeys: readonly Journey[]): IslandLink[] {
 export function aggregateAreaLinks(journeys: readonly Journey[]): AreaLink[] {
   const groups = new Map<string, { link: Omit<AreaLink, "tripCount" | "medianDurationMs" | "medianDistanceM" | "shortestDurationMs" | "longestDurationMs">; durations: number[]; distances: number[] }>();
   for (const journey of journeys) {
-    if (!journey.credible) continue;
+    if (!journey.credible || dwellsSameIsland(journey.origin, journey.destination)) continue;
     if (journey.origin.areaId === journey.destination.areaId) continue;
     const key = `${journey.origin.areaId}\u0000${journey.destination.areaId}`;
     const group = groups.get(key);

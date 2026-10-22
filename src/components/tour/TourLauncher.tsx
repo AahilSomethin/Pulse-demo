@@ -72,7 +72,7 @@ function prepareStep(
   workspace: {
     setSidebar: (mode: "expanded" | "collapsed" | "hidden") => void;
     setExploreTab: (tab: "data" | "vessels" | "hubs") => void;
-    setNetworkTab: (tab: "observed" | "opportunities" | "routes") => void;
+    setNetworkTab: (tab: "observed" | "opportunities" | "routes" | "frequency") => void;
     openDetail: (detail: { type: "connection"; id: string }) => void;
   },
   connectionId: string | null,

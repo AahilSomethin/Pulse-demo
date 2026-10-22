@@ -76,10 +76,10 @@ describe("census join", () => {
       { name: "Baarah", atoll: null },
       { name: "Nowhere", atoll: "HA" },
     ], rows);
-    expect(join.lookup({ name: "Meedhoo", atoll: "Raa" })).toEqual({ status: "matched", population: 80, year: 2022 });
+    expect(join.lookup({ name: "Meedhoo", atoll: "Raa" })).toEqual({ status: "matched", population: 80, year: 2022, method: "atoll_name" });
     expect(join.lookup({ name: "Meedhoo" }).status).toBe("ambiguous");
     expect(join.lookup({ name: "Meedhoo" }).population).toBeNull();
-    expect(join.lookup({ name: "Baarah" }).population).toBe(40);
+    expect(join.lookup({ name: "Baarah" })).toMatchObject({ population: 40, method: "unique_name" });
     expect(join.lookup({ name: "Nowhere", atoll: "HA" })).toMatchObject({ status: "unmatched", population: null });
     expect(join.ambiguous.some((item) => item.name === "Meedhoo")).toBe(true);
     expect(join.unmatchedPlaces.some((item) => item.name === "Nowhere")).toBe(true);

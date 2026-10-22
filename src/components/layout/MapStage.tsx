@@ -2,13 +2,16 @@
 
 import { Layers, PanelLeftOpen } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 
 import { SeaMap } from "@/components/map/SeaMap";
 import { MapLegend, MapStatus, Notice } from "@/components/ui/Metrics";
 import { useDataset, usePlaybackClock, usePlaybackSettings } from "@/context/MaritimeContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useWorkspace } from "@/context/WorkspaceContext";
+import { MAP_CENTER } from "@/config/constants";
+import { boundsCenter, ringBounds, unionBounds } from "@/lib/geo/bounds";
+import { ATOLL_CODES, ATOLL_TITLES } from "@/lib/reference/atolls";
 import { getMapOverlay, getServerMapOverlay, subscribeMapOverlay } from "@/lib/workspace/overlay";
 import type { MapLayerVisibility } from "@/types/map";
 
@@ -23,15 +26,26 @@ const LAYER_ITEMS: { key: keyof MapLayerVisibility; label: string }[] = [
 
 export function MapStage() {
   const pathname = usePathname();
-  const { dataset, geography, loading, loadingLabel, error } = useDataset();
+  const { dataset, geography, month, loading, loadingLabel, error } = useDataset();
   const { frame } = usePlaybackClock();
   const { selected, cellDeg, setSelected } = usePlaybackSettings();
   const { theme } = useTheme();
-  const { state, openDetail, toggleLayer, setSidebar, reopenDetail } = useWorkspace();
+  const { state, openDetail, toggleLayer, setSidebar, reopenDetail, focusOn, setPick } = useWorkspace();
   const overlay = useSyncExternalStore(subscribeMapOverlay, getMapOverlay, getServerMapOverlay);
   const [layersOpen, setLayersOpen] = useState(false);
+  const [atollChoice, setAtollChoice] = useState("");
   const section = pathname === "/network" ? "network" : pathname === "/simulate" ? "simulate" : "explore";
   const selectedHubId = state.detail?.type === "hub" ? `${state.detail.fx}:${state.detail.fy}` : null;
+  const detail = state.detail;
+  const selectedIslandId = detail?.type === "location" && geography?.polygons.some((polygon) => polygon.id === detail.id) ? detail.id : null;
+  const atollCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const polygon of geography?.polygons ?? []) {
+      if (!polygon.atoll || polygon.synthetic) continue;
+      counts.set(polygon.atoll, (counts.get(polygon.atoll) ?? 0) + 1);
+    }
+    return counts;
+  }, [geography]);
 
   const legend = [
     ...(state.layers.hubs ? [{ swatch: "bg-hub", label: "Activity hubs", pattern: "dot" as const }] : []),
@@ -49,7 +63,7 @@ export function MapStage() {
   ];
 
   return (
-    <div className="absolute inset-0" data-tour="map">
+    <div className="no-print absolute inset-0" data-tour="map">
       <SeaMap
         dataset={dataset}
         polygons={geography?.polygons ?? []}
@@ -60,10 +74,11 @@ export function MapStage() {
         cellDeg={cellDeg}
         theme={theme}
         clickMode={overlay.clickMode}
-        markers={overlay.markers}
+        markers={state.pick ? [...overlay.markers, { id: "search-pick", lon: state.pick.lon, lat: state.pick.lat, kind: "route", label: state.pick.label }] : overlay.markers}
         lines={overlay.lines}
         locations={overlay.locations ?? []}
         selectedHubId={selectedHubId}
+        selectedIslandId={selectedIslandId}
         focus={state.focus}
         onSelectDevice={(device) => {
           setSelected(device);
@@ -74,7 +89,7 @@ export function MapStage() {
         onPlace={overlay.onPlace}
       />
       <MapStatus label={loading ? loadingLabel : null} />
-      {!dataset && !loading ? (
+      {!dataset && !month && !loading && overlay.lines.length === 0 ? (
         <div className="pointer-events-none absolute inset-0 grid place-items-center p-6 text-center text-sm text-fg-muted">
           Load a daily FollowMe CSV from Explore. Columns used: imei, device_date, latitude, longitude, and speed.
         </div>
@@ -86,6 +101,40 @@ export function MapStage() {
       ) : null}
       {!state.presenting ? (
         <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2" data-tour="map-extent">
+            <button
+              type="button"
+              className="btn"
+              onClick={() => {
+                setPick(null);
+                focusOn(MAP_CENTER.longitude, MAP_CENTER.latitude, { zoom: MAP_CENTER.zoom });
+              }}
+            >
+              Maldives
+            </button>
+            <label className="field">
+              <span className="sr-only">Atoll view</span>
+              <select
+                value={atollChoice}
+                onChange={(event) => {
+                  const code = event.target.value;
+                  setAtollChoice("");
+                  const polygons = (geography?.polygons ?? []).filter((polygon) => polygon.atoll === code && !polygon.synthetic);
+                  const bounds = unionBounds(polygons.map((polygon) => ringBounds(polygon.rings)));
+                  if (!bounds) return;
+                  const center = boundsCenter(bounds);
+                  setPick(null);
+                  focusOn(center.lon, center.lat, { bounds });
+                }}
+              >
+                <option value="">Atoll</option>
+                {ATOLL_CODES.map((code) => {
+                  const count = atollCounts.get(code) ?? 0;
+                  return <option key={code} value={code} disabled={count === 0}>{ATOLL_TITLES[code]}{count === 0 ? " (no geometry)" : ""}</option>;
+                })}
+              </select>
+            </label>
+          </div>
           <button type="button" className="btn" aria-expanded={layersOpen} aria-controls="map-layers" onClick={() => setLayersOpen((current) => !current)}>
             <Layers size={16} aria-hidden />
             Layers
@@ -114,7 +163,7 @@ export function MapStage() {
           Show panel
         </button>
       ) : null}
-      {legend.length > 0 ? <MapLegend items={legend} /> : null}
+      {legend.length > 0 ? <MapLegend items={legend} note="Named OpenStreetMap islands and islets in the reference file. Not a complete official list." /> : <MapLegend items={[]} note="Named OpenStreetMap islands and islets in the reference file. Not a complete official list." />}
     </div>
   );
 }

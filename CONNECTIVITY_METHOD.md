@@ -14,6 +14,7 @@ A passage is the movement from the end of one stop to the start of the next stop
 - `implausible_speed` — the straight-line speed is over 40 knots.
 - `sparse_tracking` — the longest gap between reports on that passage is over 30 minutes.
 - `same_area` — both stops fall in the same 0.05° activity cell.
+- `same_island` — the stops are in different cells, and both fall in the same named island. The same polygon id matches. So does the same island name when the atolls do not conflict. The same name in two atolls stays a crossing. These passages stay in the record and leave the inter-island list, the map, and opportunity ranking.
 
 Duration statistics use only passages with no flags. Flagged passages stay in the coverage count (`excluded`). They are not deleted.
 
@@ -36,7 +37,7 @@ If a reference file is loaded, a stop inside a named polygon is labelled with th
 For each direction:
 
 - Journeys: credible passages only.
-- Vessels: distinct devices on any passage between those cells, including flagged ones. The month file stores the count. It does not store device ids. Daily unique counts are not added up.
+- Vessels: distinct devices on any passage between those cells, including flagged ones. The month file stores that count and cannot separate devices that appear only on flagged passages. A loaded day also reports how many of those devices have a credible passage. Evidence still uses the documented vessel count. Daily unique counts are not added up.
 - Per observed day: credible journeys divided by the number of days in the window. The window length is shown beside the rate.
 - Typical time: the median of the pooled credible durations.
 - Middle half: the interquartile range, shown from 5 journeys upward.
@@ -95,7 +96,7 @@ The connection with the most rules (11 journeys, typical time about 8 hours, 5 k
 
 2. **A repeated longer crossing with steadier tracking.** The Male'-area cell near Jetty coverage (about 4.17°N, 73.53°E, harbour match) to Maafushi: 189 credible journeys, 22 vessels, typical time 54 minutes, middle half 25 minutes, longer journeys 84 minutes, separation 26.3 km, tracked path 1.11× the separation, 8 passages excluded. The spread stays under the variability rule, so it is not flagged. It is the example of an observed connection that is repeated often enough to describe. It is still not a ferry timetable, and 22 tracked vessels are not the fleet.
 
-3. **Same-island cells are not a route.** Two neighbouring 0.05° cells that both match Thilafushi (`ތިލަފުށި`) show 106 and 102 journeys, a tracked path more than twice the 1.1 km cell separation, and a high share of flagged passages. That pattern is what the grid does when a vessel moves around one island. It is a reason to be careful with short connections, not a reason to treat the two cells as different ports.
+3. **Same-island cells are not a route.** Two neighbouring 0.05° cells that both match Thilafushi (`ތިލަފުށި`) showed 106 and 102 journeys in the August build, a tracked path more than twice the 1.1 km cell separation, and a high share of flagged passages. That pattern is movement around one island. The app now reclassifies a pair like that: the passages stay counted, and they are not listed, mapped, or ranked as an inter-island connection. The cross-island examples above are unchanged by that rule.
 
 No census table was available, so none of these findings uses population.
 

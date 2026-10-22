@@ -29,7 +29,8 @@ interface WorkspaceApi {
   toggleLayer: (layer: keyof MapLayerVisibility) => void;
   setPresenting: (value: boolean) => void;
   setClock: (clock: ClockZone) => void;
-  focusOn: (lon: number, lat: number) => void;
+  focusOn: (lon: number, lat: number, view?: { zoom?: number; bounds?: { west: number; south: number; east: number; north: number } }) => void;
+  setPick: (pick: { lon: number; lat: number; label: string } | null) => void;
   setExploreTab: (tab: ExploreTab) => void;
   setNetworkTab: (tab: NetworkTab) => void;
   patchNetwork: (patch: Partial<NetworkFilters>) => void;
@@ -122,7 +123,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     toggleLayer: (layer: keyof MapLayerVisibility) => dispatch({ type: "toggle-layer", layer }),
     setPresenting: (value: boolean) => dispatch({ type: "present", value }),
     setClock: (clock: ClockZone) => dispatch({ type: "clock", clock }),
-    focusOn: (lon: number, lat: number) => dispatch({ type: "focus", lon, lat }),
+    focusOn: (lon: number, lat: number, view?: { zoom?: number; bounds?: { west: number; south: number; east: number; north: number } }) => dispatch({ type: "focus", lon, lat, zoom: view?.zoom, bounds: view?.bounds }),
+    setPick: (pick: { lon: number; lat: number; label: string } | null) => dispatch({ type: "pick", pick }),
     setExploreTab: (tab: ExploreTab) => dispatch({ type: "explore-tab", tab }),
     setNetworkTab: (tab: NetworkTab) => dispatch({ type: "network-tab", tab }),
     patchNetwork: (patch: Partial<NetworkFilters>) => dispatch({ type: "network", patch }),

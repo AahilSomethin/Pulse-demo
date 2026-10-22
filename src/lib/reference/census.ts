@@ -245,7 +245,7 @@ export function joinCensus(places: readonly CensusPlace[], rows: readonly Census
     const code = place.code?.trim().toLowerCase();
     const coded = code && !duplicateCodes.has(code) ? byCode.get(code) : undefined;
     if (coded) {
-      const lookup: PopulationLookup = { status: "matched", population: coded.population, year: 2022 };
+      const lookup: PopulationLookup = { status: "matched", population: coded.population, year: 2022, method: "code" };
       matched.push({ placeName: place.name, censusName: coded.name, atoll: coded.atoll, population: coded.population, method: "code" });
       used.add(coded);
       remember(place, lookup);
@@ -258,7 +258,7 @@ export function joinCensus(places: readonly CensusPlace[], rows: readonly Census
         const row = candidates[0];
         matched.push({ placeName: place.name, censusName: row.name, atoll: row.atoll, population: row.population, method: "atoll_name" });
         used.add(row);
-        remember(place, { status: "matched", population: row.population, year: 2022 });
+        remember(place, { status: "matched", population: row.population, year: 2022, method: "atoll_name" });
         continue;
       }
       if (candidates.length > 1) {
@@ -268,7 +268,7 @@ export function joinCensus(places: readonly CensusPlace[], rows: readonly Census
           candidates: candidates.map(censusLabel),
           reason: "More than one Census 2022 row has this atoll and island name.",
         });
-        remember(place, { status: "ambiguous", population: null, year: 2022 });
+        remember(place, { status: "ambiguous", population: null, year: 2022, method: null });
         continue;
       }
       const sameName = byName.get(normalisePlaceName(place.name)) ?? [];
@@ -279,10 +279,10 @@ export function joinCensus(places: readonly CensusPlace[], rows: readonly Census
           candidates: sameName.map(censusLabel),
           reason: "This island name occurs in more than one atoll, and none share this place's atoll.",
         });
-        remember(place, { status: "ambiguous", population: null, year: 2022 });
+        remember(place, { status: "ambiguous", population: null, year: 2022, method: null });
       } else {
         unmatchedPlaces.push({ name: place.name, atoll });
-        remember(place, { status: "unmatched", population: null, year: 2022 });
+        remember(place, { status: "unmatched", population: null, year: 2022, method: null });
       }
       continue;
     }
@@ -295,18 +295,18 @@ export function joinCensus(places: readonly CensusPlace[], rows: readonly Census
         candidates: sameName.map(censusLabel),
         reason: "This island name occurs in more than one atoll, and the place has no atoll to choose one.",
       });
-      remember(place, { status: "ambiguous", population: null, year: 2022 });
+      remember(place, { status: "ambiguous", population: null, year: 2022, method: null });
       continue;
     }
     if (sameName.length === 1 && placeNameCount.get(normalisePlaceName(place.name)) === 1) {
       const row = sameName[0];
       matched.push({ placeName: place.name, censusName: row.name, atoll: row.atoll, population: row.population, method: "unique_name" });
       used.add(row);
-      remember(place, { status: "matched", population: row.population, year: 2022 });
+      remember(place, { status: "matched", population: row.population, year: 2022, method: "unique_name" });
       continue;
     }
     unmatchedPlaces.push({ name: place.name, atoll: null });
-    remember(place, { status: "unmatched", population: null, year: 2022 });
+    remember(place, { status: "unmatched", population: null, year: 2022, method: null });
   }
 
   const unmatchedCensus = rows.filter((row) => !used.has(row)).map((row) => ({ name: row.name, atoll: row.atoll }));
@@ -316,14 +316,14 @@ export function joinCensus(places: readonly CensusPlace[], rows: readonly Census
       const code = place.code?.trim().toLowerCase();
       if (code && byCode.has(code)) {
         const row = byCode.get(code);
-        if (row) return { status: "matched", population: row.population, year: 2022 };
+        if (row) return { status: "matched", population: row.population, year: 2022, method: "code" };
       }
       const atoll = canonicalAtoll(place.atoll);
       const storedHit = stored.get(placeKey(atoll, place.name));
       if (storedHit) return storedHit;
       const nameHits = byName.get(normalisePlaceName(place.name)) ?? [];
-      if (!atoll && nameHits.length > 1) return { status: "ambiguous", population: null, year: 2022 };
-      return { status: "unmatched", population: null, year: 2022 };
+      if (!atoll && nameHits.length > 1) return { status: "ambiguous", population: null, year: 2022, method: null };
+      return { status: "unmatched", population: null, year: 2022, method: null };
     },
     populationForIsland(name: string) {
       const hits = byPlaceName.get(normalisePlaceName(name)) ?? [];

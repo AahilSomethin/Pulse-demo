@@ -1,4 +1,5 @@
-import type { ConnectionIndicator, IndicatorScope } from "@/lib/analytics/connectivity";
+import type { ConnectionEndpoint, ConnectionIndicator, IndicatorScope } from "@/lib/analytics/connectivity";
+import { endpointsSameIsland } from "@/lib/analytics/same-island";
 import { quantile, quartileRange } from "@/lib/analytics/stats";
 import { CONNECTIVITY } from "@/config/constants";
 import { connectionId } from "@/lib/workspace/state";
@@ -37,6 +38,8 @@ export interface StoredMonth {
   rowsKept: number;
   devices: number;
   minVessels: number;
+  /** Passages between cells on one named island, omitted from `connections` when the file records them. */
+  sameIslandPassages?: number;
   connections: StoredConnection[];
 }
 
@@ -57,9 +60,31 @@ function evidenceFor(passages: number, vessels: number): ConnectionIndicator["ev
   return "insufficient";
 }
 
+function storedEndpoint(connection: StoredConnection, end: "origin" | "destination"): ConnectionEndpoint {
+  return {
+    id: end === "origin" ? connection.originId : connection.destinationId,
+    label: end === "origin" ? connection.originLabel : connection.destinationLabel,
+    lat: end === "origin" ? connection.originLat : connection.destinationLat,
+    lon: end === "origin" ? connection.originLon : connection.destinationLon,
+    confidence: end === "origin" ? connection.originConfidence : connection.destinationConfidence,
+    sourceId: end === "origin" ? connection.originSourceId : connection.destinationSourceId,
+    atoll: end === "origin" ? connection.originAtoll : connection.destinationAtoll,
+  };
+}
+
+export function storedConnectionSameIsland(connection: StoredConnection): boolean {
+  return endpointsSameIsland(storedEndpoint(connection, "origin"), storedEndpoint(connection, "destination"));
+}
+
+/** Same-island cell pairs kept in an older file, plus any count the builder stored after omitting them. */
+export function sameIslandPassageCount(file: StoredMonth): number {
+  const embedded = file.connections.filter(storedConnectionSameIsland).reduce((sum, connection) => sum + connection.durationSec.length + connection.excluded, 0);
+  return embedded + (file.sameIslandPassages ?? 0);
+}
+
 /** Rebuilds indicators from stored passage samples. Daily percentiles are not in the file. */
 export function indicatorsFromMonth(file: StoredMonth, scope: IndicatorScope = "month"): ConnectionIndicator[] {
-  return file.connections.map((connection) => {
+  return file.connections.filter((connection) => !storedConnectionSameIsland(connection)).map((connection) => {
     const durationsMs = connection.durationSec.map((seconds) => seconds * 1000);
     const passages = durationsMs.length;
     return {
@@ -84,6 +109,7 @@ export function indicatorsFromMonth(file: StoredMonth, scope: IndicatorScope = "
       },
       passages,
       vessels: connection.vessels,
+      credibleVessels: null,
       attempted: passages + connection.excluded,
       excluded: connection.excluded,
       activeDays: connection.dayCounts.filter((count) => count > 0).length,

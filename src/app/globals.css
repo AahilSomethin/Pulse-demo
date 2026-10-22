@@ -314,6 +314,19 @@ input[type="checkbox"] {
   border-bottom-color: var(--surface);
 }
 
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-sheet,
+  .print-sheet * {
+    color: black !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

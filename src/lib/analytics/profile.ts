@@ -1,5 +1,7 @@
 import { durationVariability, passagesPerObservedDay, type ConnectionIndicator } from "@/lib/analytics/connectivity";
-import { emptyPopulation, type PopulationSource } from "@/lib/analytics/population";
+import { emptyPopulation, type CensusMatchMethod, type PopulationSource } from "@/lib/analytics/population";
+import { boundsCenter, ringBounds } from "@/lib/geo/bounds";
+import type { LandPolygon } from "@/types/maritime";
 
 export interface ProfileLink {
   indicator: ConnectionIndicator;
@@ -23,7 +25,9 @@ export interface LocationProfile {
   scope: ConnectionIndicator["scope"];
   population: number | null;
   populationStatus: "matched" | "ambiguous" | "unmatched" | "not_applicable" | "unavailable";
+  populationMethod: CensusMatchMethod | null;
   populationYear: 2022 | null;
+  nameDv: string | null;
   warnings: string[];
 }
 
@@ -54,7 +58,7 @@ export function buildLocationProfile(
   const named = sample.label.split(" · ")[0];
   const populationLookup = sample.confidence === "named_polygon"
     ? population.lookup({ name: named, atoll: sample.atoll })
-    : { status: "not_applicable" as const, population: null, year: null };
+    : { status: "not_applicable" as const, population: null, year: null, method: null };
   const warnings = [
     "Counts are tracked vessels in the loaded observations. They are not ferry passengers or proof that an unlisted place has no service.",
   ];
@@ -77,8 +81,48 @@ export function buildLocationProfile(
     scope: links[0].indicator.scope,
     population: populationLookup.population,
     populationStatus: populationLookup.status,
+    populationMethod: populationLookup.method,
     populationYear: populationLookup.year,
+    nameDv: null,
     warnings,
+  };
+}
+
+/** A named island with no passages still opens. Population stays geographic context. */
+export function buildIslandProfile(
+  polygon: LandPolygon,
+  indicators: readonly ConnectionIndicator[],
+  population: PopulationSource = emptyPopulation,
+): LocationProfile {
+  const linked = buildLocationProfile(polygon.id, indicators, population);
+  if (linked) return { ...linked, nameDv: polygon.nameDv ?? null };
+  const lookup = polygon.name
+    ? population.lookup({ name: polygon.name, atoll: polygon.atoll })
+    : { status: "unmatched" as const, population: null, year: 2022 as const, method: null };
+  const center = boundsCenter(ringBounds(polygon.rings) ?? { west: 73.5, south: 4.2, east: 73.5, north: 4.2 });
+  return {
+    id: polygon.id,
+    label: polygon.name ?? "Unnamed island",
+    confidence: "named_polygon",
+    atoll: polygon.atoll,
+    lat: center.lat,
+    lon: center.lon,
+    arrivals: 0,
+    departures: 0,
+    vessels: 0,
+    links: [],
+    observationDays: indicators[0]?.observationDays ?? 1,
+    periodLabel: indicators[0]?.periodLabel ?? "Current window",
+    scope: indicators[0]?.scope ?? "day",
+    population: lookup.population,
+    populationStatus: polygon.name ? lookup.status : "unmatched",
+    populationMethod: lookup.method,
+    populationYear: lookup.year,
+    nameDv: polygon.nameDv ?? null,
+    warnings: [
+      "No observed passages in this window use this island as an endpoint.",
+      "Resident population is geographic context. It is not a passenger count or proof of transport demand.",
+    ],
   };
 }
 

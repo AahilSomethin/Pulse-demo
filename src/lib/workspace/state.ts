@@ -4,7 +4,7 @@ import { DEFAULT_MAP_LAYERS, type MapFocus, type MapLayerVisibility } from "@/ty
 export type SidebarMode = "expanded" | "collapsed" | "hidden";
 export type ClockZone = "utc" | "mvt";
 export type ExploreTab = "data" | "vessels" | "hubs";
-export type NetworkTab = "observed" | "opportunities" | "routes";
+export type NetworkTab = "observed" | "opportunities" | "routes" | "frequency";
 export type PlaceKind = "inferred_activity" | "named_island";
 export type GeoClassFilter = "all" | "inferred" | "named" | "harbour";
 export type EvidenceFilter = "all" | "limited" | "adequate";
@@ -50,6 +50,8 @@ export interface WorkspaceState {
   presenting: boolean;
   clock: ClockZone;
   focus: MapFocus | null;
+  /** One reference point chosen from search. It is not a connection. */
+  pick: { lon: number; lat: number; label: string } | null;
   exploreTab: ExploreTab;
   networkTab: NetworkTab;
   network: NetworkFilters;
@@ -67,7 +69,8 @@ export type WorkspaceAction =
   | { type: "toggle-layer"; layer: keyof MapLayerVisibility }
   | { type: "present"; value: boolean }
   | { type: "clock"; clock: ClockZone }
-  | { type: "focus"; lon: number; lat: number }
+  | { type: "focus"; lon: number; lat: number; zoom?: number; bounds?: MapFocus["bounds"] }
+  | { type: "pick"; pick: { lon: number; lat: number; label: string } | null }
   | { type: "explore-tab"; tab: ExploreTab }
   | { type: "network-tab"; tab: NetworkTab }
   | { type: "network"; patch: Partial<NetworkFilters> }
@@ -83,6 +86,7 @@ export function initialWorkspaceState(): WorkspaceState {
     presenting: false,
     clock: "utc",
     focus: null,
+    pick: null,
     exploreTab: "data",
     networkTab: "observed",
     network: {
@@ -141,7 +145,18 @@ export function reduceWorkspace(state: WorkspaceState, action: WorkspaceAction):
     case "clock":
       return state.clock === action.clock ? state : { ...state, clock: action.clock };
     case "focus":
-      return { ...state, focus: { lon: action.lon, lat: action.lat, nonce: (state.focus?.nonce ?? 0) + 1 } };
+      return {
+        ...state,
+        focus: {
+          lon: action.lon,
+          lat: action.lat,
+          zoom: action.zoom,
+          bounds: action.bounds,
+          nonce: (state.focus?.nonce ?? 0) + 1,
+        },
+      };
+    case "pick":
+      return { ...state, pick: action.pick };
     case "explore-tab":
       return state.exploreTab === action.tab ? state : { ...state, exploreTab: action.tab };
     case "network-tab":

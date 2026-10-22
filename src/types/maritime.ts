@@ -130,7 +130,7 @@ export interface Dwell {
   placeSourceId: string | null;
 }
 
-export type PassageFlag = "clock_static" | "implausible_speed" | "sparse_tracking" | "same_area";
+export type PassageFlag = "clock_static" | "implausible_speed" | "sparse_tracking" | "same_area" | "same_island";
 
 export type GeoConfidence = "inferred" | "named_polygon" | "near_harbour";
 

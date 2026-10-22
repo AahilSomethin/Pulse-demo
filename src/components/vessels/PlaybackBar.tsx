@@ -66,7 +66,7 @@ export function PlaybackBar() {
   );
 
   return (
-    <footer data-tour="playback" className="z-30 shrink-0 border-t border-border bg-surface">
+    <footer data-tour="playback" className="no-print z-30 shrink-0 border-t border-border bg-surface">
       {speed > 1 ? (
         <p id="playback-speed-note" className="px-3 pt-2 text-xs leading-5 text-fg-muted">
           Sampled playback. The historical clock jumps between moments, so GPS reports between samples are not drawn. Playback speed is not a vessel’s reported speed.

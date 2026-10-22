@@ -16,11 +16,14 @@ Playback is paused when the guide starts. Closing or finishing returns the sideb
 2. **Our data.** Opens Explore, Data. Describes FollowMe, OpenStreetMap, and Census 2022 using whatever is actually loaded.
 3. **Explore.** The map. Markers are historical GPS reports. Activity cells are not ports.
 4. **Playback.** The bar under the map, after a day is loaded. Speed moves the timeline.
-5. **Network.** The observation-window control. Connections, counts, and evidence.
-6. **Connectivity profile.** Opens the first connection in the current window when one exists.
-7. **Find opportunities.** The primary Network action. Flags are investigation candidates.
-8. **Route Lab.** The Route Lab tab. A typed duration is a scenario, not a saving.
-9. **Limitations and impact.** The Experimental menu. Coverage bias, inferred places, Census 2022 as context only, and Emergency Simulation as a supporting experiment.
+5. **Search.** The header field. Islands, atolls, harbour reference points, inferred areas, and a masked vessel from the loaded day.
+6. **Network.** The observation-window control. Connections, counts, and evidence. The map keeps every match in the list and draws a thin, zoom-aware subset.
+7. **Connectivity profile.** Opens the first connection in the current window when one exists. An island chosen from search opens the same profile.
+8. **Vessel frequency.** The Frequency tab. Observed passages, not a ferry timetable.
+9. **Find opportunities.** Flags are investigation candidates. The map shows the selected candidate.
+10. **Route Lab.** The Route Lab tab. The map shows that connection. A typed duration is a scenario, not a saving.
+11. **Connectivity report.** CSV and print from the frequency view. No coordinates or device identifiers.
+12. **Limitations and impact.** The Experimental menu. Coverage bias, inferred places, Census 2022 as context only, and Emergency Simulation as a supporting experiment.
 
 Counts in steps 2, 5, 6, and 7 come from the dataset, the current Network window, and the census join at the moment the guide starts. They are not hardcoded findings. A synthetic file is named as test data.
 

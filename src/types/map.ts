@@ -20,6 +20,10 @@ export interface MapLine {
   /** Pixel offset so the two directions of a pair stay apart. */
   offset?: number;
   opacity?: number;
+  /** Busiest connection is 0. Overview mode hides higher ranks until the map is closer. */
+  rank?: number;
+  /** 1 when unselected lines should fade with zoom. 0 when opacity is already final. */
+  gated?: number;
 }
 
 export interface MapLocation {
@@ -52,6 +56,8 @@ export interface MapFocus {
   lon: number;
   lat: number;
   nonce: number;
+  zoom?: number;
+  bounds?: { west: number; south: number; east: number; north: number };
 }
 
 export interface MapOverlay {

@@ -6,15 +6,18 @@ import { CELL_OPTIONS, CONNECTIVITY, STOP_SPEED_KN, WINDOW_OPTIONS } from "@/con
 import { useDataset, usePlaybackClock, usePlaybackSettings } from "@/context/MaritimeContext";
 import { useWorkspace } from "@/context/WorkspaceContext";
 import { formatCount, formatDuration, formatKm, formatMinutes, formatMvt, formatUtc, historicalLabel, maskDevice } from "@/lib/format";
-import { buildLocationProfile } from "@/lib/analytics/profile";
 import { durationVariability, passagesPerObservedDay, type ConnectionIndicator } from "@/lib/analytics/connectivity";
+import { connectivityCsv, downloadText } from "@/lib/analytics/export-report";
+import { summarizeFrequency } from "@/lib/analytics/frequency";
+import { buildIslandProfile, buildLocationProfile } from "@/lib/analytics/profile";
+import type { CensusMatchMethod } from "@/lib/analytics/population";
 import { findLink } from "@/lib/workspace/connection";
 import { trailIndexes } from "@/lib/vessels/frame";
 import { compareResponses } from "@/lib/simulation/emergency";
 import type { HubMode } from "@/types/maritime";
 
 const MODE_LABEL: Record<HubMode, string> = {
-  stop: "Stopped devices (reported speed under 0.5)",
+  stop: "Stopped devices (recorded speed under 0.5, unit unverified)",
   move: "Moving devices",
   all: "All pings",
 };
@@ -154,7 +157,8 @@ function IndicatorDetail({ indicator, hypothetical }: { indicator: ConnectionInd
       <p className="font-semibold">{indicator.origin.label} → {indicator.destination.label}</p>
       <dl className="mt-2 space-y-1">
         <Row label="Journeys" value={formatCount(indicator.passages)} />
-        <Row label="Tracked vessels" value={formatCount(indicator.vessels)} />
+        <Row label="Tracked vessels" hint="Distinct devices on any passage, including ones left out of the times" value={formatCount(indicator.vessels)} />
+        {indicator.credibleVessels != null ? <Row label="Vessels on credible journeys" value={formatCount(indicator.credibleVessels)} /> : <Row label="Vessels on credible journeys" value="Not separated in the August file" />}
         <Row label="Per observed day" value={rate == null ? "—" : rate.toFixed(1)} />
         <Row label="Days with a journey" value={`${indicator.activeDays} of ${indicator.observationDays}`} />
         <Row label="Typical time" hint="Median duration" value={indicator.medianDurationMs == null ? "—" : formatDuration(indicator.medianDurationMs)} />
@@ -166,23 +170,27 @@ function IndicatorDetail({ indicator, hypothetical }: { indicator: ConnectionInd
       </dl>
       {variability != null && !small ? <p className="mt-2 text-fg-secondary">The spread of times is {Math.round(variability * 100)}% of the typical time.</p> : null}
       {small ? <p className="mt-2 text-xs text-fg-muted">Fewer than {CONNECTIVITY.minPassagesForIqr} journeys. Treat the typical time as a hint, not a stable figure.</p> : null}
-      <p className="mt-2 text-xs text-fg-muted">Times use journeys with continuous-enough tracking. A quiet day is not evidence that no boat sailed. The straight line is not a navigable route.</p>
+      <p className="mt-2 text-xs text-fg-muted">Times use journeys with continuous-enough tracking. A quiet day is not evidence that no boat sailed. The straight line is not a navigable route. The recorded speed has no documented unit. The 40-knot check uses straight-line distance over time and does not convert that column.</p>
+      <button type="button" className="btn mt-2 no-print" onClick={() => downloadText("seapulse-connection.csv", connectivityCsv([indicator], summarizeFrequency({ indicators: [indicator] })))}>Export this connection</button>
       {hypothetical ? <p className="mt-2 rounded-md border border-warning bg-warning-soft px-2 py-1 text-xs">A typed duration in Route Lab is a hypothetical check against this typical time. It is not a schedule.</p> : null}
     </div>
   );
 }
 
 function LocationDetail({ id }: { id: string }) {
-  const { indicators, monthIndicators, census } = useDataset();
+  const { indicators, monthIndicators, census, geography } = useDataset();
   const { state } = useWorkspace();
   const source = state.network.scope === "month" ? monthIndicators : indicators;
-  const population = census ?? { lookup: () => ({ status: "unavailable" as const, population: null, year: null }) };
-  const profile = buildLocationProfile(id, source.length > 0 ? source : [...indicators, ...monthIndicators], population);
+  const population = census ?? { lookup: () => ({ status: "unavailable" as const, population: null, year: null, method: null }) };
+  const windowIndicators = source.length > 0 ? source : [...indicators, ...monthIndicators];
+  const polygon = geography?.polygons.find((item) => item.id === id) ?? null;
+  const profile = polygon ? buildIslandProfile(polygon, windowIndicators, population) : buildLocationProfile(id, windowIndicators, population);
   if (!profile) return <p className="text-fg-muted">That place has no observed connection in this window.</p>;
   return (
     <div>
-      <p className="text-xs text-ocean">{profile.confidence === "inferred" ? "Inferred activity cluster" : profile.confidence === "near_harbour" ? "Near a harbour" : "Named place"}</p>
+      <p className="text-xs text-ocean">{profile.confidence === "inferred" ? "Inferred activity area" : profile.confidence === "near_harbour" ? "Near a harbour reference point" : "Named place"}</p>
       <p className="font-semibold">{profile.label}</p>
+      {profile.nameDv ? <p className="text-fg-secondary">{profile.nameDv}</p> : null}
       {profile.atoll ? <p className="text-fg-secondary">{profile.atoll}</p> : null}
       <dl className="mt-2 space-y-1">
         <Row label="Arrivals" value={formatCount(profile.arrivals)} />
@@ -193,8 +201,9 @@ function LocationDetail({ id }: { id: string }) {
         {profile.populationStatus === "not_applicable" ? null : (
           <Row label="Residents (Census 2022)" value={residentLabel(profile.populationStatus, profile.population)} />
         )}
+        {profile.populationStatus === "matched" ? <Row label="Census match" value={matchLabel(profile.populationMethod)} /> : null}
       </dl>
-      <p className="mt-2 text-xs text-fg-muted">{residentNote(profile.populationStatus)}</p>
+      <p className="mt-2 text-xs text-fg-muted">{residentNote(profile.populationStatus, profile.populationMethod)}</p>
       <ul className="mt-2 space-y-1">
         {profile.links.slice(0, 6).map((link) => (
           <li key={`${link.direction}:${link.indicator.id}`} className="text-fg-secondary">
@@ -252,12 +261,25 @@ function residentLabel(status: "matched" | "ambiguous" | "unmatched" | "not_appl
   return "No verified match";
 }
 
-function residentNote(status: "matched" | "ambiguous" | "unmatched" | "not_applicable" | "unavailable"): string {
+function matchLabel(method: CensusMatchMethod | null): string {
+  if (method === "atoll_name") return "Atoll and name";
+  if (method === "unique_name") return "Unique name only";
+  if (method === "code") return "Official code";
+  return "Matched";
+}
+
+function residentNote(
+  status: "matched" | "ambiguous" | "unmatched" | "not_applicable" | "unavailable",
+  method: CensusMatchMethod | null,
+): string {
+  if (status === "matched" && method === "atoll_name") return "Matched by atoll and island name in Census 2022. Resident population is geographic context, not transport demand or proof of insufficient service.";
+  if (status === "matched" && method === "unique_name") return "Matched because the name is unique in both the reference file and Census 2022. The island had no atoll on the geography, so this is not an atoll-and-name confirmation. Population is context, not demand.";
+  if (status === "matched" && method === "code") return "Matched by an official island code in Census 2022. Population is geographic context, not transport demand.";
   if (status === "matched") return "Resident population, Census 2022. Context beside observed journeys, not a passenger count or an isolation score.";
   if (status === "ambiguous") return "This name occurs in more than one atoll, and the reference geography did not select one. No population is shown.";
   if (status === "not_applicable") return "Population is shown only when a stop falls inside a named island that matches Census 2022.";
   if (status === "unavailable") return "Census 2022 is not loaded. No population is shown.";
-  return "No Census 2022 island matched this place by atoll and name. No population is shown.";
+  return "No Census 2022 row matched this place by code, by atoll and name, or by a unique name. No population is shown.";
 }
 
 function Row({ label, value, hint }: { label: string; value: string; hint?: string }) {
