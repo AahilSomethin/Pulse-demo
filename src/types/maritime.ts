@@ -73,6 +73,8 @@ export interface ActivityFrame {
 export interface LandPolygon {
   id: string;
   name: string | null;
+  /** Dhivehi name when the reference file has one. Display uses `name`. */
+  nameDv?: string | null;
   /** Atoll name from the reference file, when that property exists. */
   atoll: string | null;
   rings: number[][][];

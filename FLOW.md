@@ -32,7 +32,7 @@ The map, the loaded day, and the playback clock stay mounted. Only the sidebar c
 
 **Explore** is where a file is loaded. It shows day quality, a vessel list, and activity cells for the current window. Positions here are tracker reports from the file.
 
-**Network** lists observed connections. The loaded day is one window. The August summary, when it has been built locally, is another, and the screen says which. Find opportunities applies the rules in [CONNECTIVITY_METHOD.md](CONNECTIVITY_METHOD.md) and holds back small samples. Route Lab compares a typed hypothetical with the observed typical time. A cluster on the map opens a place profile. Named places appear only when a geography file is loaded.
+**Network** lists observed connections. The loaded day is one window. The August summary, when it has been built locally, is another, and the screen says which. Find opportunities is the primary action on that screen. It applies the rules in [CONNECTIVITY_METHOD.md](CONNECTIVITY_METHOD.md) and holds back small samples. Route Lab compares a typed hypothetical with the observed typical time. A cluster on the map opens a place profile. Named places appear only when a geography file is loaded. A profile shows Census 2022 residents only when the island matches an official atoll and English name. Ambiguous and unmatched places stay blank. The Team Guide in the header walks through this path. See [TOUR.md](TOUR.md).
 
 **Simulate** is experimental. It places a hypothetical incident on the map and ranks historical positions by straight-line time. It does not send a vessel. Historical positions are not live positions, and a tracked vessel is not a rescue asset.
 
@@ -50,7 +50,7 @@ The map, the loaded day, and the playback clock stay mounted. Only the sidebar c
 
 **Analysis utilities.** After a day loads, dwell detection groups slow pings and passages measure the gap between dwells on the same device. Credible durations are pooled. The month file is an offline aggregate, not a sum of daily medians. A jump faster than 40 knots, a clock that does not move, or a report gap over 30 minutes stays out of the typical time and stays in the coverage count.
 
-**Scenario calculations.** Route Lab compares a typed duration with the observed typical time and says what evidence is still missing. Simulate uses straight-line distance and is marked experimental. A medical leg is added only when a loaded place is marked medical and verified. Population is shown only from a loaded census table, and it is not a demand model.
+**Scenario calculations.** Route Lab compares a typed duration with the observed typical time and says what evidence is still missing. Simulate uses straight-line distance and is marked experimental. A medical leg is added only when a loaded place is marked medical and verified. Population comes from Maldives Bureau of Statistics Table P5 (Census 2022) after `npm run data:census`. A match needs an official island code, the same atoll plus English name, or a name that is unique on both sides. It is context beside the journeys, not a demand model and not an isolation score.
 
 ## Data classifications
 

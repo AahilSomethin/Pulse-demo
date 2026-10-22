@@ -1,3 +1,4 @@
+import { canonicalAtoll } from "@/lib/reference/atolls";
 import type { Facility, FacilityKind, LandPolygon, ParsedGeography } from "@/types/maritime";
 
 interface GeoJson {
@@ -22,12 +23,26 @@ function textProperty(properties: Record<string, unknown>, keys: readonly string
   return null;
 }
 
-function featureName(properties: Record<string, unknown>): string | null {
-  return textProperty(properties, ["name", "NAME", "Name", "island"]);
+function hasThaana(value: string): boolean {
+  return /[\u0780-\u07BF]/.test(value);
+}
+
+function isLatinName(value: string): boolean {
+  return /[A-Za-z]/.test(value) && !hasThaana(value);
+}
+
+function featureNames(properties: Record<string, unknown>): { name: string | null; nameDv: string | null } {
+  const english = textProperty(properties, ["nameEn", "name:en", "name_en"]);
+  const dhivehi = textProperty(properties, ["nameDv", "name:dv"]);
+  const raw = textProperty(properties, ["name", "NAME", "Name", "island"]);
+  const nameEn = english ?? (raw && isLatinName(raw) ? raw : null);
+  const nameDv = dhivehi ?? (raw && hasThaana(raw) ? raw : null);
+  return { name: nameEn ?? raw, nameDv };
 }
 
 function featureAtoll(properties: Record<string, unknown>): string | null {
-  return textProperty(properties, ["atoll", "ATOLL", "admin2", "is_in:atoll"]);
+  const raw = textProperty(properties, ["atoll", "ATOLL", "admin2", "is_in:atoll", "addr:atoll"]);
+  return canonicalAtoll(raw) ?? raw;
 }
 
 function isVerified(properties: Record<string, unknown>): boolean {
@@ -91,7 +106,7 @@ export function parseGeoJson(text: string): ParsedGeography {
     const geometry = (record.geometry ?? record) as GeoJson;
     const properties = asRecord(record.properties);
     const kind = facilityKind(properties);
-    const name = featureName(properties);
+    const { name, nameDv } = featureNames(properties);
     const synthetic = isSynthetic(properties);
     const verified = isVerified(properties);
 
@@ -128,7 +143,7 @@ export function parseGeoJson(text: string): ParsedGeography {
       }
     }
     parts.forEach((rings, part) => {
-      polygons.push({ id: `land-${index}-${part}`, name, atoll: featureAtoll(properties), rings, synthetic });
+      polygons.push({ id: `land-${index}-${part}`, name, nameDv, atoll: featureAtoll(properties), rings, synthetic });
     });
   });
 

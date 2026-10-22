@@ -73,7 +73,7 @@ export function SimulatePanel() {
   return (
     <>
       <header>
-        <h1 className="text-lg font-semibold tracking-tight">Simulate</h1>
+        <h1 className="text-lg font-semibold tracking-tight">Simulate <span className="text-xs font-medium text-fg-muted">Experimental</span></h1>
         <p className="mt-1 text-sm leading-6 text-fg-secondary">Experimental. Hypothetical times from historical positions. This is not the main analysis, and it does not dispatch a vessel.</p>
       </header>
       {!dataset ? <Notice>Load a tracker day in Explore before comparing response times.</Notice> : null}

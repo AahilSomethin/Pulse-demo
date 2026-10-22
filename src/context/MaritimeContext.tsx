@@ -7,7 +7,8 @@ import { aggregateAreaLinks, aggregateLinks } from "@/lib/analytics/network";
 import { buildConnectionIndicators, type ConnectionIndicator } from "@/lib/analytics/connectivity";
 import { indicatorsFromMonth, parseStoredMonth, type StoredMonth } from "@/lib/analytics/month";
 import { inferDwells, inferJourneys, summarizeAreas } from "@/lib/analytics/journeys";
-import { joinCensus, type CensusJoin } from "@/lib/reference/census";
+import { canonicalAtoll } from "@/lib/reference/atolls";
+import { joinCensus, type CensusIsland, type CensusJoin, type CensusPlace } from "@/lib/reference/census";
 import { parseHarbourGeoJson } from "@/lib/reference/harbours";
 import { sortDayFiles } from "@/lib/parsing/days";
 import { parseDatasetAsync, parseFileAsync } from "@/lib/parsing/load-csv";
@@ -92,6 +93,8 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
   const [speed, setSpeedState] = useState<PlaybackSpeed>(1);
   const files = useRef(new Map<string, File>());
   const cache = useRef(new Map<string, VesselDataset>());
+  const censusRows = useRef<CensusIsland[] | null>(null);
+  const geographyRef = useRef<ParsedGeography | null>(null);
 
   const applyDataset = useCallback((next: VesselDataset) => {
     setDataset(next);
@@ -237,14 +240,25 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
     [readFile],
   );
 
+  const applyCensus = useCallback((next: ParsedGeography | null) => {
+    const rows = censusRows.current;
+    if (!rows) {
+      setCensus(null);
+      return;
+    }
+    setCensus(joinCensus(placesFrom(next), rows));
+  }, []);
+
   const loadGeoText = useCallback((text: string) => {
     try {
-      setGeography(parseGeoJson(text));
+      const next = parseGeoJson(text);
+      setGeography(next);
+      applyCensus(next);
       setError(null);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Not valid GeoJSON.");
     }
-  }, []);
+  }, [applyCensus]);
 
   const loadMonth = useCallback(async () => {
     setLoading(true);
@@ -263,6 +277,10 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    geographyRef.current = geography;
+  }, [geography]);
+
+  useEffect(() => {
     let cancelled = false;
     void (async () => {
       const [islands, harbourFile, censusFile] = await Promise.all([
@@ -271,12 +289,12 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
         fetch("/reference/census-2022.json"),
       ]);
       if (cancelled) return;
+      let parsed: ParsedGeography | null = null;
       if (islands.ok) {
         try {
-          const text = await islands.text();
-          if (!cancelled) setGeography((current) => current ?? parseGeoJson(text));
+          parsed = parseGeoJson(await islands.text());
         } catch {
-          // A missing or unreadable reference file leaves the map on inferred areas.
+          parsed = null;
         }
       }
       if (harbourFile.ok) {
@@ -286,19 +304,20 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
           setHarbours([]);
         }
       }
+      let rows: CensusIsland[] | null = null;
       if (censusFile.ok) {
         try {
-          const payload = await censusFile.json() as { islands?: { code?: string | null; name: string; atoll?: string | null; population: number }[] };
-          const rows = Array.isArray(payload.islands) ? payload.islands.map((row) => ({
-            code: row.code ?? null,
-            name: row.name,
-            atoll: row.atoll ?? null,
-            population: row.population,
-          })) : [];
-          setCensus(joinCensus(rows.map((row) => ({ code: row.code, name: row.name })), rows));
+          rows = censusIslands(await censusFile.json());
         } catch {
-          setCensus(null);
+          rows = null;
         }
+      }
+      if (cancelled) return;
+      const geographyForJoin = geographyRef.current ?? parsed;
+      if (!geographyRef.current && parsed) setGeography(parsed);
+      if (rows) {
+        censusRows.current = rows;
+        setCensus(joinCensus(placesFrom(geographyForJoin), rows));
       }
     })();
     return () => {
@@ -323,14 +342,16 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
       setDays(["synthetic-followme.csv"]);
       setActiveDay("synthetic-followme.csv");
       applyDataset(next);
-      setGeography(parseGeoJson(geoText));
+      const sampleGeography = parseGeoJson(geoText);
+      setGeography(sampleGeography);
+      applyCensus(sampleGeography);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not load the sample.");
     } finally {
       setLoading(false);
       setLoadingLabel(null);
     }
-  }, [applyDataset]);
+  }, [applyCensus, applyDataset]);
 
   const cursorRef = useRef(cursor);
   const speedRef = useRef(speed);
@@ -505,4 +526,36 @@ export function usePlaybackClock() {
 /** Settings plus the moving clock. Prefer the split hooks in controls that should not redraw every sample. */
 export function usePlayback() {
   return { ...usePlaybackSettings(), ...usePlaybackClock() };
+}
+
+function placesFrom(geography: ParsedGeography | null): CensusPlace[] {
+  const places: CensusPlace[] = [];
+  for (const polygon of geography?.polygons ?? []) {
+    if (!polygon.name || polygon.synthetic) continue;
+    places.push({ name: polygon.name, atoll: polygon.atoll });
+  }
+  return places;
+}
+
+function censusIslands(payload: unknown): CensusIsland[] {
+  if (!payload || typeof payload !== "object" || !("islands" in payload)) return [];
+  const islands = (payload as { islands?: unknown }).islands;
+  if (!Array.isArray(islands)) return [];
+  const rows: CensusIsland[] = [];
+  for (const item of islands) {
+    if (!item || typeof item !== "object") continue;
+    const row = item as Partial<CensusIsland>;
+    if (typeof row.name !== "string" || !row.name.trim()) continue;
+    if (typeof row.population !== "number" || !Number.isFinite(row.population)) continue;
+    rows.push({
+      code: typeof row.code === "string" ? row.code : null,
+      name: row.name,
+      atoll: canonicalAtoll(typeof row.atoll === "string" ? row.atoll : null),
+      population: row.population,
+      maldivian: typeof row.maldivian === "number" ? row.maldivian : null,
+      foreign: typeof row.foreign === "number" ? row.foreign : null,
+      ward: row.ward === true,
+    });
+  }
+  return rows;
 }

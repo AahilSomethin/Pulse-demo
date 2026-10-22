@@ -1,0 +1,1766 @@
+{
+  "source": "Maldives Bureau of Statistics",
+  "table": "P5",
+  "title": "Resident Population by island and sex, 2022",
+  "referenceYear": 2022,
+  "adminTotal": 236911,
+  "importedAt": "2026-10-22T19:26:32.036Z",
+  "islands": [
+    {
+      "code": null,
+      "name": "Henveiru",
+      "atoll": "K",
+      "population": 34012,
+      "maldivian": 24784,
+      "foreign": 9228,
+      "ward": true
+    },
+    {
+      "code": null,
+      "name": "Galolhu",
+      "atoll": "K",
+      "population": 28484,
+      "maldivian": 21210,
+      "foreign": 7274,
+      "ward": true
+    },
+    {
+      "code": null,
+      "name": "Machchangolhi",
+      "atoll": "K",
+      "population": 27706,
+      "maldivian": 20839,
+      "foreign": 6867,
+      "ward": true
+    },
+    {
+      "code": null,
+      "name": "Maafannu",
+      "atoll": "K",
+      "population": 47036,
+      "maldivian": 33781,
+      "foreign": 13255,
+      "ward": true
+    },
+    {
+      "code": null,
+      "name": "Vilimaale",
+      "atoll": "K",
+      "population": 6755,
+      "maldivian": 5971,
+      "foreign": 784,
+      "ward": true
+    },
+    {
+      "code": null,
+      "name": "Hulhumaale Phase 1",
+      "atoll": "K",
+      "population": 35859,
+      "maldivian": 26511,
+      "foreign": 9348,
+      "ward": true
+    },
+    {
+      "code": null,
+      "name": "Hulhumaale Phase 2",
+      "atoll": "K",
+      "population": 29855,
+      "maldivian": 26618,
+      "foreign": 3237,
+      "ward": true
+    },
+    {
+      "code": null,
+      "name": "Hulhule",
+      "atoll": "K",
+      "population": 802,
+      "maldivian": 50,
+      "foreign": 752,
+      "ward": true
+    },
+    {
+      "code": null,
+      "name": "Harbours (Maale, Hulhumaale & Vilimaale)",
+      "atoll": "K",
+      "population": 1399,
+      "maldivian": 423,
+      "foreign": 976,
+      "ward": true
+    },
+    {
+      "code": null,
+      "name": "Baarah",
+      "atoll": "HA",
+      "population": 1141,
+      "maldivian": 1053,
+      "foreign": 88,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dhidhdhoo",
+      "atoll": "HA",
+      "population": 3412,
+      "maldivian": 3126,
+      "foreign": 286,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Filladhoo",
+      "atoll": "HA",
+      "population": 559,
+      "maldivian": 529,
+      "foreign": 30,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Hoarafushi",
+      "atoll": "HA",
+      "population": 1841,
+      "maldivian": 1654,
+      "foreign": 187,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Ihavandhoo",
+      "atoll": "HA",
+      "population": 2873,
+      "maldivian": 2699,
+      "foreign": 174,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kelaa",
+      "atoll": "HA",
+      "population": 1115,
+      "maldivian": 967,
+      "foreign": 148,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maarandhoo",
+      "atoll": "HA",
+      "population": 668,
+      "maldivian": 620,
+      "foreign": 48,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Mulhadhoo",
+      "atoll": "HA",
+      "population": 286,
+      "maldivian": 245,
+      "foreign": 41,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Muraidhoo",
+      "atoll": "HA",
+      "population": 534,
+      "maldivian": 494,
+      "foreign": 40,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Thakandhoo",
+      "atoll": "HA",
+      "population": 279,
+      "maldivian": 241,
+      "foreign": 38,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Thuraakunu",
+      "atoll": "HA",
+      "population": 427,
+      "maldivian": 380,
+      "foreign": 47,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Uligamu",
+      "atoll": "HA",
+      "population": 400,
+      "maldivian": 356,
+      "foreign": 44,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Utheemu",
+      "atoll": "HA",
+      "population": 612,
+      "maldivian": 571,
+      "foreign": 41,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Vashafaru",
+      "atoll": "HA",
+      "population": 476,
+      "maldivian": 406,
+      "foreign": 70,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Finey",
+      "atoll": "HDh",
+      "population": 409,
+      "maldivian": 385,
+      "foreign": 24,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Hanimaadhoo",
+      "atoll": "HDh",
+      "population": 2664,
+      "maldivian": 1895,
+      "foreign": 769,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Hirimaradhoo",
+      "atoll": "HDh",
+      "population": 293,
+      "maldivian": 258,
+      "foreign": 35,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kulhudhuffushi",
+      "atoll": "HDh",
+      "population": 10131,
+      "maldivian": 9334,
+      "foreign": 797,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kumundhoo",
+      "atoll": "HDh",
+      "population": 997,
+      "maldivian": 941,
+      "foreign": 56,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kuribi",
+      "atoll": "HDh",
+      "population": 492,
+      "maldivian": 479,
+      "foreign": 13,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Makunudhoo",
+      "atoll": "HDh",
+      "population": 1265,
+      "maldivian": 1204,
+      "foreign": 61,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Naivaadhoo",
+      "atoll": "HDh",
+      "population": 495,
+      "maldivian": 436,
+      "foreign": 59,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Nellaidhoo",
+      "atoll": "HDh",
+      "population": 1038,
+      "maldivian": 990,
+      "foreign": 48,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Neykurendhoo",
+      "atoll": "HDh",
+      "population": 641,
+      "maldivian": 563,
+      "foreign": 78,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Nolhivaramu",
+      "atoll": "HDh",
+      "population": 1985,
+      "maldivian": 1920,
+      "foreign": 65,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Nolhivaranfaru",
+      "atoll": "HDh",
+      "population": 1254,
+      "maldivian": 1130,
+      "foreign": 124,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Vaikaradhoo",
+      "atoll": "HDh",
+      "population": 776,
+      "maldivian": 695,
+      "foreign": 81,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Bilehffahi",
+      "atoll": "Sh",
+      "population": 502,
+      "maldivian": 476,
+      "foreign": 26,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Feevah",
+      "atoll": "Sh",
+      "population": 694,
+      "maldivian": 634,
+      "foreign": 60,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Feydhoo",
+      "atoll": "Sh",
+      "population": 854,
+      "maldivian": 781,
+      "foreign": 73,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Foakaidhoo",
+      "atoll": "Sh",
+      "population": 1571,
+      "maldivian": 1488,
+      "foreign": 83,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Funadhoo",
+      "atoll": "Sh",
+      "population": 2255,
+      "maldivian": 2058,
+      "foreign": 197,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Goidhoo",
+      "atoll": "Sh",
+      "population": 592,
+      "maldivian": 538,
+      "foreign": 54,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kaditheemu",
+      "atoll": "Sh",
+      "population": 1193,
+      "maldivian": 1144,
+      "foreign": 49,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Komandoo",
+      "atoll": "Sh",
+      "population": 921,
+      "maldivian": 857,
+      "foreign": 64,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Lhaimagu",
+      "atoll": "Sh",
+      "population": 684,
+      "maldivian": 564,
+      "foreign": 120,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maaugoodhoo",
+      "atoll": "Sh",
+      "population": 944,
+      "maldivian": 895,
+      "foreign": 49,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maroshi",
+      "atoll": "Sh",
+      "population": 479,
+      "maldivian": 425,
+      "foreign": 54,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Milandhoo",
+      "atoll": "Sh",
+      "population": 2094,
+      "maldivian": 1963,
+      "foreign": 131,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Narudhoo",
+      "atoll": "Sh",
+      "population": 544,
+      "maldivian": 522,
+      "foreign": 22,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Noomaraa",
+      "atoll": "Sh",
+      "population": 371,
+      "maldivian": 342,
+      "foreign": 29,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Fodhdhoo",
+      "atoll": "N",
+      "population": 345,
+      "maldivian": 274,
+      "foreign": 71,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Henbadhoo",
+      "atoll": "N",
+      "population": 638,
+      "maldivian": 588,
+      "foreign": 50,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Holhudhoo",
+      "atoll": "N",
+      "population": 1428,
+      "maldivian": 1296,
+      "foreign": 132,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kedhikulhudhoo",
+      "atoll": "N",
+      "population": 1556,
+      "maldivian": 1481,
+      "foreign": 75,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kudafari",
+      "atoll": "N",
+      "population": 628,
+      "maldivian": 551,
+      "foreign": 77,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Landhoo",
+      "atoll": "N",
+      "population": 757,
+      "maldivian": 700,
+      "foreign": 57,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Lhohi",
+      "atoll": "N",
+      "population": 692,
+      "maldivian": 611,
+      "foreign": 81,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maafaru",
+      "atoll": "N",
+      "population": 919,
+      "maldivian": 846,
+      "foreign": 73,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maalhendhoo",
+      "atoll": "N",
+      "population": 724,
+      "maldivian": 674,
+      "foreign": 50,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Magoodhoo",
+      "atoll": "N",
+      "population": 305,
+      "maldivian": 284,
+      "foreign": 21,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Manadhoo",
+      "atoll": "N",
+      "population": 1745,
+      "maldivian": 1464,
+      "foreign": 281,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Miladhoo",
+      "atoll": "N",
+      "population": 934,
+      "maldivian": 857,
+      "foreign": 77,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Velidhoo",
+      "atoll": "N",
+      "population": 1832,
+      "maldivian": 1576,
+      "foreign": 256,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Agolhitheemu",
+      "atoll": "R",
+      "population": 381,
+      "maldivian": 349,
+      "foreign": 32,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Alifushi",
+      "atoll": "R",
+      "population": 1859,
+      "maldivian": 1497,
+      "foreign": 362,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dhuvaafaru",
+      "atoll": "R",
+      "population": 3321,
+      "maldivian": 3188,
+      "foreign": 133,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Fainu",
+      "atoll": "R",
+      "population": 423,
+      "maldivian": 386,
+      "foreign": 37,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Hulhudhuffaaru",
+      "atoll": "R",
+      "population": 1228,
+      "maldivian": 1150,
+      "foreign": 78,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Iguraidhoo",
+      "atoll": "R",
+      "population": 1278,
+      "maldivian": 1232,
+      "foreign": 46,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Innamaadhoo",
+      "atoll": "R",
+      "population": 663,
+      "maldivian": 528,
+      "foreign": 135,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kinolhas",
+      "atoll": "R",
+      "population": 543,
+      "maldivian": 498,
+      "foreign": 45,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maakurathu",
+      "atoll": "R",
+      "population": 956,
+      "maldivian": 888,
+      "foreign": 68,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maduvvari",
+      "atoll": "R",
+      "population": 1760,
+      "maldivian": 1639,
+      "foreign": 121,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Meedhoo",
+      "atoll": "R",
+      "population": 1872,
+      "maldivian": 1738,
+      "foreign": 134,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Rasgetheemu",
+      "atoll": "R",
+      "population": 537,
+      "maldivian": 473,
+      "foreign": 64,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Rasmaadhoo",
+      "atoll": "R",
+      "population": 554,
+      "maldivian": 494,
+      "foreign": 60,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Ugoofaaru",
+      "atoll": "R",
+      "population": 1754,
+      "maldivian": 1531,
+      "foreign": 223,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Vaadhoo",
+      "atoll": "R",
+      "population": 452,
+      "maldivian": 415,
+      "foreign": 37,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dharavandhoo",
+      "atoll": "B",
+      "population": 997,
+      "maldivian": 822,
+      "foreign": 175,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dhonfanu",
+      "atoll": "B",
+      "population": 398,
+      "maldivian": 364,
+      "foreign": 34,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Eydhafushi",
+      "atoll": "B",
+      "population": 2581,
+      "maldivian": 2317,
+      "foreign": 264,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Fehendhoo",
+      "atoll": "B",
+      "population": 198,
+      "maldivian": 172,
+      "foreign": 26,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Fulhadhoo",
+      "atoll": "B",
+      "population": 341,
+      "maldivian": 240,
+      "foreign": 101,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Goidhoo",
+      "atoll": "B",
+      "population": 583,
+      "maldivian": 508,
+      "foreign": 75,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Hithaadhoo",
+      "atoll": "B",
+      "population": 744,
+      "maldivian": 674,
+      "foreign": 70,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kamadhoo",
+      "atoll": "B",
+      "population": 552,
+      "maldivian": 343,
+      "foreign": 209,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kendhoo",
+      "atoll": "B",
+      "population": 1002,
+      "maldivian": 861,
+      "foreign": 141,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kihaadhoo",
+      "atoll": "B",
+      "population": 481,
+      "maldivian": 445,
+      "foreign": 36,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kudarikilu",
+      "atoll": "B",
+      "population": 557,
+      "maldivian": 451,
+      "foreign": 106,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maalhos",
+      "atoll": "B",
+      "population": 572,
+      "maldivian": 494,
+      "foreign": 78,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Thulhaadhoo",
+      "atoll": "B",
+      "population": 1625,
+      "maldivian": 1471,
+      "foreign": 154,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Hinnavaru",
+      "atoll": "Lh",
+      "population": 2286,
+      "maldivian": 2148,
+      "foreign": 138,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kurendhoo",
+      "atoll": "Lh",
+      "population": 1171,
+      "maldivian": 1037,
+      "foreign": 134,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Naifaru",
+      "atoll": "Lh",
+      "population": 4832,
+      "maldivian": 4114,
+      "foreign": 718,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Olhuvelifushi",
+      "atoll": "Lh",
+      "population": 703,
+      "maldivian": 655,
+      "foreign": 48,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dhiffushi",
+      "atoll": "K",
+      "population": 1270,
+      "maldivian": 1021,
+      "foreign": 249,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Gaafaru",
+      "atoll": "K",
+      "population": 1294,
+      "maldivian": 1196,
+      "foreign": 98,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Gulhi",
+      "atoll": "K",
+      "population": 976,
+      "maldivian": 812,
+      "foreign": 164,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Guraidhoo",
+      "atoll": "K",
+      "population": 1743,
+      "maldivian": 1568,
+      "foreign": 175,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Himmafushi",
+      "atoll": "K",
+      "population": 2012,
+      "maldivian": 1492,
+      "foreign": 520,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Huraa",
+      "atoll": "K",
+      "population": 1654,
+      "maldivian": 1207,
+      "foreign": 447,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kaashidhoo",
+      "atoll": "K",
+      "population": 2528,
+      "maldivian": 1833,
+      "foreign": 695,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maafushi",
+      "atoll": "K",
+      "population": 4471,
+      "maldivian": 3195,
+      "foreign": 1276,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Thulusdhoo",
+      "atoll": "K",
+      "population": 1801,
+      "maldivian": 1188,
+      "foreign": 613,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Bodufolhudhoo",
+      "atoll": "AA",
+      "population": 704,
+      "maldivian": 653,
+      "foreign": 51,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Feridhoo",
+      "atoll": "AA",
+      "population": 544,
+      "maldivian": 492,
+      "foreign": 52,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Himandhoo",
+      "atoll": "AA",
+      "population": 885,
+      "maldivian": 754,
+      "foreign": 131,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maalhos",
+      "atoll": "AA",
+      "population": 516,
+      "maldivian": 429,
+      "foreign": 87,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Mathiveri",
+      "atoll": "AA",
+      "population": 878,
+      "maldivian": 788,
+      "foreign": 90,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Rasdhoo",
+      "atoll": "AA",
+      "population": 1282,
+      "maldivian": 1078,
+      "foreign": 204,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Thoddoo",
+      "atoll": "AA",
+      "population": 1924,
+      "maldivian": 1529,
+      "foreign": 395,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Ukulhas",
+      "atoll": "AA",
+      "population": 1284,
+      "maldivian": 1053,
+      "foreign": 231,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dhagethi",
+      "atoll": "Adh",
+      "population": 936,
+      "maldivian": 718,
+      "foreign": 218,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dhidhdhoo",
+      "atoll": "Adh",
+      "population": 141,
+      "maldivian": 110,
+      "foreign": 31,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dhigurah",
+      "atoll": "Adh",
+      "population": 761,
+      "maldivian": 538,
+      "foreign": 223,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Fenfushi",
+      "atoll": "Adh",
+      "population": 1000,
+      "maldivian": 811,
+      "foreign": 189,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Hangnameedhoo",
+      "atoll": "Adh",
+      "population": 484,
+      "maldivian": 413,
+      "foreign": 71,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kuburudhoo",
+      "atoll": "Adh",
+      "population": 509,
+      "maldivian": 481,
+      "foreign": 28,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maamigili",
+      "atoll": "Adh",
+      "population": 2798,
+      "maldivian": 2303,
+      "foreign": 495,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Mahibadhoo",
+      "atoll": "Adh",
+      "population": 2580,
+      "maldivian": 2022,
+      "foreign": 558,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Mandhoo",
+      "atoll": "Adh",
+      "population": 418,
+      "maldivian": 286,
+      "foreign": 132,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Omadhoo",
+      "atoll": "Adh",
+      "population": 913,
+      "maldivian": 858,
+      "foreign": 55,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Felidhoo",
+      "atoll": "V",
+      "population": 620,
+      "maldivian": 503,
+      "foreign": 117,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Fulidhoo",
+      "atoll": "V",
+      "population": 400,
+      "maldivian": 294,
+      "foreign": 106,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Keyodhoo",
+      "atoll": "V",
+      "population": 641,
+      "maldivian": 520,
+      "foreign": 121,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Rakeedhoo",
+      "atoll": "V",
+      "population": 76,
+      "maldivian": 62,
+      "foreign": 14,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Thinadhoo",
+      "atoll": "V",
+      "population": 258,
+      "maldivian": 74,
+      "foreign": 184,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dhiggaru",
+      "atoll": "M",
+      "population": 1099,
+      "maldivian": 984,
+      "foreign": 115,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kolhufushi",
+      "atoll": "M",
+      "population": 793,
+      "maldivian": 702,
+      "foreign": 91,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maduvvari",
+      "atoll": "M",
+      "population": 318,
+      "maldivian": 259,
+      "foreign": 59,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Mulah",
+      "atoll": "M",
+      "population": 1426,
+      "maldivian": 1292,
+      "foreign": 134,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Muli",
+      "atoll": "M",
+      "population": 949,
+      "maldivian": 769,
+      "foreign": 180,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Naalaafushi",
+      "atoll": "M",
+      "population": 430,
+      "maldivian": 388,
+      "foreign": 42,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Raimandhoo",
+      "atoll": "M",
+      "population": 171,
+      "maldivian": 122,
+      "foreign": 49,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Veyvah",
+      "atoll": "M",
+      "population": 304,
+      "maldivian": 235,
+      "foreign": 69,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Biledhdhoo",
+      "atoll": "F",
+      "population": 967,
+      "maldivian": 886,
+      "foreign": 81,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dharaboodhoo",
+      "atoll": "F",
+      "population": 455,
+      "maldivian": 393,
+      "foreign": 62,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Feeali",
+      "atoll": "F",
+      "population": 922,
+      "maldivian": 882,
+      "foreign": 40,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Magoodhoo",
+      "atoll": "F",
+      "population": 702,
+      "maldivian": 648,
+      "foreign": 54,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Nilandhoo",
+      "atoll": "F",
+      "population": 1823,
+      "maldivian": 1649,
+      "foreign": 174,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Badidhoo",
+      "atoll": "Dh",
+      "population": 629,
+      "maldivian": 536,
+      "foreign": 93,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Hulhudheli",
+      "atoll": "Dh",
+      "population": 764,
+      "maldivian": 685,
+      "foreign": 79,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kudahuvadhoo",
+      "atoll": "Dh",
+      "population": 3131,
+      "maldivian": 2667,
+      "foreign": 464,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maaeboodhoo",
+      "atoll": "Dh",
+      "population": 679,
+      "maldivian": 650,
+      "foreign": 29,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Meedhoo",
+      "atoll": "Dh",
+      "population": 1118,
+      "maldivian": 857,
+      "foreign": 261,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Ribudhoo",
+      "atoll": "Dh",
+      "population": 316,
+      "maldivian": 278,
+      "foreign": 38,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Buruni",
+      "atoll": "Th",
+      "population": 414,
+      "maldivian": 356,
+      "foreign": 58,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dhiyamigili",
+      "atoll": "Th",
+      "population": 649,
+      "maldivian": 610,
+      "foreign": 39,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Gaadhiffushi",
+      "atoll": "Th",
+      "population": 317,
+      "maldivian": 265,
+      "foreign": 52,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Guraidhoo",
+      "atoll": "Th",
+      "population": 1293,
+      "maldivian": 1190,
+      "foreign": 103,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Hirilandhoo",
+      "atoll": "Th",
+      "population": 1146,
+      "maldivian": 996,
+      "foreign": 150,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kadoodhoo",
+      "atoll": "Th",
+      "population": 456,
+      "maldivian": 383,
+      "foreign": 73,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kibidhoo",
+      "atoll": "Th",
+      "population": 715,
+      "maldivian": 680,
+      "foreign": 35,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Madifushi",
+      "atoll": "Th",
+      "population": 858,
+      "maldivian": 779,
+      "foreign": 79,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Omadhoo",
+      "atoll": "Th",
+      "population": 417,
+      "maldivian": 387,
+      "foreign": 30,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Thimarafushi",
+      "atoll": "Th",
+      "population": 1229,
+      "maldivian": 1044,
+      "foreign": 185,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Vandhoo",
+      "atoll": "Th",
+      "population": 364,
+      "maldivian": 309,
+      "foreign": 55,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Veymandoo",
+      "atoll": "Th",
+      "population": 1321,
+      "maldivian": 1184,
+      "foreign": 137,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Vilufushi",
+      "atoll": "Th",
+      "population": 1081,
+      "maldivian": 965,
+      "foreign": 116,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dhabidhoo",
+      "atoll": "L",
+      "population": 606,
+      "maldivian": 567,
+      "foreign": 39,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Fonadhoo",
+      "atoll": "L",
+      "population": 2986,
+      "maldivian": 2738,
+      "foreign": 248,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Gamu",
+      "atoll": "L",
+      "population": 4815,
+      "maldivian": 3856,
+      "foreign": 959,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Hithadhoo",
+      "atoll": "L",
+      "population": 1108,
+      "maldivian": 1049,
+      "foreign": 59,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Isdhoo",
+      "atoll": "L",
+      "population": 929,
+      "maldivian": 858,
+      "foreign": 71,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kalaidhoo",
+      "atoll": "L",
+      "population": 655,
+      "maldivian": 589,
+      "foreign": 66,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kunahandhoo",
+      "atoll": "L",
+      "population": 601,
+      "maldivian": 581,
+      "foreign": 20,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maabaidhoo",
+      "atoll": "L",
+      "population": 565,
+      "maldivian": 495,
+      "foreign": 70,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maamendhoo",
+      "atoll": "L",
+      "population": 879,
+      "maldivian": 787,
+      "foreign": 92,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maavah",
+      "atoll": "L",
+      "population": 1379,
+      "maldivian": 1312,
+      "foreign": 67,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Mundoo",
+      "atoll": "L",
+      "population": 176,
+      "maldivian": 140,
+      "foreign": 36,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dhaandhoo",
+      "atoll": "GA",
+      "population": 1044,
+      "maldivian": 857,
+      "foreign": 187,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Dhevvadhoo",
+      "atoll": "GA",
+      "population": 599,
+      "maldivian": 470,
+      "foreign": 129,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Gemanafushi",
+      "atoll": "GA",
+      "population": 1318,
+      "maldivian": 1194,
+      "foreign": 124,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kanduhulhudhoo",
+      "atoll": "GA",
+      "population": 619,
+      "maldivian": 532,
+      "foreign": 87,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kodey",
+      "atoll": "GA",
+      "population": 328,
+      "maldivian": 276,
+      "foreign": 52,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Kolamaafushi",
+      "atoll": "GA",
+      "population": 636,
+      "maldivian": 522,
+      "foreign": 114,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maamendhoo",
+      "atoll": "GA",
+      "population": 1201,
+      "maldivian": 1090,
+      "foreign": 111,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Nilandhoo",
+      "atoll": "GA",
+      "population": 545,
+      "maldivian": 491,
+      "foreign": 54,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Viligili",
+      "atoll": "GA",
+      "population": 2900,
+      "maldivian": 2543,
+      "foreign": 357,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Fares-Maathodaa",
+      "atoll": "GDh",
+      "population": 858,
+      "maldivian": 762,
+      "foreign": 96,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Fiyoari",
+      "atoll": "GDh",
+      "population": 637,
+      "maldivian": 552,
+      "foreign": 85,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Gadhdhoo",
+      "atoll": "GDh",
+      "population": 1414,
+      "maldivian": 1251,
+      "foreign": 163,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Hoadedhdhoo",
+      "atoll": "GDh",
+      "population": 885,
+      "maldivian": 790,
+      "foreign": 95,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Madaveli",
+      "atoll": "GDh",
+      "population": 1219,
+      "maldivian": 1145,
+      "foreign": 74,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Nadallaa",
+      "atoll": "GDh",
+      "population": 581,
+      "maldivian": 542,
+      "foreign": 39,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Rathafandhoo",
+      "atoll": "GDh",
+      "population": 431,
+      "maldivian": 366,
+      "foreign": 65,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Thinadhoo",
+      "atoll": "GDh",
+      "population": 6217,
+      "maldivian": 5369,
+      "foreign": 848,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Vaadhoo",
+      "atoll": "GDh",
+      "population": 516,
+      "maldivian": 445,
+      "foreign": 71,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Fuvahmulah",
+      "atoll": "Gn",
+      "population": 9177,
+      "maldivian": 7907,
+      "foreign": 1270,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Feydhoo",
+      "atoll": "S",
+      "population": 4289,
+      "maldivian": 3057,
+      "foreign": 1232,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Hithadhoo",
+      "atoll": "S",
+      "population": 13759,
+      "maldivian": 11086,
+      "foreign": 2673,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Hulhudhoo",
+      "atoll": "S",
+      "population": 1182,
+      "maldivian": 999,
+      "foreign": 183,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maradhoo",
+      "atoll": "S",
+      "population": 2542,
+      "maldivian": 2210,
+      "foreign": 332,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Maradhoo-Feydhoo",
+      "atoll": "S",
+      "population": 1398,
+      "maldivian": 1248,
+      "foreign": 150,
+      "ward": false
+    },
+    {
+      "code": null,
+      "name": "Meedhoo",
+      "atoll": "S",
+      "population": 1892,
+      "maldivian": 1743,
+      "foreign": 149,
+      "ward": false
+    }
+  ],
+  "note": "Resident population is context beside a named island. It is not a passenger count, a demand model, or an isolation score. Islands that do not match on atoll and name stay blank."
+}

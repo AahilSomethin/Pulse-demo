@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 
 import { DetailsDrawer } from "@/components/layout/DetailsDrawer";
+import { TourLauncher } from "@/components/tour/TourLauncher";
 import { MapStage } from "@/components/layout/MapStage";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { PlaybackBar } from "@/components/vessels/PlaybackBar";
@@ -67,13 +68,14 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             <Anchor className="text-primary" size={18} aria-hidden />
             SeaPulse
           </Link>
-          <nav aria-label="Primary" className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
+          <nav aria-label="Primary" className="order-last flex w-full min-w-0 basis-full gap-1 overflow-x-auto sm:order-none sm:w-auto sm:basis-auto sm:flex-1">
             {SECTIONS.map((item) => {
               const active = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  data-tour={item.href === "/explore" ? "nav-explore" : item.href === "/network" ? "nav-network" : "nav-simulate"}
                   aria-current={active ? "page" : undefined}
                   className={`shrink-0 rounded-md px-2.5 py-1.5 text-sm ${active ? "bg-primary-soft text-primary" : "text-fg-secondary hover:bg-surface-hover"}`}
                 >
@@ -87,6 +89,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             {loading ? "Reading tracker file…" : dataset ? `${historicalLabel(dataset.periodLabel)} · ${dataset.names.length} devices · ${dataset.sourceLabel}` : "No dataset loaded"}
             {dataset?.synthetic ? " · synthetic test data" : ""}
           </p>
+          <TourLauncher />
           <button type="button" className="btn" aria-pressed={state.presenting} onClick={() => setPresenting(true)}>
             Presentation view
           </button>

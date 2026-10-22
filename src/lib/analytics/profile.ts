@@ -1,5 +1,5 @@
 import { durationVariability, passagesPerObservedDay, type ConnectionIndicator } from "@/lib/analytics/connectivity";
-import type { PopulationSource } from "@/lib/analytics/population";
+import { emptyPopulation, type PopulationSource } from "@/lib/analytics/population";
 
 export interface ProfileLink {
   indicator: ConnectionIndicator;
@@ -22,6 +22,8 @@ export interface LocationProfile {
   periodLabel: string;
   scope: ConnectionIndicator["scope"];
   population: number | null;
+  populationStatus: "matched" | "ambiguous" | "unmatched" | "not_applicable" | "unavailable";
+  populationYear: 2022 | null;
   warnings: string[];
 }
 
@@ -32,7 +34,7 @@ function endpointMatches(endpoint: ConnectionIndicator["origin"], id: string): b
 export function buildLocationProfile(
   id: string,
   indicators: readonly ConnectionIndicator[],
-  population: PopulationSource = { populationForIsland: () => null },
+  population: PopulationSource = emptyPopulation,
 ): LocationProfile | null {
   const links: ProfileLink[] = [];
   for (const indicator of indicators) {
@@ -50,7 +52,9 @@ export function buildLocationProfile(
     busiest = Math.max(busiest, link.indicator.vessels);
   }
   const named = sample.label.split(" · ")[0];
-  const populationCount = sample.confidence === "named_polygon" ? population.populationForIsland(named) : null;
+  const populationLookup = sample.confidence === "named_polygon"
+    ? population.lookup({ name: named, atoll: sample.atoll })
+    : { status: "not_applicable" as const, population: null, year: null };
   const warnings = [
     "Counts are tracked vessels in the loaded observations. They are not ferry passengers or proof that an unlisted place has no service.",
   ];
@@ -71,7 +75,9 @@ export function buildLocationProfile(
     observationDays: links[0].indicator.observationDays,
     periodLabel: links[0].indicator.periodLabel,
     scope: links[0].indicator.scope,
-    population: populationCount,
+    population: populationLookup.population,
+    populationStatus: populationLookup.status,
+    populationYear: populationLookup.year,
     warnings,
   };
 }

@@ -25,7 +25,8 @@ npm run lint
 npm run build
 npm run data:reference
 npm run data:connectivity
-npm run data:census -- path/to/census.csv
+npm run data:census
+npm run data:census-match
 ```
 
 `npm install`, `npm run dev`, and `npm run build` copy the MapLibre worker into `public/vendor/maplibre`.
@@ -48,8 +49,14 @@ The August FollowMe extract lives under `data/FollowMe`. See `QUALITY_AUDIT.md` 
 The map, the loaded day, and the playback clock stay mounted while you move between sections. Older addresses redirect: `/` and `/explorer` to `/explore`, `/emergency` to `/simulate`, and `/routes` to `/network?tab=routes`.
 
 - **Explore** — day quality, vessel search, and activity cells for the loaded day.
-- **Network** — observed connections for the loaded day or, in development, the August summary. A place profile opens from a cluster on the map. Find opportunities ranks connections that clear an evidence bar. Route Lab compares the observed typical time with a typed hypothetical.
+- **Network** — observed connections for the loaded day or, in development, the August summary. Find opportunities is the main action: it lists connections that clear an evidence bar and holds the rest back. A place profile opens from a cluster on the map and, when the island matches Census 2022, shows the 2022 resident count. Route Lab compares the observed typical time with a typed hypothetical.
 - **Simulate** — experimental. A hypothetical incident against historical positions. It does not dispatch a vessel.
+
+## Team Guide
+
+The header has **Team Guide**. It is a manual walkthrough for the Laari & Logic team. It does not start on its own, and it does not store completion. The nine steps explain the problem, the August 2025 FollowMe evidence, Explore, playback, Network, a connectivity profile, Find opportunities, Route Lab, and the limits of the data. If a day or the August summary is not loaded, that step stays a short explanation instead of a broken highlight. Details are in [TOUR.md](TOUR.md).
+
+`npm run data:census` reads `data/Census 2022/P5.xlsx` (Maldives Bureau of Statistics Table P5, resident population by island and sex, 2022) and writes `public/reference/census-2022.json`. `npm run data:census-match` prints matched, ambiguous, and unmatched islands against the OpenStreetMap reference. The workbook itself is not modified.
 
 The sidebar can be expanded, collapsed to an icon rail, or hidden. A details card describes the selected vessel, cell, connection, or scenario. Closing the card keeps that selection on the map. Hub hover shows only the unique-vessel count.
 

@@ -51,7 +51,8 @@ src/components/explore|network|simulate|vessels
 src/context/                       dataset and playback, workspace UI, theme
 src/lib/parsing/                   CSV, GeoJSON, day order
 src/lib/vessels/                   typed arrays, windowed frame, playback
-src/lib/analytics/                 dwells, journeys, links, empty census adapter
+src/lib/analytics/                 dwells, journeys, links, census-backed population lookup
+src/tour/                          Team Guide steps, Driver.js, visible-target wait
 src/lib/simulation/                emergency comparison and Route Lab
 src/lib/workspace/                 sidebar state and map overlay store
 src/workers/parse-csv.ts           same parser off the main thread
@@ -134,6 +135,7 @@ npm run build
 - Subscribing a static panel to the playback clock rerenders it on every tick.
 - Releasing an overlay without its token clears a section that just published.
 - Playback above 1× commits one sample per frame. It does not draw the GPS reports inside the jump. The clock pauses while `document.hidden` is true.
-- `src/lib/analytics/population.ts` returns null. Do not invent census, demand, fares, or fleet size.
+- Census population is shown only after an atoll-and-name or unique-name match against Table P5. Do not invent a match, a demand figure, or an isolation score. Ambiguous names stay blank.
+- Team Guide targets use `data-tour` on a visible element. The guide is started from the header. It does not auto-start and it does not store progress. Steps that need a loaded day or a connection fall back to centred text when that data is absent.
 - No verified medical or Coast Guard file ships with the app. An evacuation leg runs only when a loaded feature has `kind: "medical"` and `verified: true`.
 - Old paths redirect in `src/config/redirects.ts`: `/` and `/explorer` to `/explore`, `/emergency` to `/simulate`, `/routes` to `/network?tab=routes`.

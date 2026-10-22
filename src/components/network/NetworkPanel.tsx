@@ -38,10 +38,19 @@ export function NetworkPanel() {
     if (state.network.scope === "month" && !month && !loading) void loadMonth();
   }, [state.network.scope, month, loading, loadMonth]);
 
+  const opportunities = useMemo(() => findOpportunities(filtered), [filtered]);
+
   function chooseTab(tab: NetworkTab) {
     setNetworkTab(tab);
     const query = tab === "observed" ? "" : `?tab=${tab}`;
     window.history.replaceState(null, "", `/network${query}`);
+  }
+
+  function showOpportunities(selectFirst: boolean) {
+    chooseTab("opportunities");
+    if (!selectFirst) return;
+    const first = opportunities.flagged[0];
+    if (first) choose(first.indicator);
   }
 
   function choose(indicator: ConnectionIndicator) {
@@ -50,13 +59,16 @@ export function NetworkPanel() {
     focusOn((indicator.origin.lon + indicator.destination.lon) / 2, (indicator.origin.lat + indicator.destination.lat) / 2);
   }
 
-  const opportunities = useMemo(() => findOpportunities(filtered), [filtered]);
-
   return (
     <>
-      <header>
-        <h1 className="text-lg font-semibold tracking-tight">Network</h1>
-        <p className="mt-1 text-sm leading-6 text-fg-secondary">Observed passages between places where tracked vessels stopped. A missing line is not proof that no service exists.</p>
+      <header className="flex flex-col gap-2">
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight">Network</h1>
+          <p className="mt-1 text-sm leading-6 text-fg-secondary">Observed passages between places where tracked vessels stopped. A missing line is not proof that no service exists.</p>
+        </div>
+        <button type="button" className="btn btn-primary self-start" data-tour="find-opportunities" onClick={() => showOpportunities(true)}>
+          Find opportunities
+        </button>
       </header>
       {!dataset && state.network.scope === "day" ? <Notice>Load a tracker day in Explore, or switch the window to the August summary after it has been built.</Notice> : null}
       {dataset?.synthetic ? <Notice tone="warning">Synthetic test geometry. Do not read these links as real atoll services.</Notice> : null}
@@ -65,8 +77,8 @@ export function NetworkPanel() {
       {overlay.hidden > 0 ? <p className="text-xs text-fg-muted">Map shows the {CONNECTIVITY.mapLinkCap} busiest connections in the current filters. {formatCount(overlay.hidden)} more stay in the list only.</p> : null}
       <div role="tablist" aria-label="Network" className="flex flex-wrap gap-1">
         <button type="button" role="tab" aria-selected={state.networkTab === "observed"} className={state.networkTab === "observed" ? "btn btn-primary" : "btn"} onClick={() => chooseTab("observed")}>Connections</button>
-        <button type="button" role="tab" aria-selected={state.networkTab === "opportunities"} className={state.networkTab === "opportunities" ? "btn btn-primary" : "btn"} onClick={() => chooseTab("opportunities")}>Find opportunities</button>
-        <button type="button" role="tab" aria-selected={state.networkTab === "routes"} className={state.networkTab === "routes" ? "btn btn-primary" : "btn"} onClick={() => chooseTab("routes")}>Route Lab</button>
+        <button type="button" role="tab" aria-selected={state.networkTab === "opportunities"} className={state.networkTab === "opportunities" ? "btn btn-primary" : "btn border-primary text-primary"} onClick={() => chooseTab("opportunities")}>Find opportunities</button>
+        <button type="button" role="tab" data-tour="network-tab-routes" aria-selected={state.networkTab === "routes"} className={state.networkTab === "routes" ? "btn btn-primary" : "btn"} onClick={() => chooseTab("routes")}>Route Lab</button>
       </div>
       {state.networkTab === "observed" ? <ConnectionList indicators={filtered} activeId={activeId} onChoose={choose} /> : null}
       {state.networkTab === "opportunities" ? (
@@ -75,11 +87,6 @@ export function NetworkPanel() {
           withheld={opportunities.withheld.length}
           activeId={activeId}
           onChoose={choose}
-          onFind={() => {
-            chooseTab("opportunities");
-            const first = opportunities.flagged[0];
-            if (first) choose(first.indicator);
-          }}
         />
       ) : null}
       {state.networkTab === "routes" ? <RouteLab indicators={filtered} onChoose={choose} /> : null}
@@ -110,20 +117,15 @@ function OpportunityList({
   withheld,
   activeId,
   onChoose,
-  onFind,
 }: {
   flagged: Opportunity[];
   withheld: number;
   activeId: string | null;
   onChoose: (indicator: ConnectionIndicator) => void;
-  onFind: () => void;
 }) {
   return (
     <section className="space-y-2">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold">Connections worth a closer look</h2>
-        <button type="button" className="btn btn-primary" onClick={onFind}>Find opportunities</button>
-      </div>
+      <h2 className="text-sm font-semibold">Connections worth a closer look</h2>
       <Notice>Each result is a planning question. It is not a recommendation to build or change a route.</Notice>
       {flagged.length === 0 ? <p className="text-sm text-fg-muted">No connection in the current filters has both enough repeated journeys and one of the investigation rules.</p> : (
         <ul className="space-y-2">
@@ -176,7 +178,7 @@ function RouteLab({ indicators, onChoose }: { indicators: ConnectionIndicator[];
           <p className="text-xs text-fg-muted">Observed baseline · {baseline.periodLabel} · {baseline.observationDays} observation {baseline.observationDays === 1 ? "day" : "days"}</p>
           <h2 className="font-medium">{selected.origin.label} → {selected.destination.label}</h2>
           <p className="text-fg-secondary">{formatCount(baseline.journeys)} journeys · {formatCount(baseline.vessels)} vessels · {formatCount(baseline.excluded)} left out of the times</p>
-          <p className="text-fg-secondary">Typical time {formatMinutes(baseline.medianMin)} · middle half {formatMinutes(baseline.iqrMin)} · longer journeys {formatMinutes(baseline.p90Min)}</p>
+          <p className="text-fg-secondary"><span title="Median duration">Typical time</span> {formatMinutes(baseline.medianMin)} · <span title="Interquartile range">middle half</span> {formatMinutes(baseline.iqrMin)} · <span title="90th percentile">longer journeys</span> {formatMinutes(baseline.p90Min)}</p>
           <p className="text-fg-secondary">Straight-line separation {baseline.straightLineKm == null ? "—" : `${baseline.straightLineKm.toFixed(1)} km`} · tracked path {baseline.pathRatio == null ? "—" : `${baseline.pathRatio.toFixed(1)}× that separation`}</p>
           <div className="space-y-1">
             {baseline.histogram.map((bin) => (

@@ -49,7 +49,7 @@ export function MapStage() {
   ];
 
   return (
-    <div className="absolute inset-0">
+    <div className="absolute inset-0" data-tour="map">
       <SeaMap
         dataset={dataset}
         polygons={geography?.polygons ?? []}

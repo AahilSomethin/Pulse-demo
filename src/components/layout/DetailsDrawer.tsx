@@ -34,6 +34,7 @@ export function DetailsDrawer() {
   return (
     <aside
       aria-label="Selection details"
+      data-tour="details"
       className={`absolute top-3 right-3 z-20 flex w-[min(22rem,calc(100%-1.5rem))] max-h-[min(70dvh,36rem)] flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-panel max-lg:left-3 max-lg:max-h-[min(40dvh,20rem)] ${tallSheet ? "max-lg:max-h-40" : ""}`}
     >
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border-soft px-3 py-2">
@@ -135,7 +136,7 @@ function ConnectionDetail({ id }: { id: string }) {
       <p className="font-semibold">{link.origin} → {link.destination}</p>
       <dl className="mt-2 space-y-1">
         <Row label="Observed passages" value={formatCount(link.tripCount)} />
-        <Row label="Median duration" value={formatDuration(link.medianDurationMs)} />
+        <Row label="Typical time" hint="Median duration" value={formatDuration(link.medianDurationMs)} />
         <Row label="Straight-line distance" value={formatKm(link.medianDistanceM)} />
         <Row label="Coverage gaps excluded" value={formatCount(gaps)} />
       </dl>
@@ -156,9 +157,9 @@ function IndicatorDetail({ indicator, hypothetical }: { indicator: ConnectionInd
         <Row label="Tracked vessels" value={formatCount(indicator.vessels)} />
         <Row label="Per observed day" value={rate == null ? "—" : rate.toFixed(1)} />
         <Row label="Days with a journey" value={`${indicator.activeDays} of ${indicator.observationDays}`} />
-        <Row label="Typical time" value={indicator.medianDurationMs == null ? "—" : formatDuration(indicator.medianDurationMs)} />
-        <Row label="Middle half of times" value={indicator.iqrMs == null ? "Needs more journeys" : formatDuration(indicator.iqrMs)} />
-        <Row label="Longer journeys" value={indicator.p90Ms == null ? "Needs more journeys" : formatDuration(indicator.p90Ms)} />
+        <Row label="Typical time" hint="Median duration" value={indicator.medianDurationMs == null ? "—" : formatDuration(indicator.medianDurationMs)} />
+        <Row label="Middle half of times" hint="Interquartile range" value={indicator.iqrMs == null ? "Needs more journeys" : formatDuration(indicator.iqrMs)} />
+        <Row label="Longer journeys" hint="90th percentile" value={indicator.p90Ms == null ? "Needs more journeys" : formatDuration(indicator.p90Ms)} />
         <Row label="Straight-line separation" value={indicator.medianDistanceM == null ? "—" : formatKm(indicator.medianDistanceM)} />
         <Row label="Tracked path vs separation" value={indicator.medianPathRatio == null ? "—" : `${indicator.medianPathRatio.toFixed(1)}×`} />
         <Row label="Left out of the times" value={formatCount(indicator.excluded)} />
@@ -175,7 +176,7 @@ function LocationDetail({ id }: { id: string }) {
   const { indicators, monthIndicators, census } = useDataset();
   const { state } = useWorkspace();
   const source = state.network.scope === "month" ? monthIndicators : indicators;
-  const population = census ?? { populationForIsland: () => null };
+  const population = census ?? { lookup: () => ({ status: "unavailable" as const, population: null, year: null }) };
   const profile = buildLocationProfile(id, source.length > 0 ? source : [...indicators, ...monthIndicators], population);
   if (!profile) return <p className="text-fg-muted">That place has no observed connection in this window.</p>;
   return (
@@ -189,9 +190,11 @@ function LocationDetail({ id }: { id: string }) {
         <Row label="Most vessels on one connection" value={formatCount(profile.vessels)} />
         <Row label="Connected places" value={formatCount(profile.links.length)} />
         <Row label="Window" value={`${profile.observationDays} ${profile.scope === "month" ? "days in the August summary" : "loaded day"}`} />
-        <Row label="Residents" value={profile.population == null ? "Not loaded" : formatCount(profile.population)} />
+        {profile.populationStatus === "not_applicable" ? null : (
+          <Row label="Residents (Census 2022)" value={residentLabel(profile.populationStatus, profile.population)} />
+        )}
       </dl>
-      {profile.population != null ? <p className="mt-2 text-xs text-fg-muted">Population is context from the loaded census table. Journeys per resident are not a passenger-service measure.</p> : null}
+      <p className="mt-2 text-xs text-fg-muted">{residentNote(profile.populationStatus)}</p>
       <ul className="mt-2 space-y-1">
         {profile.links.slice(0, 6).map((link) => (
           <li key={`${link.direction}:${link.indicator.id}`} className="text-fg-secondary">
@@ -242,10 +245,25 @@ function ScenarioDetail({ id }: { id: string }) {
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function residentLabel(status: "matched" | "ambiguous" | "unmatched" | "not_applicable" | "unavailable", population: number | null): string {
+  if (status === "matched" && population != null) return formatCount(population);
+  if (status === "ambiguous") return "Ambiguous name";
+  if (status === "unavailable") return "Not loaded";
+  return "No verified match";
+}
+
+function residentNote(status: "matched" | "ambiguous" | "unmatched" | "not_applicable" | "unavailable"): string {
+  if (status === "matched") return "Resident population, Census 2022. Context beside observed journeys, not a passenger count or an isolation score.";
+  if (status === "ambiguous") return "This name occurs in more than one atoll, and the reference geography did not select one. No population is shown.";
+  if (status === "not_applicable") return "Population is shown only when a stop falls inside a named island that matches Census 2022.";
+  if (status === "unavailable") return "Census 2022 is not loaded. No population is shown.";
+  return "No Census 2022 island matched this place by atoll and name. No population is shown.";
+}
+
+function Row({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-fg-muted">{label}</dt>
+      <dt className="text-fg-muted" title={hint}>{label}</dt>
       <dd className="text-right tabular-nums">{value}</dd>
     </div>
   );

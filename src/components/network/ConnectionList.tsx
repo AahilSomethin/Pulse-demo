@@ -29,18 +29,23 @@ export function ConnectionFilters({
   onChange: (patch: Partial<NetworkFilters>) => void;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-      <label className="field">
-        Observation window
-        <select value={filters.scope} onChange={(event) => onChange({ scope: event.target.value === "month" ? "month" : "day" })}>
-          <option value="day">Loaded day</option>
-          <option value="month">August 2025 summary</option>
-        </select>
-      </label>
-      <label className="field">
-        Minimum journeys
-        <input type="number" min={1} step={1} value={filters.minPassages} onChange={(event) => onChange({ minPassages: Math.max(1, Number(event.target.value) || 1) })} />
-      </label>
+    <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <label className="field" data-tour="network-scope">
+          Observation window
+          <select value={filters.scope} onChange={(event) => onChange({ scope: event.target.value === "month" ? "month" : "day" })}>
+            <option value="day">Loaded day</option>
+            <option value="month">August 2025 summary</option>
+          </select>
+        </label>
+        <label className="field">
+          Minimum journeys
+          <input type="number" min={1} step={1} value={filters.minPassages} onChange={(event) => onChange({ minPassages: Math.max(1, Number(event.target.value) || 1) })} />
+        </label>
+      </div>
+      <details className="rounded-lg border border-border px-3 py-2">
+        <summary className="cursor-pointer text-sm text-fg-secondary">More filters</summary>
+        <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
       <label className="field">
         Shortest typical time (minutes, 0 for any)
         <input type="number" min={0} step={5} value={filters.minDurationMin} onChange={(event) => onChange({ minDurationMin: Math.max(0, Number(event.target.value) || 0) })} />
@@ -83,6 +88,8 @@ export function ConnectionFilters({
           </select>
         </label>
       ) : null}
+        </div>
+      </details>
     </div>
   );
 }
@@ -110,8 +117,8 @@ export function ConnectionCard({
         {formatCount(indicator.passages)} journeys · {formatCount(indicator.vessels)} vessels · {rate == null ? "—" : `${rate.toFixed(1)} per day`}
       </p>
       <p className="text-fg-secondary">
-        Typical time {indicator.medianDurationMs == null ? "—" : formatDuration(indicator.medianDurationMs)}
-        {stable && indicator.iqrMs != null ? ` · middle half ${formatDuration(indicator.iqrMs)}` : ""}
+        <span title="Median duration">Typical time</span> {indicator.medianDurationMs == null ? "—" : formatDuration(indicator.medianDurationMs)}
+        {stable && indicator.iqrMs != null ? <span title="Interquartile range"> · middle half {formatDuration(indicator.iqrMs)}</span> : ""}
         {indicator.medianDistanceM == null ? "" : ` · ${formatKm(indicator.medianDistanceM)} apart`}
       </p>
       <p className="text-xs text-fg-muted">

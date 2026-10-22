@@ -2,13 +2,19 @@
   "source": "OpenStreetMap",
   "licence": "Open Database License (ODbL) 1.0",
   "attribution": "© OpenStreetMap contributors",
-  "retrievedAt": "2026-10-22T18:46:46.102Z",
+  "retrievedAt": "2026-10-22T19:34:03.612Z",
   "area": "Maldives relation 536773",
-  "islands": 658,
+  "islands": 668,
+  "islandsWithEnglishName": 657,
+  "islandsWithAtoll": 54,
+  "atollBoundaries": 14,
   "harbours": 56,
   "notes": [
     "Island polygons are place=island or place=islet features that have a name and a geometry.",
+    "nameEn is name:en, or the name tag when it is already in Latin script.",
+    "atoll is an official abbreviation from addr:atoll, is_in:atoll, or the admin_level 4 boundary that contains the island.",
     "Harbour points are named harbour nodes, ferry terminals, and named piers.",
-    "A match is a geographic hint. It is not confirmation of a port call."
+    "A match is a geographic hint. It is not confirmation of a port call.",
+    "Seven admin_level 4 relations had no boundary geometry in the Overpass response: North Maalhosmadulu (R), South Maalhosmadulu (B), Mulaku (M), North Nilandhe (F), Kolhumadulu (Th), Hadhdhunmathi (L), and Fuvahmulah (Gn). Islands there keep a null atoll."
   ]
 }

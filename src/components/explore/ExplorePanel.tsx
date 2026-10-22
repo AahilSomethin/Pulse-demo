@@ -61,7 +61,16 @@ function DataTab() {
   const credible = journeys.filter((journey) => !journey.coverageGap).length;
 
   return (
-    <>
+    <section data-tour="explore-data" className="flex flex-col gap-3">
+      <details className="rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm leading-6">
+        <summary className="cursor-pointer font-medium text-fg">Why SeaPulse?</summary>
+        <div className="mt-2 space-y-2 text-fg-secondary">
+          <p>Boat journeys connect communities across the Maldives, but a list of tracker points does not show which crossings repeat, how long they take, or which patterns deserve a closer look.</p>
+          <p>SeaPulse reads historical GPS from tracked devices in August 2025 and rebuilds the crossings those devices actually made.</p>
+          <p>For each observed connection it reports how often the journey appears, a typical travel time, how much those times vary, and whether the evidence is strong enough to compare.</p>
+          <p>A planner can then ask where the record is thin and where better transport information would help. The file covers tracked devices, not every boat and not a published ferry timetable.</p>
+        </div>
+      </details>
       <label className="field">
         One day CSV
         <input type="file" accept=".csv,.txt" onChange={(event) => {
@@ -128,7 +137,7 @@ function DataTab() {
           </p>
         </section>
       ) : null}
-    </>
+    </section>
   );
 }
 
@@ -214,14 +223,6 @@ function HubTab() {
           </select>
         </label>
         <label className="field">
-          Hubs from
-          <select value={playback.mode} onChange={(event) => playback.setMode(event.target.value as HubMode)}>
-            <option value="stop">Stopped devices</option>
-            <option value="move">Moving devices</option>
-            <option value="all">All pings</option>
-          </select>
-        </label>
-        <label className="field">
           Cell size
           <select value={playback.cellDeg} onChange={(event) => playback.setCellDeg(Number(event.target.value))}>
             {CELL_OPTIONS.map((option) => (
@@ -229,12 +230,25 @@ function HubTab() {
             ))}
           </select>
         </label>
-        <label className="field">
-          Min peak speed
-          <input type="number" min={0} step={1} value={playback.threshold} onChange={(event) => playback.setThreshold(Number(event.target.value) || 0)} />
-        </label>
       </div>
-      <p className="text-xs leading-5 text-fg-muted">The speed filter keeps a device after 3 pings at or above this reported value. 0 turns it off. The unit is not in the file. This is not playback speed.</p>
+      <details className="rounded-lg border border-border px-3 py-2">
+        <summary className="cursor-pointer text-sm text-fg-secondary">Advanced hub settings</summary>
+        <div className="mt-2 grid grid-cols-1 gap-2">
+          <label className="field">
+            Hubs from
+            <select value={playback.mode} onChange={(event) => playback.setMode(event.target.value as HubMode)}>
+              <option value="stop">Stopped devices</option>
+              <option value="move">Moving devices</option>
+              <option value="all">All pings</option>
+            </select>
+          </label>
+          <label className="field">
+            Min peak speed
+            <input type="number" min={0} step={1} value={playback.threshold} onChange={(event) => playback.setThreshold(Number(event.target.value) || 0)} />
+          </label>
+          <p className="text-xs leading-5 text-fg-muted">The speed filter keeps a device after 3 pings at or above this reported value. 0 turns it off. The unit is not in the file. This is not playback speed.</p>
+        </div>
+      </details>
       <section>
         <h2 className="text-sm font-semibold">Top hubs in window</h2>
         {frame && frame.topHubs.length > 0 ? (

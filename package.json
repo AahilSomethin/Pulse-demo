@@ -13,11 +13,13 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "data:connectivity": "tsx scripts/aggregate-connectivity.ts",
-    "data:reference": "node scripts/fetch-reference.mjs",
+    "data:reference": "tsx scripts/fetch-reference.ts",
     "data:census": "tsx scripts/import-census.ts",
+    "data:census-match": "tsx scripts/report-census-match.ts",
     "data:findings": "tsx scripts/report-findings.ts"
   },
   "dependencies": {
+    "driver.js": "^1.10.2",
     "lucide-react": "^1.61.0",
     "maplibre-gl": "^6.15.0",
     "next": "16.4.2",
@@ -32,6 +34,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
+    "read-excel-file": "^9.3.12",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
