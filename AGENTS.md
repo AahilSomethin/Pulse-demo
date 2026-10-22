@@ -28,3 +28,109 @@ Retain qualifying friction even if it is later fixed or worked around; record th
 Before the final response, run one reporting pass. If candidates remain, from this file's directory run `npx --no-install next internal agent-feedback-instructions` once without piping or truncating its output. Follow its output or error guidance. If a network sandbox blocks it, retry with network access; if it still returns no output, continue normally.
 
 <!-- END:nextjs-agent-feedback -->
+
+# SeaPulse agent notes
+
+SeaPulse is the project to change. It is a browser-only dashboard for historical FollowMe vessel tracks around the Maldives. It replays one loaded day, shows activity cells, infers dwell-to-dwell connections, and compares hypothetical times against those historical positions. It is not a live tracker and it does not dispatch vessels.
+
+Read [FLOW.md](FLOW.md) for the pipeline, [IMPLEMENTATION.md](IMPLEMENTATION.md) for module behaviour, and [LIMITATIONS.md](LIMITATIONS.md) for what the files cannot support. [README.md](README.md) covers setup and the three sections.
+
+## Stack
+
+Next.js 16, React 19, TypeScript, Tailwind CSS 4, MapLibre GL with `react-map-gl`, and Vitest. Parsing and analysis run in the browser. There is no database and no maritime API.
+
+## Layout
+
+```
+src/app/layout.tsx                 Theme, Maritime, and Workspace providers
+src/app/(workspace)/               /explore, /network, /simulate
+src/app/api/dev-followme/[day]     development-only stream of one local day
+src/components/layout/             shell, sidebar, map stage, details drawer
+src/components/map/                MapLibre map, loaded without SSR
+src/components/explore|network|simulate|vessels
+src/context/                       dataset and playback, workspace UI, theme
+src/lib/parsing/                   CSV, GeoJSON, day order
+src/lib/vessels/                   typed arrays, windowed frame, playback
+src/lib/analytics/                 dwells, journeys, links, empty census adapter
+src/lib/simulation/                emergency comparison and Route Lab
+src/lib/workspace/                 sidebar state and map overlay store
+src/workers/parse-csv.ts           same parser off the main thread
+src/config/                        constants, map colours, old-route redirects
+src/data/followme-quality.json     August counts only
+public/fixtures/                   labelled synthetic CSV and GeoJSON
+data/FollowMe/                     gitignored raw tracks
+tests/                             Vitest
+```
+
+Pages only render a panel. `WorkspaceShell` stays mounted and owns the sidebar, the map, the details card, and the playback bar.
+
+## State
+
+`MaritimeContext` holds the loaded day and splits playback into two contexts. Settings (window, hub mode, cell size, speed filter, selection, play, speed) are separate from the clock (`cursor` and the current frame). Panels that do not need the frame should use `useDataset` or `usePlaybackSettings`, not `usePlaybackClock`.
+
+The provider keeps the active day and one previous day in a `Map`. Switching sections must not clear or reparse that cache.
+
+`WorkspaceContext` is an external store for the sidebar, details card, layer toggles, presentation view, clock zone, and the Explore / Network drafts. The first client snapshot matches the server. Stored sidebar, layers, and clock zone are applied in a microtask so hydration stays stable. Do not read `localStorage` during the first render.
+
+Section-specific markers and lines go through `publishMapOverlay` in `src/lib/workspace/overlay.ts`, via `useMapOverlay`. A release carries the token from its own publish. A newer section must survive the previous section’s cleanup.
+
+## Map
+
+`MapStage` renders one `SeaMap`. `SeaMap` dynamically imports `SeaMapInner` with `ssr: false`. The map instance stays alive across `/explore`, `/network`, and `/simulate`. Update sources and layer visibility. Do not remount the map to change a panel, a layer, or the playback cursor.
+
+The worker URL is `/vendor/maplibre/maplibre-gl-worker.mjs`. `predev`, `prebuild`, and `postinstall` copy it. Do not commit `public/vendor/`. If the CARTO style fails, data layers still draw on the flat fallback. A `ResizeObserver` on the map container handles sidebar width changes.
+
+## FollowMe and privacy
+
+Users load a CSV in the browser. In development, `GET /api/dev-followme/[day]` streams `data/FollowMe/FollowMe_august_2025/{1-31}.csv` and returns 404 in production. The raw directory is gitignored.
+
+Do not commit raw tracks, device identifiers, or coordinates from the extract. `src/data/followme-quality.json` and `src/lib/analytics/corpus.ts` store counts only. Mask IMEIs in the UI. `public/fixtures/` is synthetic and must stay labelled as synthetic.
+
+`device_date` is the observation clock. `timestamp` is the database save time and only breaks ties. The reported speed unit is not in the file. Do not convert it.
+
+## Observed, inferred, simulated
+
+- **Observed.** Parsed ping time, latitude, longitude, reported speed, heading, network, and IMEI. Dwell-to-dwell counts, durations, and straight-line distances are summaries of those pings.
+- **Inferred.** Hub cells, dwells, 0.05° activity areas, and the links between them. An activity cell is not a harbour or an island. A named link exists only when both ends fall in a loaded polygon that has a name.
+- **Simulated.** A map-clicked incident, an optional user-placed Coast Guard origin, a typed Route Lab duration, and straight-line times at assumed or unverified speeds. Label them as hypothetical. They are not a schedule and not a dispatch order.
+
+Hub rules differ from dwell rules. A hub ping is reported speed under 0.5 in the window `[t - W, t + 1)`. A dwell needs at least two slow pings, 10 minutes, 400 metres, and no gap over 20 minutes. The bold trail is `(t - W, t]`. Keep those edges.
+
+A journey whose implied straight-line speed is above 40 knots, or whose clock does not move, is a coverage gap and stays out of Sea Network medians.
+
+## Conventions
+
+Keep pages and components thin. Maritime calculations live in `src/lib` and take plain data, so Vitest can run them without React. Use the `@/` alias.
+
+Style with the semantic tokens in `src/app/globals.css` (`bg-surface`, `text-fg-muted`, `border-border`, and the same family). MapLibre paint values belong in `src/config/map-colors.ts`. Support light and dark through those tokens, not theme branches in components.
+
+Changing a threshold, window edge, distance, or sort requires a test in `tests/` and a matching note in `IMPLEMENTATION.md` or `LIMITATIONS.md` when the user-facing meaning changes.
+
+## Checks
+
+```bash
+npm test
+npm run typecheck
+npm run lint
+npm run build
+```
+
+`tests/maritime.test.ts` uses synthetic rows. `tests/followme-day.test.ts` parses local day 1 only when that file is present and checks counts, not identifiers.
+
+## Do not modify
+
+- `insight/` — reference only.
+- `Maldives vessel hubs over time (1).html` in the parent directory — Rida’s original viewer.
+- `data/FollowMe/` — private raw tracks. Do not add them to git.
+- Analytical formulas in `src/lib`, unless the change is validated and tested.
+- The Next.js blocks at the top of this file. `next dev` restores them.
+
+## Pitfalls
+
+- Remounting `SeaMap`, or parsing the CSV again on every section change, drops the camera and repeats a large parse.
+- Subscribing a static panel to the playback clock rerenders it on every tick.
+- Releasing an overlay without its token clears a section that just published.
+- Playback above 1× commits one sample per frame. It does not draw the GPS reports inside the jump. The clock pauses while `document.hidden` is true.
+- `src/lib/analytics/population.ts` returns null. Do not invent census, demand, fares, or fleet size.
+- No verified medical or Coast Guard file ships with the app. An evacuation leg runs only when a loaded feature has `kind: "medical"` and `verified: true`.
+- Old paths redirect in `src/config/redirects.ts`: `/` and `/explorer` to `/explore`, `/emergency` to `/simulate`, `/routes` to `/network?tab=routes`.

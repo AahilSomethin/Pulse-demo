@@ -4,6 +4,8 @@ SeaPulse is a browser-only maritime dashboard for FollowMe vessel tracks. It mig
 
 Tracker files are parsed locally. A development-only route can read one local August day. Production does not serve those files.
 
+How the pieces connect is in [FLOW.md](FLOW.md). Module behaviour is in [IMPLEMENTATION.md](IMPLEMENTATION.md). Data limits are in [LIMITATIONS.md](LIMITATIONS.md). Notes for coding agents are in [AGENTS.md](AGENTS.md).
+
 ## Setup
 
 ```bash

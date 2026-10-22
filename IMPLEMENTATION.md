@@ -1,6 +1,6 @@
 # Implementation
 
-SeaPulse lives under `src/`. The original HTML file and the Insight project are untouched.
+SeaPulse lives under `src/`. The original HTML file and the Insight project are untouched. The short system overview is [FLOW.md](FLOW.md). Agent constraints are in [AGENTS.md](AGENTS.md).
 
 ## Modules
 

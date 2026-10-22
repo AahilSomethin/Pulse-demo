@@ -1,6 +1,6 @@
 # Limitations
 
-Each item is classified as resolved, partially resolved, blocked by data, or an inherent limitation.
+Each item is classified as resolved, partially resolved, blocked by data, or an inherent limitation. The system overview is [FLOW.md](FLOW.md).
 
 ## Resolved
 

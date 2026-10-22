@@ -1,0 +1,65 @@
+# How SeaPulse works
+
+SeaPulse replays historical FollowMe vessel tracks on a map. You load one day, watch where those trackers reported, inspect connections inferred from the same positions, and compare hypothetical travel times. Nothing in the app is a live vessel feed.
+
+Setup and the three sections are in [README.md](README.md). Module detail is in [IMPLEMENTATION.md](IMPLEMENTATION.md). What the files cannot support is in [LIMITATIONS.md](LIMITATIONS.md).
+
+## What SeaPulse does
+
+A researcher or teammate opens one FollowMe CSV in the browser. SeaPulse keeps the positions, plays them forward through a time window, and draws activity on a map of the Maldives. From the same day it estimates where vessels lingered and which areas they travelled between. Network and Simulate then compare those historical measurements with times the user wants to test. The result is an exploration tool for the August 2025 extract, not a picture of every boat in the country.
+
+## System flow
+
+```mermaid
+flowchart TD
+  csv["FollowMe CSV, local August day, or synthetic fixture"] --> parse["Parse, validate, and drop duplicates"]
+  parse --> typed["Typed-array dataset for one day"]
+  typed --> frame["Playback frame for the current window"]
+  typed --> dwell["Dwells, activity cells, and journeys"]
+  dwell --> links["Inferred links and named-polygon links"]
+  frame --> map["Persistent MapLibre map"]
+  links --> map
+  links --> network["Network and Route Lab"]
+  frame --> simulate["Simulate: straight-line comparison"]
+  simulate --> map
+```
+
+Parsing prefers a Web Worker and falls back to the same function on the main thread. The browser keeps the active day and one previous day. Switching Explore, Network, and Simulate does not reload the file.
+
+## Application flow
+
+The map, the loaded day, and the playback clock stay mounted. Only the sidebar changes.
+
+**Explore** is where a file is loaded. It shows day quality, a vessel list, and activity cells for the current window. Positions here are tracker reports from the file.
+
+**Network** lists directions inferred from dwells on that day. The Observed tab is the historical count, duration, and straight-line distance. Route Lab compares that record with the time the same distance would take at the file’s median reported moving value. A duration the user types is a hypothetical check, not a timetable. Named islands appear only after a GeoJSON file with polygon names is loaded.
+
+**Simulate** places a hypothetical incident on the map. It ranks historical positions inside a radius, and any loaded Coast Guard points, by straight-line time. An optional second point is a user-placed Coast Guard origin. The list is a comparison of assumptions. It does not send a vessel.
+
+`/` and `/explorer` redirect to `/explore`, `/emergency` to `/simulate`, and `/routes` to `/network?tab=routes`.
+
+## Technical architecture
+
+**Dataset loading.** Explore reads a CSV in the browser, or, in development only, streams one file from `data/FollowMe/FollowMe_august_2025`. Production returns 404 for that route. The parser accepts named FollowMe headers or the original column positions, keeps rows inside the Maldives box, and stores columns in typed arrays.
+
+**Shared React state.** `MaritimeContext` holds the dataset, geography, journeys, and links, and separates playback settings from the moving clock. `WorkspaceContext` holds the sidebar, details card, layer toggles, and scenario drafts. Section markers reach the map through a small overlay store so a route change does not rebuild the map.
+
+**Persistent MapLibre map.** `MapStage` owns one map for the whole workspace. Panels publish markers and lines onto it. Land outlines come from a CARTO style. If that style fails, the data layers still draw.
+
+**Playback engine.** The bar under the map moves a millisecond cursor. At 1× the clock advances by one sixth of the window every 90 ms. The frame keeps the last ping per device in `[t − W, t + 1)`, hub cells for that window, and the selected trail. Faster speeds take fewer samples. They do not change a vessel’s reported speed.
+
+**Analysis utilities.** After a day loads, dwell detection groups slow pings, journeys measure the gap between dwells on the same device, and the network code turns those journeys into directions. A jump faster than 40 knots in a straight line is treated as missing coverage and left out of the medians.
+
+**Scenario calculations.** Route Lab and Simulate use straight-line distance. They add no reefs, channels, or schedules. A medical leg is added only when a loaded place is marked medical and verified. No population file is present, so the app does not estimate demand.
+
+## Data classifications
+
+**Observed GPS data** is what the file recorded: time, latitude, longitude, reported speed, and the other tracker fields that were present. Summaries such as trip count and median duration describe those records.
+
+**Derived or inferred findings** are calculated from the pings. Hub cells count devices in a grid. Dwells and activity areas estimate lingering. Links estimate travel between those areas. An activity cell is not a harbour, and a cluster of pings is not an island name.
+
+**Hypothetical simulations** are choices the user adds: a typed duration, a clicked incident, an assumed speed, or a Coast Guard origin that was not in the file. The interface labels these as hypothetical. The synthetic fixture in `public/fixtures/` is test geometry, not an observation.
+
+## Limitations
+
+SeaPulse does not monitor vessels live and it is not a Coast Guard dispatch system. Coverage is only the trackers in the loaded file. Distance is straight-line. The speed unit is not documented in the extract. A fuller list is in [LIMITATIONS.md](LIMITATIONS.md).
