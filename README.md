@@ -50,7 +50,7 @@ The map, the loaded day, and the playback clock stay mounted while you move betw
 
 - **Explore** — day quality, vessel search, and activity cells for the loaded day.
 - **Network** — observed connections for the loaded day or, in development, the August summary. Find opportunities is the main action: it lists connections that clear an evidence bar and holds the rest back. A place profile opens from a cluster on the map and, when the island matches Census 2022, shows the 2022 resident count. Route Lab compares the observed typical time with a typed hypothetical.
-- **Simulate** — experimental. A hypothetical incident against historical positions. It does not dispatch a vessel.
+- **Experimental** — a secondary menu. Emergency Simulation (`/simulate`) places a hypothetical incident against historical positions. It does not dispatch a vessel.
 
 ## Team Guide
 
@@ -66,4 +66,4 @@ The bar under the map has play/pause, restart, day controls, a scrubber, the sel
 
 Timestamps are stored as UTC, which is how the original viewer parsed them. The clock also shows Maldives time (UTC+5), and either zone can be primary. The reported speed unit is not documented and is not converted.
 
-Space plays and pauses, `P` toggles presentation view, `[` and `]` change speed, and Escape leaves presentation view or closes the details card. Those keys do nothing while a field, button, or link is focused. Presentation view hides the header and sidebar and keeps the playback bar and the three section links.
+Space plays and pauses, `P` toggles presentation view, `[` and `]` change speed, and Escape leaves presentation view or closes the details card. Those keys do nothing while a field, button, or link is focused. Presentation view hides the header and sidebar and keeps the playback bar. Its switch follows Explore, Network, and Findings, with Emergency Simulation under Experimental.

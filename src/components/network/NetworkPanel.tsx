@@ -43,7 +43,7 @@ export function NetworkPanel() {
   function chooseTab(tab: NetworkTab) {
     setNetworkTab(tab);
     const query = tab === "observed" ? "" : `?tab=${tab}`;
-    window.history.replaceState(null, "", `/network${query}`);
+    window.history.replaceState(window.history.state, "", `/network${query}`);
   }
 
   function showOpportunities(selectFirst: boolean) {

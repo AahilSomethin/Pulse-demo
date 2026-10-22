@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 
 import { DetailsDrawer } from "@/components/layout/DetailsDrawer";
+import { ExperimentalMenu } from "@/components/layout/ExperimentalMenu";
 import { TourLauncher } from "@/components/tour/TourLauncher";
 import { MapStage } from "@/components/layout/MapStage";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -16,11 +17,10 @@ import { useWorkspace } from "@/context/WorkspaceContext";
 import { historicalLabel } from "@/lib/format";
 import { PLAYBACK_SPEEDS } from "@/lib/vessels/playback";
 
-const SECTIONS = [
+const PRIMARY = [
   { href: "/explore", label: "Explore" },
   { href: "/network", label: "Network" },
-  { href: "/simulate", label: "Simulate" },
-];
+] as const;
 
 export function WorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -68,22 +68,22 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             <Anchor className="text-primary" size={18} aria-hidden />
             SeaPulse
           </Link>
-          <nav aria-label="Primary" className="order-last flex w-full min-w-0 basis-full gap-1 overflow-x-auto sm:order-none sm:w-auto sm:basis-auto sm:flex-1">
-            {SECTIONS.map((item) => {
+          <nav aria-label="Primary" className="order-last flex w-full min-w-0 basis-full flex-wrap items-center gap-1 overflow-visible sm:order-none sm:w-auto sm:basis-auto sm:flex-1">
+            {PRIMARY.map((item) => {
               const active = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  data-tour={item.href === "/explore" ? "nav-explore" : item.href === "/network" ? "nav-network" : "nav-simulate"}
+                  data-tour={item.href === "/explore" ? "nav-explore" : "nav-network"}
                   aria-current={active ? "page" : undefined}
                   className={`shrink-0 rounded-md px-2.5 py-1.5 text-sm ${active ? "bg-primary-soft text-primary" : "text-fg-secondary hover:bg-surface-hover"}`}
                 >
                   {item.label}
-                  {item.href === "/simulate" ? <span className="ml-1 text-xs text-fg-muted">Experimental</span> : null}
                 </Link>
               );
             })}
+            <ExperimentalMenu variant="nav" />
           </nav>
           <p className="hidden min-w-0 truncate text-xs text-fg-muted xl:block">
             {loading ? "Reading tracker file…" : dataset ? `${historicalLabel(dataset.periodLabel)} · ${dataset.names.length} devices · ${dataset.sourceLabel}` : "No dataset loaded"}
@@ -113,17 +113,40 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
 
 function PresentSwitch() {
   const pathname = usePathname();
-  const { setPresenting } = useWorkspace();
+  const { state, setPresenting, setNetworkTab } = useWorkspace();
+  const findings = pathname === "/network" && state.networkTab === "opportunities";
+  const network = pathname === "/network" && !findings;
+
+  function openNetwork(tab: "observed" | "opportunities") {
+    if (window.location.pathname === "/network") {
+      const query = tab === "observed" ? "" : `?tab=${tab}`;
+      window.history.replaceState(window.history.state, "", `/network${query}`);
+    }
+    setNetworkTab(tab);
+  }
+
   return (
     <div className="absolute top-3 left-1/2 z-20 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1 rounded-lg border border-border bg-surface p-1 shadow-panel">
-      {SECTIONS.map((item) => {
-        const active = pathname === item.href;
-        return (
-          <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={`btn ${active ? "btn-primary" : "btn-ghost"}`}>
-            {item.label}
-          </Link>
-        );
-      })}
+      <Link href="/explore" aria-current={pathname === "/explore" ? "page" : undefined} className={`btn ${pathname === "/explore" ? "btn-primary" : "btn-ghost"}`}>
+        Explore
+      </Link>
+      <Link
+        href="/network"
+        aria-current={network ? "page" : undefined}
+        className={`btn ${network ? "btn-primary" : "btn-ghost"}`}
+        onClick={() => openNetwork("observed")}
+      >
+        Network
+      </Link>
+      <Link
+        href="/network?tab=opportunities"
+        aria-current={findings ? "page" : undefined}
+        className={`btn ${findings ? "btn-primary" : "btn-ghost"}`}
+        onClick={() => openNetwork("opportunities")}
+      >
+        Findings
+      </Link>
+      <ExperimentalMenu variant="present" />
       <button type="button" className="btn btn-ghost" onClick={() => setPresenting(false)}>
         Exit
       </button>

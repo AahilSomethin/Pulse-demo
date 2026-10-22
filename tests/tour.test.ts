@@ -56,6 +56,8 @@ describe("team guide steps", () => {
     expect(opportunities?.description).toContain("1");
     expect(opportunities?.description).toContain("not proof");
     expect(steps.find((step) => step.id === "playback")?.target).toBe("playback");
+    expect(steps.find((step) => step.id === "limits")?.target).toBe("nav-experimental");
+    expect(steps.find((step) => step.id === "limits")?.description).toContain("Emergency Simulation");
     expect(steps.find((step) => step.id === "limits")?.description).toContain("Experimental");
   });
 

@@ -52,7 +52,8 @@ export function TourLauncher() {
         setNetworkTab(previous.networkTab);
         if (!route) return;
         const here = `${window.location.pathname}${window.location.search}`;
-        if (here !== previous.href) router.replace(previous.href);
+        // Driver destroys the guide inside the click that left the last step. Replacing the route on that same turn is ignored.
+        if (here !== previous.href) window.setTimeout(() => router.replace(previous.href), 0);
       },
     });
   }
@@ -81,7 +82,7 @@ function prepareStep(
   if (step.networkTab) {
     workspace.setNetworkTab(step.networkTab);
     const query = step.networkTab === "observed" ? "" : `?tab=${step.networkTab}`;
-    if (window.location.pathname === "/network") window.history.replaceState(null, "", `/network${query}`);
+    if (window.location.pathname === "/network") window.history.replaceState(window.history.state, "", `/network${query}`);
   }
   if (step.route && window.location.pathname !== step.route) {
     const href = step.route === "/network" && step.networkTab && step.networkTab !== "observed"

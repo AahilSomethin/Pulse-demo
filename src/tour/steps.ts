@@ -181,9 +181,9 @@ export function buildGuideSteps(snapshot: GuideSnapshot = EMPTY): GuideStep[] {
     {
       id: "limits",
       title: "Limitations and impact",
-      description: "FollowMe covers tracked devices, not every vessel and not a ferry timetable. A gap in the record does not prove a gap in service. Inferred activity areas are not verified islands or harbours. Census 2022 population is context for a matched island only, and SeaPulse does not score isolation. Simulate, marked Experimental, tries hypothetical response times. It is not live rescue guidance. What a planner can do is see where the evidence is thin and decide where better information is needed.",
-      fallbackDescription: "FollowMe covers tracked devices only. Missing observations do not prove missing services. Census 2022 is context for matched islands. Simulate is an experimental side feature, not an operational tool.",
-      target: "nav-simulate",
+      description: "FollowMe covers tracked devices, not every vessel and not a ferry timetable. A gap in the record does not prove a gap in service. Inferred activity areas are not verified islands or harbours. Census 2022 population is context for a matched island only, and SeaPulse does not score isolation. Emergency Simulation is in this Experimental menu. It is a supporting experiment that tries hypothetical response times from historical positions. It is not live rescue guidance. What a planner can do is see where the evidence is thin and decide where better information is needed.",
+      fallbackDescription: "FollowMe covers tracked devices only. Missing observations do not prove missing services. Census 2022 is context for matched islands. Emergency Simulation, under Experimental, is a supporting experiment, not an operational tool.",
+      target: "nav-experimental",
       route: null,
       exploreTab: null,
       networkTab: null,

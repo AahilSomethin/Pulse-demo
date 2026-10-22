@@ -1,6 +1,6 @@
 # Team Guide
 
-The Team Guide is a manual Driver.js walkthrough for Laari & Logic teammates. It explains the maritime connectivity problem, the August 2025 FollowMe evidence, the three sections, and the limits of what SeaPulse can claim. It is not a judge demo and it does not start by itself.
+The Team Guide is a manual Driver.js walkthrough for Laari & Logic teammates. It explains the maritime connectivity problem, the August 2025 FollowMe evidence, Explore and Network, and the limits of what SeaPulse can claim. It is not a judge demo and it does not start by itself.
 
 ## How to start and leave
 
@@ -20,7 +20,7 @@ Playback is paused when the guide starts. Closing or finishing returns the sideb
 6. **Connectivity profile.** Opens the first connection in the current window when one exists.
 7. **Find opportunities.** The primary Network action. Flags are investigation candidates.
 8. **Route Lab.** The Route Lab tab. A typed duration is a scenario, not a saving.
-9. **Limitations and impact.** The Simulate navigation item. Coverage bias, inferred places, Census 2022 as context only, and the experimental status of Simulate.
+9. **Limitations and impact.** The Experimental menu. Coverage bias, inferred places, Census 2022 as context only, and Emergency Simulation as a supporting experiment.
 
 Counts in steps 2, 5, 6, and 7 come from the dataset, the current Network window, and the census join at the moment the guide starts. They are not hardcoded findings. A synthetic file is named as test data.
 

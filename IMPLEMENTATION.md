@@ -27,7 +27,7 @@ SeaPulse lives under `src/`. The original HTML file and the Insight project are 
 
 ## Workspace
 
-`src/app/(workspace)/layout.tsx` mounts one shell. Explore, Network, and Simulate only swap the sidebar and the markers published through `src/lib/workspace/overlay.ts`. A hidden section releases its overlay with a token, so a newer section is not cleared when the previous effect cleans up. `next.config.ts` applies the temporary redirects in `src/config/redirects.ts`.
+`src/app/(workspace)/layout.tsx` mounts one shell. Explore, Network, and Emergency Simulation (`/simulate`, opened from the Experimental menu) only swap the sidebar and the markers published through `src/lib/workspace/overlay.ts`. A hidden section releases its overlay with a token, so a newer section is not cleared when the previous effect cleans up. `next.config.ts` applies the temporary redirects in `src/config/redirects.ts`.
 
 `MaritimeContext` splits settings (window, speed, selection, playing) from the clock (cursor and frame). Panels that do not need the frame avoid subscribing to every tick. `WorkspaceContext` is an external store for the sidebar, details card, layers, presentation view, and the clock zone. The first client snapshot matches the server until a microtask applies `localStorage`, so a stored sidebar mode does not break hydration.
 

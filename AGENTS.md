@@ -138,4 +138,4 @@ npm run build
 - Census population is shown only after an atoll-and-name or unique-name match against Table P5. Do not invent a match, a demand figure, or an isolation score. Ambiguous names stay blank.
 - Team Guide targets use `data-tour` on a visible element. The guide is started from the header. It does not auto-start and it does not store progress. Steps that need a loaded day or a connection fall back to centred text when that data is absent.
 - No verified medical or Coast Guard file ships with the app. An evacuation leg runs only when a loaded feature has `kind: "medical"` and `verified: true`.
-- Old paths redirect in `src/config/redirects.ts`: `/` and `/explorer` to `/explore`, `/emergency` to `/simulate`, `/routes` to `/network?tab=routes`.
+- Old paths redirect in `src/config/redirects.ts`: `/` and `/explorer` to `/explore`, `/emergency` to `/simulate`, `/routes` to `/network?tab=routes`. Emergency Simulation stays at `/simulate` and opens from the Experimental menu, not as a third primary section.

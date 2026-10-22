@@ -61,7 +61,7 @@ One MapLibre map stays mounted for the whole workspace. Hub cells use the recove
 
 Map zoom changed the scale bar from 1 km to 500 m. Clicking the map in Simulate, with **Place incident** active, produced a ranked list: Synthetic Coast Guard at 4.8 km and 11 min (assumed 25), and two historical positions at about 6.6 km and 28 min (assumed 12, because those pings report under 1). The copy states that this does not dispatch a vessel.
 
-Presentation view hides the header and the sidebar, keeps the playback bar, and leaves an Explore / Network / Simulate switch on the map.
+Presentation view hides the header and the sidebar, keeps the playback bar, and leaves an Explore / Network / Findings switch on the map. Emergency Simulation stays in the Experimental menu.
 
 ## 8. Verified browser states
 

@@ -6,7 +6,7 @@ Setup and the three sections are in [README.md](README.md). Module detail is in 
 
 ## What SeaPulse does
 
-A researcher or teammate opens one FollowMe CSV in the browser. SeaPulse keeps the positions, plays them forward through a time window, and draws activity on a map of the Maldives. From the same day it estimates where vessels lingered and which areas they travelled between. Network and Simulate then compare those historical measurements with times the user wants to test. The result is an exploration tool for the August 2025 extract, not a picture of every boat in the country.
+A researcher or teammate opens one FollowMe CSV in the browser. SeaPulse keeps the positions, plays them forward through a time window, and draws activity on a map of the Maldives. From the same day it estimates where vessels lingered and which areas they travelled between. Network compares those historical measurements with times the user wants to test. Emergency Simulation, under Experimental, does the same for a hypothetical incident. The result is an exploration tool for the August 2025 extract, not a picture of every boat in the country.
 
 ## System flow
 
@@ -20,11 +20,11 @@ flowchart TD
   frame --> map["Persistent MapLibre map"]
   links --> map
   links --> network["Network, profiles, opportunities, Route Lab"]
-  frame --> simulate["Simulate: straight-line comparison"]
+  frame --> simulate["Emergency Simulation: straight-line comparison"]
   simulate --> map
 ```
 
-Parsing prefers a Web Worker and falls back to the same function on the main thread. The browser keeps the active day and one previous day. Switching Explore, Network, and Simulate does not reload the file.
+Parsing prefers a Web Worker and falls back to the same function on the main thread. The browser keeps the active day and one previous day. Switching Explore, Network, and Emergency Simulation does not reload the file.
 
 ## Application flow
 
@@ -34,7 +34,7 @@ The map, the loaded day, and the playback clock stay mounted. Only the sidebar c
 
 **Network** lists observed connections. The loaded day is one window. The August summary, when it has been built locally, is another, and the screen says which. Find opportunities is the primary action on that screen. It applies the rules in [CONNECTIVITY_METHOD.md](CONNECTIVITY_METHOD.md) and holds back small samples. Route Lab compares a typed hypothetical with the observed typical time. A cluster on the map opens a place profile. Named places appear only when a geography file is loaded. A profile shows Census 2022 residents only when the island matches an official atoll and English name. Ambiguous and unmatched places stay blank. The Team Guide in the header walks through this path. See [TOUR.md](TOUR.md).
 
-**Simulate** is experimental. It places a hypothetical incident on the map and ranks historical positions by straight-line time. It does not send a vessel. Historical positions are not live positions, and a tracked vessel is not a rescue asset.
+**Emergency Simulation** is under the Experimental menu, at `/simulate`. It places a hypothetical incident on the map and ranks historical positions by straight-line time. It does not send a vessel. Historical positions are not live positions, and a tracked vessel is not a rescue asset.
 
 `/` and `/explorer` redirect to `/explore`, `/emergency` to `/simulate`, and `/routes` to `/network?tab=routes`.
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Compass, LifeBuoy, PanelLeftClose, PanelLeftOpen, Waypoints, X } from "lucide-react";
+import { Compass, PanelLeftClose, PanelLeftOpen, Waypoints, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -10,7 +10,6 @@ import { useWorkspace } from "@/context/WorkspaceContext";
 const SECTIONS = [
   { href: "/explore", label: "Explore", icon: Compass },
   { href: "/network", label: "Network", icon: Waypoints },
-  { href: "/simulate", label: "Simulate", icon: LifeBuoy },
 ] as const;
 
 export function Sidebar({ children }: { children: ReactNode }) {
@@ -43,12 +42,11 @@ export function Sidebar({ children }: { children: ReactNode }) {
                   href={section.href}
                   aria-current={active ? "page" : undefined}
                   aria-label={section.label}
-                  title={section.href === "/simulate" ? "Simulate, experimental" : section.label}
+                  title={section.label}
                   className={`btn btn-ghost ${active ? "bg-primary-soft text-primary" : ""}`}
                   onClick={() => setSidebar("expanded")}
                 >
                   <Icon size={16} aria-hidden />
-                  {expanded ? null : section.href === "/simulate" ? <span className="sr-only">Experimental</span> : null}
                 </Link>
               );
             })}
