@@ -44,7 +44,7 @@ The map, the loaded day, and the playback clock stay mounted. Only the sidebar c
 
 **Shared React state.** `MaritimeContext` holds the dataset, geography, journeys, and links, and separates playback settings from the moving clock. `WorkspaceContext` holds the sidebar, details card, layer toggles, and scenario drafts. Section markers reach the map through a small overlay store so a route change does not rebuild the map.
 
-**Persistent MapLibre map.** `MapStage` owns one map for the whole workspace. Panels publish markers and lines onto it. Land outlines come from a CARTO style. If that style fails, the data layers still draw.
+**Persistent MapLibre map.** `MapStage` owns one map for the whole workspace. Panels publish markers and lines onto it. The CARTO basemap is recolored for the active theme. If that style fails, the data layers still draw.
 
 **Playback engine.** The bar under the map moves a millisecond cursor. At 1× the clock advances by one sixth of the window every 90 ms. The frame keeps the last ping per device in `[t − W, t + 1)`, hub cells for that window, and the selected trail. Faster speeds take fewer samples. They do not change a vessel’s reported speed.
 

@@ -17,7 +17,7 @@ const LAYER_ITEMS: { key: keyof MapLayerVisibility; label: string }[] = [
   { key: "vessels", label: "Vessel dots" },
   { key: "trail", label: "Selected trail" },
   { key: "islands", label: "Islands" },
-  { key: "connections", label: "Observed connections" },
+  { key: "connections", label: "Inferred connections" },
   { key: "scenario", label: "Scenario overlays" },
 ];
 
@@ -34,11 +34,18 @@ export function MapStage() {
   const selectedHubId = state.detail?.type === "hub" ? `${state.detail.fx}:${state.detail.fy}` : null;
 
   const legend = [
-    ...(state.layers.hubs ? [{ swatch: "bg-ocean", label: "Activity hubs" }] : []),
-    ...(state.layers.vessels ? [{ swatch: "bg-ocean", label: "Vessel reports" }] : []),
-    ...(state.layers.trail ? [{ swatch: "bg-primary", label: "Selected trail" }] : []),
-    ...(state.layers.connections && section === "network" ? [{ swatch: "bg-cyan", label: "Inferred connection" }, { swatch: "bg-primary", label: "Named polygon" }] : []),
-    ...(state.layers.scenario && section === "simulate" ? [{ swatch: "bg-danger", label: "Hypothetical incident" }, { swatch: "bg-warning", label: "Assumed origin" }] : []),
+    ...(state.layers.hubs ? [{ swatch: "bg-hub", label: "Activity hubs", pattern: "dot" as const }] : []),
+    ...(state.layers.vessels ? [{ swatch: "bg-vessel", label: "Vessel reports", pattern: "dot" as const }] : []),
+    ...(state.layers.trail ? [{ swatch: "bg-ocean", label: "Historical track", pattern: "solid" as const }] : []),
+    ...(state.layers.connections && section === "network" ? [
+      { swatch: "bg-cyan", label: "Inferred connection", pattern: "dashed" as const },
+      { swatch: "bg-cyan", label: "Named places", pattern: "solid" as const },
+    ] : []),
+    ...(state.layers.scenario && section === "simulate" ? [
+      { swatch: "bg-danger", label: "Hypothetical incident", pattern: "dot" as const },
+      { swatch: "bg-warning", label: "Assumed origin", pattern: "dot" as const },
+      { swatch: "bg-danger", label: "Estimated response", pattern: "dashed" as const },
+    ] : []),
   ];
 
   return (

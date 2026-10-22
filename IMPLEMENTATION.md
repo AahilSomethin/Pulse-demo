@@ -17,7 +17,7 @@ SeaPulse lives under `src/`. The original HTML file and the Insight project are 
 - `src/lib/simulation/emergency.ts` — straight-line comparison against historical positions.
 - `src/lib/simulation/routes.ts` — observed duration, distance, and a straight-line reference at the file’s median reported moving value. Typed minutes stay hypothetical.
 - `src/app/api/dev-followme/[day]/route.ts` — development-only stream of one local day. Other environments return 404.
-- `src/components/map/SeaMapInner.tsx` — MapLibre layers for land, hubs, vessels, trails, inferred links, named links, and scenario lines.
+- `src/components/map/SeaMapInner.tsx` — MapLibre layers for land, hubs, vessels, trails, inferred links, named links, and scenario lines. The CARTO style is recolored in `src/lib/map/basemap.ts` without changing its zoom limits or filters.
 - `scripts/audit-followme.mjs` — rebuilds the committed August summary. It does not write tracks or device identifiers.
 
 ## Workspace
@@ -28,7 +28,7 @@ SeaPulse lives under `src/`. The original HTML file and the Insight project are 
 
 `src/lib/vessels/playback.ts` turns wall time into one timeline step. 1× commits every 90 ms and advances by `window / 6`. Faster speeds commit no sooner than 33 ms. `advancePlayback` returns a single cursor. A step past the end of the day stops on that timestamp and returns the unused remainder; the next commit wraps that remainder with modulo. It does not emit the GPS reports inside the jump. The animation frame ignores time while `document.hidden` is true. `advanceCursor` in `frame.ts` is unchanged.
 
-Hub paint is `src/lib/vessels/hub-style.ts`: soft fill from 3% to a 25% cap, with a separate outline. The map resizes from a `ResizeObserver` on its container after the sidebar changes width.
+Hub paint is `src/lib/vessels/hub-style.ts`: soft fill from 3% to a 25% cap, with a separate outline. Loaded island polygons are a 35% tint so they do not hide the basemap roads. The map resizes from a `ResizeObserver` on its container after the sidebar changes width. Historical trails are solid. Inferred links are dashed. Named-place links are solid. Estimated response lines use a longer dash.
 
 Playback stores a millisecond cursor. The context keeps the active day and one previous day.
 

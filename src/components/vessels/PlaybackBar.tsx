@@ -91,7 +91,7 @@ export function PlaybackBar() {
             <div className="absolute h-full rounded-full bg-ocean" style={{ left: `${bandLeft}%`, width: `${bandWidth}%` }} />
           </div>
           <input
-            className="w-full accent-primary"
+            className="timeline-range w-full"
             type="range"
             min={dataset.t0}
             max={dataset.t1}

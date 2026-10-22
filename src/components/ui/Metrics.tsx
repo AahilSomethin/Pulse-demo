@@ -28,17 +28,23 @@ export function PageHeader({ title, lede }: { title: string; lede: string }) {
 export const asideClass =
   "scroll-thin flex max-h-[min(42dvh,100%)] min-h-0 shrink-0 flex-col gap-3 overflow-y-auto border-b border-border p-3 lg:max-h-none lg:w-[22rem] lg:border-r lg:border-b-0 xl:w-96";
 
-export function MapLegend({ items }: { items: { swatch: string; label: string }[] }) {
+export function MapLegend({ items }: { items: { swatch: string; label: string; pattern?: "dot" | "solid" | "dashed" }[] }) {
   return (
     <ul className="pointer-events-none absolute bottom-10 left-14 z-10 max-w-[16rem] rounded-lg border border-border bg-overlay px-3 py-2 text-xs leading-5 text-fg-secondary">
       {items.map((item) => (
         <li key={item.label} className="flex items-center gap-2">
-          <span className={`size-2 shrink-0 rounded-full ${item.swatch}`} />
+          <LegendSwatch swatch={item.swatch} pattern={item.pattern} />
           {item.label}
         </li>
       ))}
     </ul>
   );
+}
+
+function LegendSwatch({ swatch, pattern = "dot" }: { swatch: string; pattern?: "dot" | "solid" | "dashed" }) {
+  if (pattern === "solid") return <span className={`h-0.5 w-4 shrink-0 rounded-full ${swatch}`} />;
+  if (pattern === "dashed") return <span className={`h-0 w-4 shrink-0 border-t-2 border-dashed ${swatch.replace("bg-", "border-")}`} />;
+  return <span className={`size-2 shrink-0 rounded-full ${swatch}`} />;
 }
 
 export function MapStatus({ label }: { label: string | null }) {

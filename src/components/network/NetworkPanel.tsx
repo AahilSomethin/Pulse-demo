@@ -252,7 +252,7 @@ function RouteTab({
 
 function ConnectionButton({ link, active, onChoose }: { link: AreaLink | IslandLink; active: boolean; onChoose: (link: AreaLink | IslandLink) => void }) {
   return (
-    <button type="button" aria-pressed={active} className={`w-full rounded-lg border px-3 py-2 text-left text-sm leading-6 ${active ? "border-primary bg-primary-soft" : "border-border bg-surface"}`} onClick={() => onChoose(link)}>
+    <button type="button" aria-pressed={active} className={`w-full rounded-lg border px-3 py-2 text-left text-sm leading-6 ${active ? "border-selected bg-selected-soft" : "border-border bg-surface"}`} onClick={() => onChoose(link)}>
       <p className="font-medium">{link.origin} → {link.destination}</p>
       <p className="text-fg-secondary">{formatCount(link.tripCount)} passages · median {formatDuration(link.medianDurationMs)} · {formatKm(link.medianDistanceM)} straight line</p>
     </button>

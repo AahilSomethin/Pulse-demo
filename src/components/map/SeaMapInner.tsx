@@ -3,12 +3,13 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import type { FeatureCollection, LineString, Point, Polygon } from "geojson";
-import { setWorkerUrl, type Map as MapLibreMap } from "maplibre-gl";
+import { setWorkerUrl, type Map as MapLibreMap, type StyleSpecification } from "maplibre-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import MapGL, { Layer, NavigationControl, Popup, ScaleControl, Source, type MapLayerMouseEvent, type MapRef } from "react-map-gl/maplibre";
 
 import { MAP_CENTER } from "@/config/constants";
-import { BASEMAP_STYLE, MAP_COLORS, type MapTheme } from "@/config/map-colors";
+import { MAP_COLORS, type MapTheme } from "@/config/map-colors";
+import { loadMaritimeStyle, type MaritimeStyle } from "@/lib/map/basemap";
 import { trailIndexes } from "@/lib/vessels/frame";
 import { hubFillOpacity, hubLineOpacity } from "@/lib/vessels/hub-style";
 import type { MapClickMode, MapFocus, MapLayerVisibility, MapLine, MapMarker } from "@/types/map";
@@ -38,6 +39,13 @@ interface SeaMapProps {
 }
 
 const EMPTY: FeatureCollection = { type: "FeatureCollection", features: [] };
+
+interface SavedView {
+  center: [number, number];
+  zoom: number;
+  bearing: number;
+  pitch: number;
+}
 
 interface HubHover {
   id: string;
@@ -97,10 +105,20 @@ export default function SeaMapInner({
   const colors = MAP_COLORS[theme];
   const mapRef = useRef<MapRef>(null);
   const hoverRef = useRef<string | null>(null);
+  const viewRef = useRef<SavedView | null>(null);
+  const styleSeen = useRef<string | null>(null);
   const [hover, setHover] = useState<HubHover | null>(null);
-  const [styleFailed, setStyleFailed] = useState(false);
+  const [styles, setStyles] = useState<Partial<Record<MapTheme, MaritimeStyle>>>({});
+  const [failedThemes, setFailedThemes] = useState<Partial<Record<MapTheme, boolean>>>({});
   const [ready, setReady] = useState(false);
   const styleReady = useRef(false);
+  const styleFailed = Boolean(failedThemes[theme]);
+  const maritimeStyle = styles[theme];
+  const previousStyle = styles[theme === "dark" ? "light" : "dark"];
+  const fallback = useMemo(() => fallbackStyle(colors.sea), [colors.sea]);
+  const mapStyle = styleFailed ? fallback : maritimeStyle ?? previousStyle ?? fallback;
+  const styleKey = styleFailed ? `failed:${theme}` : maritimeStyle ? theme : previousStyle ? `holding:${theme}` : `loading:${theme}`;
+  const waitingForStyle = !styleFailed && !maritimeStyle && !previousStyle;
 
   const land = useMemo<FeatureCollection<Polygon>>(
     () => ({
@@ -219,6 +237,59 @@ export default function SeaMapInner({
     }),
     [lines],
   );
+
+  useEffect(() => {
+    if (styles[theme] || failedThemes[theme]) return;
+    let cancelled = false;
+    loadMaritimeStyle(theme).then(
+      (style) => {
+        if (!cancelled) setStyles((current) => ({ ...current, [theme]: style }));
+      },
+      () => {
+        if (!cancelled) setFailedThemes((current) => ({ ...current, [theme]: true }));
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [theme, styles, failedThemes]);
+
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map || !ready) return;
+    const save = () => {
+      const center = map.getCenter();
+      viewRef.current = { center: [center.lng, center.lat], zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch() };
+    };
+    save();
+    map.on("moveend", save);
+    return () => {
+      map.off("moveend", save);
+    };
+  }, [ready]);
+
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map || !ready) return;
+    if (styleSeen.current === null) {
+      styleSeen.current = styleKey;
+      return;
+    }
+    if (styleSeen.current === styleKey) return;
+    styleSeen.current = styleKey;
+    const view = viewRef.current;
+    if (!view) return;
+    const restore = () => {
+      if (!map.isStyleLoaded()) return;
+      map.off("styledata", restore);
+      map.jumpTo({ center: view.center, zoom: view.zoom, bearing: view.bearing, pitch: view.pitch });
+    };
+    restore();
+    map.on("styledata", restore);
+    return () => {
+      map.off("styledata", restore);
+    };
+  }, [styleKey, ready]);
 
   useEffect(() => {
     if (!dataset) return;
@@ -379,11 +450,15 @@ export default function SeaMapInner({
     ...(layers.hubs ? ["hub-fill"] : []),
   ];
 
+  if (waitingForStyle) {
+    return <div className="h-full w-full bg-background" />;
+  }
+
   return (
     <MapGL
       ref={mapRef}
       initialViewState={MAP_CENTER}
-      mapStyle={styleFailed ? fallbackStyle(colors.background) : BASEMAP_STYLE[theme]}
+      mapStyle={mapStyle as StyleSpecification}
       minZoom={4}
       maxZoom={16}
       attributionControl={{ compact: true }}
@@ -403,17 +478,16 @@ export default function SeaMapInner({
       }}
       onError={(event) => {
         const message = event.error?.message ?? "";
-        if (!styleReady.current && /style|sprite|glyph/i.test(message)) {
-          queueMicrotask(() => {
-            if (!styleReady.current) setStyleFailed(true);
-          });
-        }
+        if (maritimeStyle || styleReady.current || !/style|sprite|glyph/i.test(message)) return;
+        queueMicrotask(() => {
+          if (!styleReady.current) setFailedThemes((current) => ({ ...current, [theme]: true }));
+        });
       }}
     >
       <NavigationControl position="top-left" showCompass={false} />
       <ScaleControl position="bottom-left" />
       <Source id="land" type="geojson" data={land}>
-        <Layer id="land-fill" type="fill" layout={{ visibility: visibility(layers.islands) }} paint={{ "fill-color": colors.land, "fill-opacity": 0.85 }} />
+        <Layer id="land-fill" type="fill" layout={{ visibility: visibility(layers.islands) }} paint={{ "fill-color": colors.land, "fill-opacity": 0.35 }} />
         <Layer id="land-line" type="line" layout={{ visibility: visibility(layers.islands) }} paint={{ "line-color": colors.landLine, "line-width": 1 }} />
       </Source>
       <Source id="hubs" type="geojson" data={hubs}>
@@ -517,7 +591,7 @@ export default function SeaMapInner({
           paint={{
             "line-color": colors.incident,
             "line-width": ["case", ["==", ["get", "active"], 1], 4, 2],
-            "line-dasharray": [1.5, 1.2],
+            "line-dasharray": [5, 3],
           }}
         />
       </Source>
@@ -528,13 +602,23 @@ export default function SeaMapInner({
           type="circle"
           filter={["!=", ["get", "selected"], 1]}
           layout={{ visibility: visibility(layers.vessels) }}
-          paint={{ "circle-radius": 3.5, "circle-color": colors.vessel }}
+          paint={{
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 2.5, 8, 3.5, 12, 4.5],
+            "circle-color": colors.vessel,
+            "circle-stroke-color": colors.markerStroke,
+            "circle-stroke-width": 1,
+          }}
         />
         <Layer
           id="vessel-selected"
           type="circle"
           filter={["==", ["get", "selected"], 1]}
-          paint={{ "circle-radius": 7, "circle-color": colors.selected, "circle-stroke-color": colors.background, "circle-stroke-width": 2 }}
+          paint={{
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 5, 8, 6.5, 12, 8],
+            "circle-color": colors.selected,
+            "circle-stroke-color": colors.markerStroke,
+            "circle-stroke-width": 2,
+          }}
         />
       </Source>
       <Source id="markers" type="geojson" data={markerData}>
@@ -545,7 +629,7 @@ export default function SeaMapInner({
           paint={{
             "circle-radius": 6,
             "circle-stroke-width": 2,
-            "circle-stroke-color": colors.background,
+            "circle-stroke-color": colors.markerStroke,
             "circle-color": [
               "match",
               ["get", "kind"],

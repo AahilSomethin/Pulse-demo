@@ -33,4 +33,4 @@ Each item is classified as resolved, partially resolved, blocked by data, or an 
 - **Hubs are grid counts.** A hub is a cell of unique devices in the current window. One slow ping is enough. The cell is not a port.
 - **Playback window.** The window is `[t − W, t + 1)`. The bold trail is `(t − W, t]`. The selected vessel bypasses the speed filter and still counts toward hubs. Those are the original rules. Above 1× the clock commits one sample per frame, so GPS reports between samples are not drawn.
 - **Malformed time.** A timestamp that already includes `Z` or a numeric offset is rejected. The Maldives box is exclusive. The August extract had 0 bad times and 20,993 out-of-box rows.
-- **Basemap.** Land outlines come from the CARTO style over the network. If that style fails to load, the data layers still draw on a flat background.
+- **Basemap.** Geography comes from the CARTO vector style (OpenStreetMap and CARTO attribution). SeaPulse recolors water, land, roads, and labels. The style has no bathymetry, and house numbers start above the map’s maximum zoom. If the style fails to load, the data layers still draw on a flat sea-coloured background.

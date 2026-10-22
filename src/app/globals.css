@@ -2,58 +2,68 @@
 
 :root {
   color-scheme: dark;
-  --background: #071422;
-  --surface: #0e1c2f;
-  --surface-hover: #163049;
-  --surface-sunken: #0a1626;
-  --border: #23415c;
-  --border-soft: #18324a;
-  --fg: #e7f1f8;
-  --fg-secondary: #b7c9d6;
-  --fg-muted: #7f97a8;
-  --ocean: #7cc4ff;
-  --ocean-soft: rgb(124 196 255 / 0.16);
-  --cyan: #22d3ee;
-  --primary: #2dd4bf;
-  --primary-hover: #5eead4;
-  --primary-soft: rgb(45 212 191 / 0.16);
-  --primary-fg: #04201c;
-  --warning: #fbbf24;
-  --warning-soft: rgb(251 191 36 / 0.16);
-  --danger: #f07167;
-  --danger-soft: rgb(240 113 103 / 0.16);
+  --background: #0b1c28;
+  --surface: #132a3a;
+  --surface-hover: #1a364a;
+  --surface-sunken: #0e2230;
+  --border: #2c4a60;
+  --border-soft: #1e3a4e;
+  --fg: #e8f2f6;
+  --fg-secondary: #c5d5e0;
+  --fg-muted: #a9bcc9;
+  --ocean: #7ec8e3;
+  --ocean-soft: rgb(126 200 227 / 0.16);
+  --vessel: #8ebeff;
+  --hub: #d7f3fa;
+  --cyan: #3dcec0;
+  --primary: #7ec8e3;
+  --primary-hover: #a5dbeb;
+  --primary-soft: rgb(126 200 227 / 0.16);
+  --primary-fg: #06202c;
+  --selected: #2dd4bf;
+  --selected-hover: #5eead4;
+  --selected-soft: rgb(45 212 191 / 0.16);
+  --warning: #e0a44a;
+  --warning-soft: rgb(224 164 74 / 0.16);
+  --danger: #f08a82;
+  --danger-soft: rgb(240 138 130 / 0.16);
   --success: #34d399;
   --success-soft: rgb(52 211 153 / 0.16);
-  --overlay: rgb(7 20 34 / 0.88);
+  --overlay: rgb(11 28 40 / 0.92);
   --shadow: 0 12px 32px rgb(0 0 0 / 0.32);
 }
 
 [data-theme="light"] {
   color-scheme: light;
-  --background: #f3f7fb;
+  --background: #f4fafc;
   --surface: #ffffff;
-  --surface-hover: #e7f0f7;
-  --surface-sunken: #e8eef5;
-  --border: #c5d4e2;
-  --border-soft: #dbe5ef;
-  --fg: #102033;
-  --fg-secondary: #3d5166;
-  --fg-muted: #5d7388;
-  --ocean: #0b5cad;
-  --ocean-soft: rgb(11 92 173 / 0.12);
-  --cyan: #0e7490;
-  --primary: #0f766e;
-  --primary-hover: #115e59;
-  --primary-soft: rgb(15 118 110 / 0.12);
+  --surface-hover: #e7f3f8;
+  --surface-sunken: #e8f2f6;
+  --border: #c5d3dc;
+  --border-soft: #d7e3ea;
+  --fg: #193348;
+  --fg-secondary: #3d5568;
+  --fg-muted: #4e687c;
+  --ocean: #087ea4;
+  --ocean-soft: rgb(8 126 164 / 0.12);
+  --vessel: #075cc4;
+  --hub: #0e4f6c;
+  --cyan: #00766c;
+  --primary: #087ea4;
+  --primary-hover: #066887;
+  --primary-soft: rgb(8 126 164 / 0.12);
   --primary-fg: #ffffff;
-  --warning: #a16207;
-  --warning-soft: rgb(161 98 7 / 0.12);
-  --danger: #b42318;
-  --danger-soft: rgb(180 35 24 / 0.1);
+  --selected: #0f766e;
+  --selected-hover: #115e59;
+  --selected-soft: rgb(15 118 110 / 0.12);
+  --warning: #9a6410;
+  --warning-soft: rgb(154 100 16 / 0.12);
+  --danger: #c53636;
+  --danger-soft: rgb(197 54 54 / 0.1);
   --success: #047857;
   --success-soft: rgb(4 120 87 / 0.12);
-  --overlay: rgb(16 32 51 / 0.55);
-  --shadow: 0 12px 32px rgb(16 32 51 / 0.12);
+  --overlay: rgb(255 255 255 / 0.94);
+  --shadow: 0 12px 32px rgb(25 51 72 / 0.12);
 }
 
 @theme inline {
@@ -68,11 +78,16 @@
   --color-fg-muted: var(--fg-muted);
   --color-ocean: var(--ocean);
   --color-ocean-soft: var(--ocean-soft);
+  --color-vessel: var(--vessel);
+  --color-hub: var(--hub);
   --color-cyan: var(--cyan);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
   --color-primary-fg: var(--primary-fg);
+  --color-selected: var(--selected);
+  --color-selected-hover: var(--selected-hover);
+  --color-selected-soft: var(--selected-soft);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
@@ -123,6 +138,11 @@ body {
   background: var(--surface-hover);
 }
 
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .btn-primary {
   border-color: transparent;
   background: var(--primary);
@@ -162,6 +182,19 @@ body {
 .scroll-thin {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+}
+
+.timeline-range {
+  accent-color: var(--selected);
+  height: 1.75rem;
+}
+
+.timeline-range:hover {
+  accent-color: var(--selected-hover);
+}
+
+input[type="checkbox"] {
+  accent-color: var(--primary);
 }
 
 .maplibregl-ctrl-group {

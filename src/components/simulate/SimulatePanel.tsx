@@ -107,7 +107,7 @@ export function SimulatePanel() {
             key={option.id}
             type="button"
             aria-pressed={state.detail?.type === "scenario" && state.detail.id === option.id}
-            className="w-full rounded-lg border border-border bg-surface p-3 text-left text-sm leading-6"
+            className={`w-full rounded-lg border p-3 text-left text-sm leading-6 ${state.detail?.type === "scenario" && state.detail.id === option.id ? "border-selected bg-selected-soft" : "border-border bg-surface"}`}
             onClick={() => openDetail({ type: "scenario", id: option.id })}
           >
             <p className="text-xs text-fg-muted">{EVIDENCE[option.evidence]}{index === 0 ? " · shortest combined estimate" : ""}</p>

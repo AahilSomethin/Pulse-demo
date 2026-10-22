@@ -78,7 +78,7 @@ Section-specific markers and lines go through `publishMapOverlay` in `src/lib/wo
 
 `MapStage` renders one `SeaMap`. `SeaMap` dynamically imports `SeaMapInner` with `ssr: false`. The map instance stays alive across `/explore`, `/network`, and `/simulate`. Update sources and layer visibility. Do not remount the map to change a panel, a layer, or the playback cursor.
 
-The worker URL is `/vendor/maplibre/maplibre-gl-worker.mjs`. `predev`, `prebuild`, and `postinstall` copy it. Do not commit `public/vendor/`. If the CARTO style fails, data layers still draw on the flat fallback. A `ResizeObserver` on the map container handles sidebar width changes.
+The worker URL is `/vendor/maplibre/maplibre-gl-worker.mjs`. `predev`, `prebuild`, and `postinstall` copy it. Do not commit `public/vendor/`. The basemap is CARTO Dark Matter or Positron, recolored in `src/lib/map/basemap.ts`. Zoom limits, filters, and non-color paint stay as published. If that style fails, data layers still draw on a flat sea-coloured fallback. A `ResizeObserver` on the map container handles sidebar width changes.
 
 ## FollowMe and privacy
 
