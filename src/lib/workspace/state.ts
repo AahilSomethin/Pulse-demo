@@ -4,13 +4,27 @@ import { DEFAULT_MAP_LAYERS, type MapFocus, type MapLayerVisibility } from "@/ty
 export type SidebarMode = "expanded" | "collapsed" | "hidden";
 export type ClockZone = "utc" | "mvt";
 export type ExploreTab = "data" | "vessels" | "hubs";
-export type NetworkTab = "observed" | "routes";
+export type NetworkTab = "observed" | "opportunities" | "routes";
 export type PlaceKind = "inferred_activity" | "named_island";
+export type GeoClassFilter = "all" | "inferred" | "named" | "harbour";
+export type EvidenceFilter = "all" | "limited" | "adequate";
+
+export interface NetworkFilters {
+  scope: "day" | "month";
+  minPassages: number;
+  minDurationMin: number;
+  maxDurationMin: number;
+  geoClass: GeoClassFilter;
+  evidence: EvidenceFilter;
+  minVariability: number;
+  atoll: string;
+}
 
 export type DetailTarget =
   | { type: "vessel"; device: number }
   | { type: "hub"; fx: number; fy: number }
   | { type: "connection"; id: string }
+  | { type: "location"; id: string }
   | { type: "scenario"; id: string };
 
 export interface ScenarioDraft {
@@ -38,6 +52,7 @@ export interface WorkspaceState {
   focus: MapFocus | null;
   exploreTab: ExploreTab;
   networkTab: NetworkTab;
+  network: NetworkFilters;
   scenario: ScenarioDraft;
   route: RouteDraft;
 }
@@ -55,6 +70,7 @@ export type WorkspaceAction =
   | { type: "focus"; lon: number; lat: number }
   | { type: "explore-tab"; tab: ExploreTab }
   | { type: "network-tab"; tab: NetworkTab }
+  | { type: "network"; patch: Partial<NetworkFilters> }
   | { type: "scenario"; patch: Partial<ScenarioDraft> }
   | { type: "route"; patch: Partial<RouteDraft> };
 
@@ -69,6 +85,16 @@ export function initialWorkspaceState(): WorkspaceState {
     focus: null,
     exploreTab: "data",
     networkTab: "observed",
+    network: {
+      scope: "day",
+      minPassages: 1,
+      minDurationMin: 0,
+      maxDurationMin: 0,
+      geoClass: "all",
+      evidence: "all",
+      minVariability: 0,
+      atoll: "",
+    },
     scenario: {
       incident: null,
       coastGuard: null,
@@ -120,6 +146,8 @@ export function reduceWorkspace(state: WorkspaceState, action: WorkspaceAction):
       return state.exploreTab === action.tab ? state : { ...state, exploreTab: action.tab };
     case "network-tab":
       return state.networkTab === action.tab ? state : { ...state, networkTab: action.tab };
+    case "network":
+      return { ...state, network: { ...state.network, ...action.patch } };
     case "scenario":
       return { ...state, scenario: { ...state.scenario, ...action.patch } };
     case "route":

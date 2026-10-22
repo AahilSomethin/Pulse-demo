@@ -73,8 +73,18 @@ export interface ActivityFrame {
 export interface LandPolygon {
   id: string;
   name: string | null;
+  /** Atoll name from the reference file, when that property exists. */
+  atoll: string | null;
   rings: number[][][];
   synthetic: boolean;
+}
+
+export interface HarbourPoint {
+  id: string;
+  name: string | null;
+  lat: number;
+  lon: number;
+  sourceId: string | null;
 }
 
 export type FacilityKind = "medical" | "coast_guard";
@@ -110,7 +120,17 @@ export interface Dwell {
   areaLabel: string;
   areaLat: number;
   areaLon: number;
+  /** Atoll from a matched named polygon, when the reference file has one. */
+  atoll: string | null;
+  confidence: GeoConfidence;
+  /** Harbour name when the stop is near a harbour and not inside a named polygon. */
+  placeName: string | null;
+  placeSourceId: string | null;
 }
+
+export type PassageFlag = "clock_static" | "implausible_speed" | "sparse_tracking" | "same_area";
+
+export type GeoConfidence = "inferred" | "named_polygon" | "near_harbour";
 
 export interface Journey {
   device: number;
@@ -118,9 +138,17 @@ export interface Journey {
   destination: Dwell;
   durationMs: number;
   straightLineM: number;
+  /** Sum of ping-to-ping distances between the two dwells. */
+  pathM: number;
+  pingsBetween: number;
+  /** Largest gap between consecutive reports on this passage, including the endpoints. */
+  maxGapMs: number;
   impliedKn: number;
-  /** True when the straight-line speed is not a credible passage. */
+  flags: PassageFlag[];
+  /** Straight-line speed is not a credible passage. Sparse and same-area stays are separate flags. */
   coverageGap: boolean;
+  /** Usable in duration statistics. Flagged passages are kept on the journey and excluded here. */
+  credible: boolean;
 }
 
 export interface IslandLink {

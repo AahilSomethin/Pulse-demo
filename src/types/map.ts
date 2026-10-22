@@ -15,6 +15,19 @@ export interface MapLine {
   coordinates: [number, number][];
   kind: "response" | "named" | "inferred";
   active?: boolean;
+  /** 0–1 relative passage count. Width uses this. */
+  weight?: number;
+  /** Pixel offset so the two directions of a pair stay apart. */
+  offset?: number;
+  opacity?: number;
+}
+
+export interface MapLocation {
+  id: string;
+  lon: number;
+  lat: number;
+  label: string;
+  passages: number;
 }
 
 export interface MapLayerVisibility {
@@ -45,7 +58,9 @@ export interface MapOverlay {
   clickMode: MapClickMode;
   markers: MapMarker[];
   lines: MapLine[];
+  locations?: MapLocation[];
   onPlace?: (lat: number, lon: number) => void;
+  onSelectLocation?: (id: string) => void;
 }
 
 export const EMPTY_OVERLAY: MapOverlay = { clickMode: "vessel", markers: [], lines: [] };

@@ -78,6 +78,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
                   className={`shrink-0 rounded-md px-2.5 py-1.5 text-sm ${active ? "bg-primary-soft text-primary" : "text-fg-secondary hover:bg-surface-hover"}`}
                 >
                   {item.label}
+                  {item.href === "/simulate" ? <span className="ml-1 text-xs text-fg-muted">Experimental</span> : null}
                 </Link>
               );
             })}

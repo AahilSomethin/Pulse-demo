@@ -116,7 +116,12 @@ Classified in `LIMITATIONS.md`. The ones that still block a stronger claim are t
 
 ## Test results
 
-Re-run on 22 October 2026 after the catalog was removed from the app:
+Re-run on 22 October 2026 after connectivity indicators were added:
+
+- `npm test` — 9 files, 52 tests passed, including `tests/connectivity.test.ts` and the local day-1 count check.
+- Month aggregate row and device totals matched `src/data/followme-quality.json` (17,243,987 kept rows, 1,776 devices, 31 files).
+
+Earlier audit notes below were written before this pass. The page list there is out of date: the app now prerenders `/explore`, `/network`, and `/simulate`.
 
 - `npm test` — 2 files, 19 tests passed. `tests/maritime.test.ts` 18 tests in 42 ms. `tests/followme-day.test.ts` 1 test in 5.3 s. Total duration 6.41 s.
 - `npx tsc --noEmit` — exit 0.

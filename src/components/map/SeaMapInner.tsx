@@ -12,7 +12,7 @@ import { MAP_COLORS, type MapTheme } from "@/config/map-colors";
 import { loadMaritimeStyle, type MaritimeStyle } from "@/lib/map/basemap";
 import { trailIndexes } from "@/lib/vessels/frame";
 import { hubFillOpacity, hubLineOpacity } from "@/lib/vessels/hub-style";
-import type { MapClickMode, MapFocus, MapLayerVisibility, MapLine, MapMarker } from "@/types/map";
+import type { MapClickMode, MapFocus, MapLayerVisibility, MapLine, MapLocation, MapMarker } from "@/types/map";
 import type { ActivityFrame, Facility, LandPolygon, VesselDataset } from "@/types/maritime";
 
 export type { MapClickMode, MapLine, MapMarker } from "@/types/map";
@@ -31,10 +31,12 @@ interface SeaMapProps {
   clickMode: MapClickMode;
   markers?: MapMarker[];
   lines?: MapLine[];
+  locations?: MapLocation[];
   selectedHubId?: string | null;
   focus?: MapFocus | null;
   onSelectDevice?: (device: number) => void;
   onSelectHub?: (hub: { fx: number; fy: number }) => void;
+  onSelectLocation?: (id: string) => void;
   onPlace?: (lat: number, lon: number) => void;
 }
 
@@ -76,6 +78,24 @@ function liftPlaceLabels(map: MapLibreMap) {
   }
 }
 
+function ensureConnectionArrow(map: MapLibreMap) {
+  if (map.hasImage("connection-arrow")) return;
+  const canvas = document.createElement("canvas");
+  canvas.width = 20;
+  canvas.height = 20;
+  const context = canvas.getContext("2d");
+  if (!context) return;
+  context.clearRect(0, 0, 20, 20);
+  context.fillStyle = "#ffffff";
+  context.beginPath();
+  context.moveTo(3, 4);
+  context.lineTo(17, 10);
+  context.lineTo(3, 16);
+  context.closePath();
+  context.fill();
+  map.addImage("connection-arrow", context.getImageData(0, 0, 20, 20), { sdf: true });
+}
+
 function fallbackStyle(color: string) {
   return {
     version: 8 as const,
@@ -96,10 +116,12 @@ export default function SeaMapInner({
   clickMode,
   markers = [],
   lines = [],
+  locations = [],
   selectedHubId = null,
   focus = null,
   onSelectDevice,
   onSelectHub,
+  onSelectLocation,
   onPlace,
 }: SeaMapProps) {
   const colors = MAP_COLORS[theme];
@@ -231,11 +253,29 @@ export default function SeaMapInner({
       type: "FeatureCollection",
       features: lines.filter((line) => line.coordinates.length > 1).map((line) => ({
         type: "Feature" as const,
-        properties: { kind: line.kind, active: line.active ? 1 : 0 },
+        properties: {
+          kind: line.kind,
+          active: line.active ? 1 : 0,
+          weight: line.weight ?? 0.45,
+          offset: line.offset ?? 0,
+          opacity: line.opacity ?? 0.9,
+        },
         geometry: { type: "LineString" as const, coordinates: line.coordinates },
       })),
     }),
     [lines],
+  );
+
+  const locationData = useMemo<FeatureCollection<Point>>(
+    () => ({
+      type: "FeatureCollection",
+      features: locations.map((location) => ({
+        type: "Feature" as const,
+        properties: { id: location.id, label: location.label, passages: location.passages },
+        geometry: { type: "Point" as const, coordinates: [location.lon, location.lat] as [number, number] },
+      })),
+    }),
+    [locations],
   );
 
   useEffect(() => {
@@ -439,6 +479,12 @@ export default function SeaMapInner({
       onSelectDevice?.(device);
       return;
     }
+    const location = event.features?.find((feature) => feature.layer?.id === "location-hit");
+    const locationId = location?.properties?.id;
+    if (typeof locationId === "string" && locationId) {
+      onSelectLocation?.(locationId);
+      return;
+    }
     const hub = event.features?.find((feature) => feature.layer?.id === "hub-fill");
     const fx = Number(hub?.properties?.fx);
     const fy = Number(hub?.properties?.fy);
@@ -447,8 +493,25 @@ export default function SeaMapInner({
 
   const interactiveLayerIds = [
     ...(clickMode === "vessel" && (layers.vessels || selected >= 0) ? ["vessel-hit"] : []),
+    ...(locations.length > 0 && layers.connections ? ["location-hit"] : []),
     ...(layers.hubs ? ["hub-fill"] : []),
   ];
+
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+    const addArrow = () => ensureConnectionArrow(map);
+    if (map.isStyleLoaded()) addArrow();
+    const onMissing = (event: { id: string }) => {
+      if (event.id === "connection-arrow") ensureConnectionArrow(map);
+    };
+    map.on("style.load", addArrow);
+    map.on("styleimagemissing", onMissing);
+    return () => {
+      map.off("style.load", addArrow);
+      map.off("styleimagemissing", onMissing);
+    };
+  }, [mapStyle]);
 
   if (waitingForStyle) {
     return <div className="h-full w-full bg-background" />;
@@ -472,6 +535,10 @@ export default function SeaMapInner({
         setReady(true);
         const map = mapRef.current?.getMap();
         if (map) {
+          ensureConnectionArrow(map);
+          map.on("styleimagemissing", (event) => {
+            if (event.id === "connection-arrow") ensureConnectionArrow(map);
+          });
           liftPlaceLabels(map);
           map.resize();
         }
@@ -569,7 +636,9 @@ export default function SeaMapInner({
           layout={{ visibility: visibility(layers.connections) }}
           paint={{
             "line-color": colors.inferred,
-            "line-width": ["case", ["==", ["get", "active"], 1], 4, 2],
+            "line-width": ["+", ["case", ["==", ["get", "active"], 1], 1.5, 0], ["interpolate", ["linear"], ["get", "weight"], 0, 1.25, 1, 5]],
+            "line-offset": ["get", "offset"],
+            "line-opacity": ["get", "opacity"],
             "line-dasharray": [2, 2],
           }}
         />
@@ -580,7 +649,9 @@ export default function SeaMapInner({
           layout={{ visibility: visibility(layers.connections) }}
           paint={{
             "line-color": colors.route,
-            "line-width": ["case", ["==", ["get", "active"], 1], 4, 2.5],
+            "line-width": ["+", ["case", ["==", ["get", "active"], 1], 1.5, 0], ["interpolate", ["linear"], ["get", "weight"], 0, 1.5, 1, 5.5]],
+            "line-offset": ["get", "offset"],
+            "line-opacity": ["get", "opacity"],
           }}
         />
         <Layer
@@ -592,6 +663,36 @@ export default function SeaMapInner({
             "line-color": colors.incident,
             "line-width": ["case", ["==", ["get", "active"], 1], 4, 2],
             "line-dasharray": [5, 3],
+          }}
+        />
+        <Layer
+          id="link-arrows"
+          type="symbol"
+          filter={["!=", ["get", "kind"], "response"]}
+          layout={{
+            visibility: visibility(layers.connections),
+            "symbol-placement": "line",
+            "symbol-spacing": 90,
+            "icon-image": "connection-arrow",
+            "icon-size": 0.55,
+            "icon-allow-overlap": true,
+            "icon-rotation-alignment": "map",
+          }}
+          paint={{ "icon-color": colors.route, "icon-opacity": ["get", "opacity"] }}
+        />
+      </Source>
+      <Source id="locations" type="geojson" data={locationData}>
+        <Layer id="location-hit" type="circle" paint={{ "circle-radius": 14, "circle-opacity": 0 }} />
+        <Layer
+          id="location-dots"
+          type="circle"
+          layout={{ visibility: visibility(layers.connections) }}
+          paint={{
+            "circle-radius": ["interpolate", ["linear"], ["get", "passages"], 1, 4, 40, 9],
+            "circle-color": colors.selected,
+            "circle-opacity": 0.85,
+            "circle-stroke-color": colors.markerStroke,
+            "circle-stroke-width": 1,
           }}
         />
       </Source>

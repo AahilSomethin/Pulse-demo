@@ -1,7 +1,8 @@
 import { AREA_CELL_DEG, DWELL_MAX_GAP_MS, DWELL_MIN_MS, DWELL_RADIUS_M, IMPLAUSIBLE_KN, STOP_SPEED_KN } from "@/config/constants";
+import { passagesFromDataset } from "@/lib/analytics/passages";
 import { distanceM, impliedKnots } from "@/lib/geo/distance";
 import { locateIsland } from "@/lib/geo/point-in-polygon";
-import type { ActivityArea, Dwell, Journey, LandPolygon, VesselDataset } from "@/types/maritime";
+import type { ActivityArea, Dwell, HarbourPoint, Journey, LandPolygon, VesselDataset } from "@/types/maritime";
 
 /** Grid label for a GPS cluster. The wording is deliberate: this is not a harbour. */
 export function activityAreaAt(lat: number, lon: number): { id: string; label: string; lat: number; lon: number } {
@@ -47,6 +48,10 @@ function dwellFrom(dataset: VesselDataset, indexes: number[], polygons: readonly
     areaLabel: area.label,
     areaLat: area.lat,
     areaLon: area.lon,
+    atoll: null,
+    confidence: "inferred",
+    placeName: null,
+    placeSourceId: null,
   };
 }
 
@@ -111,20 +116,35 @@ export function journeysFromDwells(dwells: readonly Dwell[]): Journey[] {
       const durationMs = destination.startMs - origin.endMs;
       const straightLineM = distanceM(origin.lon, origin.lat, destination.lon, destination.lat);
       const impliedKn = impliedKnots(straightLineM, durationMs);
+      const coverageGap = !(durationMs > 0) || impliedKn > IMPLAUSIBLE_KN;
+      const flags = [
+        ...(durationMs > 0 ? [] : ["clock_static" as const]),
+        ...(impliedKn > IMPLAUSIBLE_KN ? ["implausible_speed" as const] : []),
+        ...(origin.areaId === destination.areaId ? ["same_area" as const] : []),
+      ];
       journeys.push({
         device,
         origin,
         destination,
         durationMs,
         straightLineM,
+        pathM: straightLineM,
+        pingsBetween: 0,
+        maxGapMs: Math.max(durationMs, 0),
         impliedKn,
-        coverageGap: !(durationMs > 0) || impliedKn > IMPLAUSIBLE_KN,
+        flags,
+        coverageGap,
+        credible: !coverageGap && origin.areaId !== destination.areaId,
       });
     }
   }
   return journeys;
 }
 
-export function inferJourneys(dataset: VesselDataset, polygons: readonly LandPolygon[]): Journey[] {
-  return journeysFromDwells(inferDwells(dataset, polygons));
+export function inferJourneys(
+  dataset: VesselDataset,
+  polygons: readonly LandPolygon[],
+  harbours: readonly HarbourPoint[] = [],
+): Journey[] {
+  return passagesFromDataset(dataset, polygons, harbours);
 }

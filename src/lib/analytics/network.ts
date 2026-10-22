@@ -4,7 +4,7 @@ import type { AreaLink, IslandLink, Journey, LandPolygon } from "@/types/maritim
 export function aggregateLinks(journeys: readonly Journey[]): IslandLink[] {
   const groups = new Map<string, { origin: string; destination: string; durations: number[]; distances: number[] }>();
   for (const journey of journeys) {
-    if (journey.coverageGap) continue;
+    if (!journey.credible) continue;
     const origin = journey.origin.islandName;
     const destination = journey.destination.islandName;
     if (!origin || !destination || origin === destination) continue;
@@ -35,7 +35,7 @@ export function aggregateLinks(journeys: readonly Journey[]): IslandLink[] {
 export function aggregateAreaLinks(journeys: readonly Journey[]): AreaLink[] {
   const groups = new Map<string, { link: Omit<AreaLink, "tripCount" | "medianDurationMs" | "medianDistanceM" | "shortestDurationMs" | "longestDurationMs">; durations: number[]; distances: number[] }>();
   for (const journey of journeys) {
-    if (journey.coverageGap) continue;
+    if (!journey.credible) continue;
     if (journey.origin.areaId === journey.destination.areaId) continue;
     const key = `${journey.origin.areaId}\u0000${journey.destination.areaId}`;
     const group = groups.get(key);

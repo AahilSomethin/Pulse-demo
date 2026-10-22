@@ -62,6 +62,7 @@ export function MapStage() {
         clickMode={overlay.clickMode}
         markers={overlay.markers}
         lines={overlay.lines}
+        locations={overlay.locations ?? []}
         selectedHubId={selectedHubId}
         focus={state.focus}
         onSelectDevice={(device) => {
@@ -69,6 +70,7 @@ export function MapStage() {
           openDetail({ type: "vessel", device });
         }}
         onSelectHub={(hub) => openDetail({ type: "hub", fx: hub.fx, fy: hub.fy })}
+        onSelectLocation={(id) => openDetail({ type: "location", id })}
         onPlace={overlay.onPlace}
       />
       <MapStatus label={loading ? loadingLabel : null} />

@@ -12,11 +12,22 @@ function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 }
 
+function textProperty(properties: Record<string, unknown>, keys: readonly string[]): string | null {
+  for (const key of keys) {
+    const raw = properties[key];
+    if (typeof raw !== "string") continue;
+    const trimmed = raw.trim();
+    if (trimmed.length > 0) return trimmed;
+  }
+  return null;
+}
+
 function featureName(properties: Record<string, unknown>): string | null {
-  const raw = properties.name ?? properties.NAME ?? properties.Name ?? properties.island;
-  if (typeof raw !== "string") return null;
-  const trimmed = raw.trim();
-  return trimmed.length > 0 ? trimmed : null;
+  return textProperty(properties, ["name", "NAME", "Name", "island"]);
+}
+
+function featureAtoll(properties: Record<string, unknown>): string | null {
+  return textProperty(properties, ["atoll", "ATOLL", "admin2", "is_in:atoll"]);
 }
 
 function isVerified(properties: Record<string, unknown>): boolean {
@@ -117,7 +128,7 @@ export function parseGeoJson(text: string): ParsedGeography {
       }
     }
     parts.forEach((rings, part) => {
-      polygons.push({ id: `land-${index}-${part}`, name, rings, synthetic });
+      polygons.push({ id: `land-${index}-${part}`, name, atoll: featureAtoll(properties), rings, synthetic });
     });
   });
 

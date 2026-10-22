@@ -43,11 +43,12 @@ export function Sidebar({ children }: { children: ReactNode }) {
                   href={section.href}
                   aria-current={active ? "page" : undefined}
                   aria-label={section.label}
-                  title={section.label}
+                  title={section.href === "/simulate" ? "Simulate, experimental" : section.label}
                   className={`btn btn-ghost ${active ? "bg-primary-soft text-primary" : ""}`}
                   onClick={() => setSidebar("expanded")}
                 >
                   <Icon size={16} aria-hidden />
+                  {expanded ? null : section.href === "/simulate" ? <span className="sr-only">Experimental</span> : null}
                 </Link>
               );
             })}

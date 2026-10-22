@@ -14,21 +14,24 @@ Each item is classified as resolved, partially resolved, blocked by data, or an 
 ## Partially resolved
 
 - **Real FollowMe in the app.** One daily file loads, plays, and matches the offline count for day 1 (435,033 kept rows, 1,432 devices). Previous and next day work in development against `data/FollowMe/FollowMe_august_2025`. The full month is not held in the browser. A production build does not serve those files; the user selects them.
-- **Journey reconstruction.** Dwells and the passages between them are computed per loaded day. A passage whose straight-line speed exceeds 40 knots, or whose clock does not advance, is a coverage gap and is left out of the medians. Trails on the map still connect successive pings, including across a long gap, because that is the original viewer rule.
-- **Route Lab.** The primary comparison is observed trip count, median duration, shortest and longest duration, median straight-line distance, and the time that distance would take at the file’s median reported moving value. A typed duration remains a labelled hypothetical. The comparison is not a schedule, and it is not channel-aware.
+- **Journey reconstruction.** Dwells and the passages between them are computed per loaded day. A passage whose straight-line speed exceeds 40 knots, or whose clock does not advance, is a coverage gap. A passage whose longest report gap exceeds 30 minutes is sparse. Both stay in the record and out of the typical time. Passages that cross midnight are in the August summary, which carries each vessel's open stop into the next file. The day view does not.
+- **Route Lab.** The comparison is the pooled typical time, the middle half of times, the longer journeys when the sample allows, straight-line separation, and the tracked-path ratio. A typed duration is hypothetical. It is not a schedule and it is not a navigable path.
+- **Month summary.** `data/derived/connectivity-august-2025.json` is built offline and gitignored. Redistribution of cell centres derived from the private extract was not confirmed. Development serves it. Production does not.
 - **Emergency list.** Simulate explains historical positions, unverified speed, and the missing medical leg. A map click places an incident and ranks the straight-line options. On the synthetic fixture that list showed a Coast Guard estimate and two historical positions. It is still not a dispatch.
 - **Light, dark, and small screens.** Both themes use the same semantic roles. Light and dark were both rendered. At 390px the workspace had no horizontal overflow and the canvas matched the map. A wider emulated width (960px) did the same. Browser zoom at 125%, 150%, and 200% was not measured.
 
 ## Blocked by data
 
-- **Island and harbour names.** No national boundary or harbour file is in `seapulse/data`. GPS clusters are not used as a substitute.
+- **Island and harbour names.** No national boundary file ships until `npm run data:reference` succeeds. Until then, clusters stay inferred. A downloaded OpenStreetMap name is only as good as that feature.
 - **Hospitals and Coast Guard sites.** No verified medical or coast-guard layer is present. The evacuation leg stays off. A GeoJSON feature is used only when `kind` is `medical` and `verified` is true. SeaPulse does not check that claim against an authority.
-- **Census and demand.** No population file is present. Route Lab does not invent demand, fare, or fleet size.
+- **Census.** No Census 2022 table is bundled. `npm run data:census` loads one if you have an official CSV. Population is context, not a passenger accessibility index. Route Lab does not invent demand, fare, or fleet size.
+- **MTCC workbook.** `data/MTCC/MTCC.xlsx` states that its passenger figures are randomly generated samples. It is not used.
 - **Speed unit.** The file does not name the unit. Values are shown as recorded. The month median of values at or above 0.5 is 9, from a sample of up to 80,000. The month maximum is 770. Nothing is converted to knots.
 
 ## Inherent limitations
 
 - **Coverage is the file.** 1,776 devices across August 2025 are the tracked set. They are not the Maldivian fleet. A place with no ping is not proof that it has no service.
+- **Activity cells can split one island.** A 0.05° cell is about 5 km. Two cells on Thilafushi both received that island's name and a busy link between them. Short named links need a look at the map before they are read as a crossing. See [CONNECTIVITY_METHOD.md](CONNECTIVITY_METHOD.md).
 - **Straight-line distance.** Hubs, journeys, Route Lab, and Emergency use straight-line distance. Reefs, channels, traffic, and waiting are not in the data.
 - **Hubs are grid counts.** A hub is a cell of unique devices in the current window. One slow ping is enough. The cell is not a port.
 - **Playback window.** The window is `[t − W, t + 1)`. The bold trail is `(t − W, t]`. The selected vessel bypasses the speed filter and still counts toward hubs. Those are the original rules. Above 1× the clock commits one sample per frame, so GPS reports between samples are not drawn.

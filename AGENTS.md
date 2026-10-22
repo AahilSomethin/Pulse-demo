@@ -96,7 +96,9 @@ Do not commit raw tracks, device identifiers, or coordinates from the extract. `
 
 Hub rules differ from dwell rules. A hub ping is reported speed under 0.5 in the window `[t - W, t + 1)`. A dwell needs at least two slow pings, 10 minutes, 400 metres, and no gap over 20 minutes. The bold trail is `(t - W, t]`. Keep those edges.
 
-A journey whose implied straight-line speed is above 40 knots, or whose clock does not move, is a coverage gap and stays out of Sea Network medians.
+A journey whose implied straight-line speed is above 40 knots, or whose clock does not move, is a coverage gap. A passage with a report gap over 30 minutes is sparse. Both stay out of duration statistics and stay in the coverage count. The month aggregate carries an open dwell across midnight. Do not close that state per file.
+
+The August connectivity file under `data/derived/` is gitignored. It stores activity-cell centres and passage durations from a private extract. Do not commit it unless redistribution is explicitly allowed. Count-only quality figures in `src/data/followme-quality.json` are the committed aggregate.
 
 ## Conventions
 
@@ -122,6 +124,7 @@ npm run build
 - `insight/` — reference only.
 - `Maldives vessel hubs over time (1).html` in the parent directory — Rida’s original viewer.
 - `data/FollowMe/` — private raw tracks. Do not add them to git.
+- `data/derived/` — local connectivity summary. Do not add it to git unless redistribution of the derived cell centres is confirmed.
 - Analytical formulas in `src/lib`, unless the change is validated and tested.
 - The Next.js blocks at the top of this file. `next dev` restores them.
 

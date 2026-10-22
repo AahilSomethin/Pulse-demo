@@ -1,3 +1,4 @@
+import type { ConnectionIndicator } from "@/lib/analytics/connectivity";
 import { etaMinutes } from "@/lib/geo/distance";
 import type { AreaLink, IslandLink } from "@/types/maritime";
 
@@ -65,5 +66,88 @@ export function simulateConnection(link: IslandLink | null, origin: string, dest
     observedMedianM: link?.medianDistanceM ?? null,
     proposedMin,
     differenceMin: observedMedianMin == null ? null : observedMedianMin - proposedMin,
+  };
+}
+
+export interface DurationBin {
+  label: string;
+  count: number;
+}
+
+export interface RouteBaseline {
+  journeys: number;
+  vessels: number;
+  medianMin: number | null;
+  iqrMin: number | null;
+  p90Min: number | null;
+  straightLineKm: number | null;
+  pathRatio: number | null;
+  excluded: number;
+  evidence: ConnectionIndicator["evidence"] | null;
+  histogram: DurationBin[];
+  periodLabel: string;
+  observationDays: number;
+}
+
+export interface ScenarioComparison {
+  proposedMin: number;
+  versusMedianMin: number | null;
+  versusP90Min: number | null;
+  assumptions: string[];
+  evidenceNeeded: string[];
+}
+
+const BIN_MINUTES = 15;
+
+/** Fifteen-minute bins from the pooled durations. The last bin collects the tail. */
+export function durationHistogram(durationsMs: readonly number[], bins = 8): DurationBin[] {
+  const counts = Array.from({ length: bins }, () => 0);
+  let tail = 0;
+  for (const duration of durationsMs) {
+    const minutes = duration / 60_000;
+    const index = Math.floor(minutes / BIN_MINUTES);
+    if (index >= bins) tail += 1;
+    else if (index >= 0) counts[index] += 1;
+  }
+  const rows = counts.map((count, index) => ({
+    label: `${index * BIN_MINUTES}–${(index + 1) * BIN_MINUTES} min`,
+    count,
+  }));
+  if (tail > 0) rows.push({ label: `${bins * BIN_MINUTES} min or more`, count: tail });
+  return rows;
+}
+
+export function describeBaseline(indicator: ConnectionIndicator | null): RouteBaseline {
+  return {
+    journeys: indicator?.passages ?? 0,
+    vessels: indicator?.vessels ?? 0,
+    medianMin: indicator?.medianDurationMs == null ? null : indicator.medianDurationMs / 60_000,
+    iqrMin: indicator?.iqrMs == null ? null : indicator.iqrMs / 60_000,
+    p90Min: indicator?.p90Ms == null ? null : indicator.p90Ms / 60_000,
+    straightLineKm: indicator?.medianDistanceM == null ? null : indicator.medianDistanceM / 1000,
+    pathRatio: indicator?.medianPathRatio ?? null,
+    excluded: indicator?.excluded ?? 0,
+    evidence: indicator?.evidence ?? null,
+    histogram: durationHistogram(indicator?.durationsMs ?? []),
+    periodLabel: indicator?.periodLabel ?? "",
+    observationDays: indicator?.observationDays ?? 0,
+  };
+}
+
+export function compareScenario(baseline: RouteBaseline, proposedMin: number): ScenarioComparison {
+  return {
+    proposedMin,
+    versusMedianMin: baseline.medianMin == null ? null : baseline.medianMin - proposedMin,
+    versusP90Min: baseline.p90Min == null ? null : baseline.p90Min - proposedMin,
+    assumptions: [
+      "The typed duration is a hypothetical direct time. It is not taken from the tracker file.",
+      "The comparison does not change the observed journeys.",
+    ],
+    evidenceNeeded: [
+      "A navigable path, not the straight line between the two clusters.",
+      "The vessel types that actually make this passage, and a verified speed for them.",
+      "How much of the observed time is waiting, cargo, or a gap in tracking.",
+      "A schedule, demand, and fleet only if a later study collects them. This file does not contain them.",
+    ],
   };
 }

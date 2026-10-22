@@ -15,11 +15,11 @@ flowchart TD
   csv["FollowMe CSV, local August day, or synthetic fixture"] --> parse["Parse, validate, and drop duplicates"]
   parse --> typed["Typed-array dataset for one day"]
   typed --> frame["Playback frame for the current window"]
-  typed --> dwell["Dwells, activity cells, and journeys"]
-  dwell --> links["Inferred links and named-polygon links"]
+  typed --> dwell["Dwells and flagged passages"]
+  dwell --> links["Pooled connection indicators"]
   frame --> map["Persistent MapLibre map"]
   links --> map
-  links --> network["Network and Route Lab"]
+  links --> network["Network, profiles, opportunities, Route Lab"]
   frame --> simulate["Simulate: straight-line comparison"]
   simulate --> map
 ```
@@ -32,9 +32,9 @@ The map, the loaded day, and the playback clock stay mounted. Only the sidebar c
 
 **Explore** is where a file is loaded. It shows day quality, a vessel list, and activity cells for the current window. Positions here are tracker reports from the file.
 
-**Network** lists directions inferred from dwells on that day. The Observed tab is the historical count, duration, and straight-line distance. Route Lab compares that record with the time the same distance would take at the file’s median reported moving value. A duration the user types is a hypothetical check, not a timetable. Named islands appear only after a GeoJSON file with polygon names is loaded.
+**Network** lists observed connections. The loaded day is one window. The August summary, when it has been built locally, is another, and the screen says which. Find opportunities applies the rules in [CONNECTIVITY_METHOD.md](CONNECTIVITY_METHOD.md) and holds back small samples. Route Lab compares a typed hypothetical with the observed typical time. A cluster on the map opens a place profile. Named places appear only when a geography file is loaded.
 
-**Simulate** places a hypothetical incident on the map. It ranks historical positions inside a radius, and any loaded Coast Guard points, by straight-line time. An optional second point is a user-placed Coast Guard origin. The list is a comparison of assumptions. It does not send a vessel.
+**Simulate** is experimental. It places a hypothetical incident on the map and ranks historical positions by straight-line time. It does not send a vessel. Historical positions are not live positions, and a tracked vessel is not a rescue asset.
 
 `/` and `/explorer` redirect to `/explore`, `/emergency` to `/simulate`, and `/routes` to `/network?tab=routes`.
 
@@ -48,9 +48,9 @@ The map, the loaded day, and the playback clock stay mounted. Only the sidebar c
 
 **Playback engine.** The bar under the map moves a millisecond cursor. At 1× the clock advances by one sixth of the window every 90 ms. The frame keeps the last ping per device in `[t − W, t + 1)`, hub cells for that window, and the selected trail. Faster speeds take fewer samples. They do not change a vessel’s reported speed.
 
-**Analysis utilities.** After a day loads, dwell detection groups slow pings, journeys measure the gap between dwells on the same device, and the network code turns those journeys into directions. A jump faster than 40 knots in a straight line is treated as missing coverage and left out of the medians.
+**Analysis utilities.** After a day loads, dwell detection groups slow pings and passages measure the gap between dwells on the same device. Credible durations are pooled. The month file is an offline aggregate, not a sum of daily medians. A jump faster than 40 knots, a clock that does not move, or a report gap over 30 minutes stays out of the typical time and stays in the coverage count.
 
-**Scenario calculations.** Route Lab and Simulate use straight-line distance. They add no reefs, channels, or schedules. A medical leg is added only when a loaded place is marked medical and verified. No population file is present, so the app does not estimate demand.
+**Scenario calculations.** Route Lab compares a typed duration with the observed typical time and says what evidence is still missing. Simulate uses straight-line distance and is marked experimental. A medical leg is added only when a loaded place is marked medical and verified. Population is shown only from a loaded census table, and it is not a demand model.
 
 ## Data classifications
 

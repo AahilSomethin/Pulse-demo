@@ -8,6 +8,7 @@ import {
   type ClockZone,
   type DetailTarget,
   type ExploreTab,
+  type NetworkFilters,
   type NetworkTab,
   type RouteDraft,
   type ScenarioDraft,
@@ -31,6 +32,7 @@ interface WorkspaceApi {
   focusOn: (lon: number, lat: number) => void;
   setExploreTab: (tab: ExploreTab) => void;
   setNetworkTab: (tab: NetworkTab) => void;
+  patchNetwork: (patch: Partial<NetworkFilters>) => void;
   patchScenario: (patch: Partial<ScenarioDraft>) => void;
   patchRoute: (patch: Partial<RouteDraft>) => void;
 }
@@ -123,6 +125,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     focusOn: (lon: number, lat: number) => dispatch({ type: "focus", lon, lat }),
     setExploreTab: (tab: ExploreTab) => dispatch({ type: "explore-tab", tab }),
     setNetworkTab: (tab: NetworkTab) => dispatch({ type: "network-tab", tab }),
+    patchNetwork: (patch: Partial<NetworkFilters>) => dispatch({ type: "network", patch }),
     patchScenario: (patch: Partial<ScenarioDraft>) => dispatch({ type: "scenario", patch }),
     patchRoute: (patch: Partial<RouteDraft>) => dispatch({ type: "route", patch }),
   }), [dispatch]);

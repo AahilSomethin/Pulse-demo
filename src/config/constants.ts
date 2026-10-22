@@ -35,6 +35,36 @@ export const DWELL_MAX_GAP_MS = 20 * 60 * 1000;
 /** Straight-line speed above this is treated as a tracker gap, not a passage. */
 export const IMPLAUSIBLE_KN = 40;
 
+/**
+ * A passage whose longest gap between reports exceeds this is still kept,
+ * but it is flagged and left out of duration statistics.
+ */
+export const SPARSE_GAP_MS = 30 * 60 * 1000;
+
+/** Configurable rules for connectivity indicators and opportunity ranking. */
+export const CONNECTIVITY = {
+  sparseGapMs: SPARSE_GAP_MS,
+  harbourMatchM: 300,
+  minPassagesForIqr: 5,
+  minPassagesForP90: 10,
+  minPassagesAdequate: 8,
+  minVesselsAdequate: 3,
+  minPassagesLimited: 3,
+  minVesselsLimited: 2,
+  variabilityRatio: 0.5,
+  minPassagesForVariability: 10,
+  slowRatio: 1.5,
+  minBandComparisons: 4,
+  pathRatio: 1.8,
+  minPassagesForPath: 5,
+  dayCv: 1,
+  minDaysForConsistency: 7,
+  gapShare: 0.3,
+  minAttemptsForGaps: 5,
+  monthMinVessels: 3,
+  mapLinkCap: 60,
+} as const;
+
 /** Grid for inferred activity areas. A cell is not a harbour. */
 export const AREA_CELL_DEG = 0.05;
 

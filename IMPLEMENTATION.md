@@ -10,12 +10,17 @@ SeaPulse lives under `src/`. The original HTML file and the Insight project are 
 - `src/workers/parse-csv.ts` — same parser off the main thread. The worker accepts text or a file and transfers the typed-array buffers. If it cannot start, the caller uses the same function directly.
 - `src/lib/vessels/frame.ts` — window `[t - W, t + 1)`, last ping per device, speed mask, hub grid, and the `(t - W, t]` trail.
 - `src/lib/parsing/geojson.ts` — land polygons, plus medical and Coast Guard sites.
-- `src/lib/analytics/journeys.ts` — dwells, inferred activity cells, and the passages between dwells.
-- `src/lib/analytics/network.ts` — named directions and inferred-area directions. A named link requires a polygon name at both ends.
-- `src/lib/analytics/corpus.ts` — the offline August summary. Counts only. No device identifiers and no coordinates.
-- `src/lib/analytics/population.ts` — empty census adapter.
-- `src/lib/simulation/emergency.ts` — straight-line comparison against historical positions.
-- `src/lib/simulation/routes.ts` — observed duration, distance, and a straight-line reference at the file’s median reported moving value. Typed minutes stay hypothetical.
+- `src/lib/analytics/journeys.ts` — dwells and inferred activity cells.
+- `src/lib/analytics/passages.ts` — the same dwell rule with path length, quality flags, and a carry across midnight.
+- `src/lib/analytics/connectivity.ts` — pooled indicators. Median, interquartile range, and 90th percentile come from one duration list.
+- `src/lib/analytics/opportunities.ts` — evidence gate and separate investigation rules. No combined score.
+- `src/lib/analytics/network.ts` — named directions and inferred-area directions. Credible passages only.
+- `src/lib/analytics/month.ts` — reads the local August summary and recomputes quantiles from stored seconds.
+- `src/lib/reference/census.ts` — exact code or name join. No fuzzy match.
+- `src/lib/analytics/population.ts` — empty census adapter when no table is loaded.
+- `src/lib/simulation/routes.ts` — observed baseline, histogram, and a hypothetical typed duration.
+- `src/app/api/dev-connectivity/route.ts` — development-only read of `data/derived/connectivity-august-2025.json`.
+- `scripts/aggregate-connectivity.ts` — one-day-at-a-time month summary. Gitignored output. No device identifiers.
 - `src/app/api/dev-followme/[day]/route.ts` — development-only stream of one local day. Other environments return 404.
 - `src/components/map/SeaMapInner.tsx` — MapLibre layers for land, hubs, vessels, trails, inferred links, named links, and scenario lines. The CARTO style is recolored in `src/lib/map/basemap.ts` without changing its zoom limits or filters.
 - `scripts/audit-followme.mjs` — rebuilds the committed August summary. It does not write tracks or device identifiers.
@@ -45,9 +50,11 @@ Reported speed is not converted. The unit is not in the file.
 
 ## What is inferred
 
-Dwells are a separate layer. A dwell is at least two slow pings spanning 10 minutes, staying within 400 metres, with no sample gap over 20 minutes. Each dwell also carries an activity-cell id from a 0.05° grid. A journey is the time and straight-line distance from the end of one dwell to the start of the next on the same device. If the implied speed is above 40 knots, or the clock does not move, the jump is a coverage gap and is excluded from Sea Network medians.
+Dwells are a separate layer. A dwell is at least two slow pings spanning 10 minutes, staying within 400 metres, with no sample gap over 20 minutes. Each dwell also carries an activity-cell id from a 0.05° grid. A journey is the time and straight-line distance from the end of one dwell to the start of the next on the same device. The passage also stores the summed ping-to-ping path, the longest internal gap, and flags. A gap over 30 minutes is sparse tracking. If the implied speed is above 40 knots, or the clock does not move, the jump is a coverage gap. Flagged passages stay on record and stay out of the duration statistics.
 
-Island names come only from the loaded GeoJSON. A ping inside a polygon is not treated as a harbour call. An activity cell is never promoted to an island.
+The month script does not close a vessel's state at midnight. See [CONNECTIVITY_METHOD.md](CONNECTIVITY_METHOD.md).
+
+Island names come only from a loaded GeoJSON or from the OpenStreetMap reference file when that download succeeded. A point within 300 metres of a harbour point is labelled near a harbour. An activity cell is never promoted to an island.
 
 ## Emergency comparison
 
@@ -61,8 +68,8 @@ If a medical feature is marked verified, each option adds a second straight-line
 
 ## Route Lab
 
-The default pair is an inferred activity direction from the loaded day. The page shows observed count, median duration, shortest and longest duration, median straight-line distance, and the straight-line time at the file’s median reported moving value. The user can still type a hypothetical duration. Named polygons are a separate choice and stay empty until a polygon file is loaded.
+Route Lab uses the selected connection's pooled durations: journey count, vessels, typical time, interquartile range from 5 journeys, 90th percentile from 10, a 15-minute histogram, straight-line separation, and the tracked-path ratio. A typed duration is the difference from that typical time. The page lists the evidence still required before anyone could treat the difference as a saving. The straight line is not a route.
 
 ## Checks
 
-`tests/maritime.test.ts` covers quoted FollowMe rows, duplicates, activity areas, the hub cell, hub opacity, the speed mask, dwell journeys, the response comparison, and the route reference, using synthetic rows. `tests/playback.test.ts` covers the speed step and large end-of-day jumps. `tests/workspace-state.test.ts` covers the details card, the sidebar, and a repeated network-tab update. `tests/overlay.test.ts` covers a newer section surviving an older release. `tests/redirects.test.ts` covers the compatibility redirects. `tests/followme-day.test.ts` parses local day 1 when that file is present and checks the kept-row and device counts against `src/data/followme-quality.json`. It does not embed a device identifier. `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` are the project checks. The production build prerenders `/explore`, `/network`, and `/simulate`. The day route is dynamic and is not available in production.
+`tests/connectivity.test.ts` covers midnight carry, pooled quantiles, opportunity rules, spatial matching, harbours, and the census join. `tests/maritime.test.ts` covers quoted FollowMe rows, duplicates, activity areas, the hub cell, hub opacity, the speed mask, dwell journeys, the response comparison, and the route reference, using synthetic rows. `tests/playback.test.ts` covers the speed step and large end-of-day jumps. `tests/workspace-state.test.ts` covers the details card, the sidebar, and a repeated network-tab update. `tests/overlay.test.ts` covers a newer section surviving an older release. `tests/redirects.test.ts` covers the compatibility redirects. `tests/followme-day.test.ts` parses local day 1 when that file is present and checks the kept-row and device counts against `src/data/followme-quality.json`. It does not embed a device identifier. `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` are the project checks. The production build prerenders `/explore`, `/network`, and `/simulate`. The day route is dynamic and is not available in production.

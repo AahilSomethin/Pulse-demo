@@ -74,7 +74,7 @@ export function SimulatePanel() {
     <>
       <header>
         <h1 className="text-lg font-semibold tracking-tight">Simulate</h1>
-        <p className="mt-1 text-sm leading-6 text-fg-secondary">Hypothetical incident times from historical positions. This does not dispatch a vessel.</p>
+        <p className="mt-1 text-sm leading-6 text-fg-secondary">Experimental. Hypothetical times from historical positions. This is not the main analysis, and it does not dispatch a vessel.</p>
       </header>
       {!dataset ? <Notice>Load a tracker day in Explore before comparing response times.</Notice> : null}
       {dataset ? <Notice tone="warning">{historicalLabel(dataset.periodLabel)}. A dot is a past report in the selected window, not a boat that can respond now.</Notice> : null}

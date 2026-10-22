@@ -4,13 +4,17 @@ import { createContext, useCallback, useContext, useEffect, useLayoutEffect, use
 
 import { DEFAULT_CELL_DEG, DEFAULT_WINDOW_MS } from "@/config/constants";
 import { aggregateAreaLinks, aggregateLinks } from "@/lib/analytics/network";
-import { inferDwells, journeysFromDwells, summarizeAreas } from "@/lib/analytics/journeys";
+import { buildConnectionIndicators, type ConnectionIndicator } from "@/lib/analytics/connectivity";
+import { indicatorsFromMonth, parseStoredMonth, type StoredMonth } from "@/lib/analytics/month";
+import { inferDwells, inferJourneys, summarizeAreas } from "@/lib/analytics/journeys";
+import { joinCensus, type CensusJoin } from "@/lib/reference/census";
+import { parseHarbourGeoJson } from "@/lib/reference/harbours";
 import { sortDayFiles } from "@/lib/parsing/days";
 import { parseDatasetAsync, parseFileAsync } from "@/lib/parsing/load-csv";
 import { parseGeoJson } from "@/lib/parsing/geojson";
 import { buildSpeedMask, computeFrame, initialCursor } from "@/lib/vessels/frame";
 import { advancePlayback, commitIntervalMs, isPlaybackSpeed, playbackStep, type PlaybackSpeed } from "@/lib/vessels/playback";
-import type { ActivityArea, ActivityFrame, AreaLink, HubMode, IslandLink, Journey, ParsedGeography, VesselDataset } from "@/types/maritime";
+import type { ActivityArea, ActivityFrame, AreaLink, HarbourPoint, HubMode, IslandLink, Journey, ParsedGeography, VesselDataset } from "@/types/maritime";
 
 interface DatasetValue {
   dataset: VesselDataset | null;
@@ -19,6 +23,11 @@ interface DatasetValue {
   links: IslandLink[];
   areaLinks: AreaLink[];
   areas: ActivityArea[];
+  indicators: ConnectionIndicator[];
+  month: StoredMonth | null;
+  monthIndicators: ConnectionIndicator[];
+  census: CensusJoin | null;
+  harbours: HarbourPoint[];
   loading: boolean;
   loadingLabel: string | null;
   error: string | null;
@@ -31,6 +40,7 @@ interface DatasetValue {
   selectDay: (name: string) => Promise<void>;
   loadGeoText: (text: string) => void;
   loadSample: () => Promise<void>;
+  loadMonth: () => Promise<void>;
 }
 
 interface PlaybackSettings {
@@ -64,6 +74,9 @@ const PlaybackClockContext = createContext<PlaybackClock | null>(null);
 export function MaritimeProvider({ children }: { children: ReactNode }) {
   const [dataset, setDataset] = useState<VesselDataset | null>(null);
   const [geography, setGeography] = useState<ParsedGeography | null>(null);
+  const [harbours, setHarbours] = useState<HarbourPoint[]>([]);
+  const [month, setMonth] = useState<StoredMonth | null>(null);
+  const [census, setCensus] = useState<CensusJoin | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingLabel, setLoadingLabel] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -233,6 +246,66 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const loadMonth = useCallback(async () => {
+    setLoading(true);
+    setLoadingLabel("Reading the August connectivity summary…");
+    setError(null);
+    try {
+      const response = await fetch("/api/dev-connectivity");
+      if (!response.ok) throw new Error("The month summary is not in data/derived. Run npm run data:connectivity.");
+      setMonth(parseStoredMonth(await response.json()));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Could not read the month summary.");
+    } finally {
+      setLoading(false);
+      setLoadingLabel(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const [islands, harbourFile, censusFile] = await Promise.all([
+        fetch("/reference/osm-islands.geojson"),
+        fetch("/reference/osm-harbours.geojson"),
+        fetch("/reference/census-2022.json"),
+      ]);
+      if (cancelled) return;
+      if (islands.ok) {
+        try {
+          const text = await islands.text();
+          if (!cancelled) setGeography((current) => current ?? parseGeoJson(text));
+        } catch {
+          // A missing or unreadable reference file leaves the map on inferred areas.
+        }
+      }
+      if (harbourFile.ok) {
+        try {
+          setHarbours(parseHarbourGeoJson(await harbourFile.text()));
+        } catch {
+          setHarbours([]);
+        }
+      }
+      if (censusFile.ok) {
+        try {
+          const payload = await censusFile.json() as { islands?: { code?: string | null; name: string; atoll?: string | null; population: number }[] };
+          const rows = Array.isArray(payload.islands) ? payload.islands.map((row) => ({
+            code: row.code ?? null,
+            name: row.name,
+            atoll: row.atoll ?? null,
+            population: row.population,
+          })) : [];
+          setCensus(joinCensus(rows.map((row) => ({ code: row.code, name: row.name })), rows));
+        } catch {
+          setCensus(null);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const loadSample = useCallback(async () => {
     setLoading(true);
     setLoadingLabel("Loading synthetic test data…");
@@ -318,16 +391,29 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
   }, [playing, dataset]);
 
   const movement = useMemo(() => {
-    if (!dataset) return { journeys: [] as Journey[], links: [] as IslandLink[], areaLinks: [] as AreaLink[], areas: [] as ActivityArea[] };
-    const dwells = inferDwells(dataset, geography?.polygons ?? []);
-    const journeys = journeysFromDwells(dwells);
+    if (!dataset) {
+      return {
+        journeys: [] as Journey[],
+        links: [] as IslandLink[],
+        areaLinks: [] as AreaLink[],
+        areas: [] as ActivityArea[],
+        indicators: [] as ConnectionIndicator[],
+      };
+    }
+    const polygons = geography?.polygons ?? [];
+    const dwells = inferDwells(dataset, polygons);
+    const journeys = inferJourneys(dataset, polygons, harbours);
+    const periodLabel = dataset.periodLabel || "Loaded day";
     return {
       journeys,
       links: aggregateLinks(journeys),
       areaLinks: aggregateAreaLinks(journeys),
       areas: summarizeAreas(dwells),
+      indicators: buildConnectionIndicators(journeys, { scope: "day", periodLabel, observationDays: 1 }),
     };
-  }, [dataset, geography]);
+  }, [dataset, geography, harbours]);
+
+  const monthIndicators = useMemo(() => (month ? indicatorsFromMonth(month) : []), [month]);
 
   const mask = useMemo(() => (dataset ? buildSpeedMask(dataset, threshold) : null), [dataset, threshold]);
   const frame = useMemo(() => {
@@ -343,6 +429,11 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
       links: movement.links,
       areaLinks: movement.areaLinks,
       areas: movement.areas,
+      indicators: movement.indicators,
+      month,
+      monthIndicators,
+      census,
+      harbours,
       loading,
       loadingLabel,
       error,
@@ -355,8 +446,9 @@ export function MaritimeProvider({ children }: { children: ReactNode }) {
       selectDay,
       loadGeoText,
       loadSample,
+      loadMonth,
     }),
-    [dataset, geography, movement, loading, loadingLabel, error, days, activeDay, loadCsvText, loadCsvFile, loadCsvFiles, loadLocalAugust, selectDay, loadGeoText, loadSample],
+    [dataset, geography, movement, month, monthIndicators, census, harbours, loading, loadingLabel, error, days, activeDay, loadCsvText, loadCsvFile, loadCsvFiles, loadLocalAugust, selectDay, loadGeoText, loadSample, loadMonth],
   );
   const settingsValue = useMemo<PlaybackSettings>(
     () => ({

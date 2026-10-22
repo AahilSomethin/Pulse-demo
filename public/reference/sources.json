@@ -1,0 +1,14 @@
+{
+  "source": "OpenStreetMap",
+  "licence": "Open Database License (ODbL) 1.0",
+  "attribution": "© OpenStreetMap contributors",
+  "retrievedAt": "2026-10-22T18:46:46.102Z",
+  "area": "Maldives relation 536773",
+  "islands": 658,
+  "harbours": 56,
+  "notes": [
+    "Island polygons are place=island or place=islet features that have a name and a geometry.",
+    "Harbour points are named harbour nodes, ferry terminals, and named piers.",
+    "A match is a geographic hint. It is not confirmation of a port call."
+  ]
+}

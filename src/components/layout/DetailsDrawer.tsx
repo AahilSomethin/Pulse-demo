@@ -2,11 +2,13 @@
 
 import { X } from "lucide-react";
 
-import { CELL_OPTIONS, STOP_SPEED_KN, WINDOW_OPTIONS } from "@/config/constants";
+import { CELL_OPTIONS, CONNECTIVITY, STOP_SPEED_KN, WINDOW_OPTIONS } from "@/config/constants";
 import { useDataset, usePlaybackClock, usePlaybackSettings } from "@/context/MaritimeContext";
 import { useWorkspace } from "@/context/WorkspaceContext";
 import { formatCount, formatDuration, formatKm, formatMinutes, formatMvt, formatUtc, historicalLabel, maskDevice } from "@/lib/format";
-import { coverageGapsFor, findLink, placeKindLabel } from "@/lib/workspace/connection";
+import { buildLocationProfile } from "@/lib/analytics/profile";
+import { durationVariability, passagesPerObservedDay, type ConnectionIndicator } from "@/lib/analytics/connectivity";
+import { findLink } from "@/lib/workspace/connection";
 import { trailIndexes } from "@/lib/vessels/frame";
 import { compareResponses } from "@/lib/simulation/emergency";
 import type { HubMode } from "@/types/maritime";
@@ -54,6 +56,7 @@ function DetailBody() {
   if (detail.type === "vessel") return <VesselDetail device={detail.device} />;
   if (detail.type === "hub") return <HubDetail fx={detail.fx} fy={detail.fy} />;
   if (detail.type === "connection") return <ConnectionDetail id={detail.id} />;
+  if (detail.type === "location") return <LocationDetail id={detail.id} />;
   return <ScenarioDetail id={detail.id} />;
 }
 
@@ -119,36 +122,84 @@ function HubDetail({ fx, fy }: { fx: number; fy: number }) {
 }
 
 function ConnectionDetail({ id }: { id: string }) {
-  const { links, areaLinks, journeys } = useDataset();
+  const { links, areaLinks, journeys, indicators, monthIndicators } = useDataset();
   const { state } = useWorkspace();
+  const indicator = [...monthIndicators, ...indicators].find((item) => item.id === id) ?? null;
+  if (indicator) return <IndicatorDetail indicator={indicator} hypothetical={state.networkTab === "routes"} />;
   const link = findLink([...areaLinks, ...links], id);
-  if (!link) return <p className="text-fg-muted">That connection is not in the loaded day.</p>;
-  const gaps = coverageGapsFor(journeys, link);
-  const inferred = link.placeKind === "inferred_activity";
-
+  if (!link) return <p className="text-fg-muted">That connection is not in the current window.</p>;
+  const gaps = journeys.filter((journey) => journey.coverageGap && journey.origin.areaId === ("originId" in link ? link.originId : "")).length;
   return (
     <div>
-      <p className={`text-xs ${inferred ? "text-cyan" : "text-primary"}`}>{placeKindLabel(link.placeKind)}</p>
+      <p className="text-xs text-cyan">{link.placeKind === "inferred_activity" ? "Inferred cluster" : "Named polygon"}</p>
       <p className="font-semibold">{link.origin} → {link.destination}</p>
       <dl className="mt-2 space-y-1">
         <Row label="Observed passages" value={formatCount(link.tripCount)} />
         <Row label="Median duration" value={formatDuration(link.medianDurationMs)} />
         <Row label="Straight-line distance" value={formatKm(link.medianDistanceM)} />
-        <Row label="Shortest to longest" value={`${formatDuration(link.shortestDurationMs)} – ${formatDuration(link.longestDurationMs)}`} />
         <Row label="Coverage gaps excluded" value={formatCount(gaps)} />
       </dl>
-      <p className="mt-2 text-xs text-fg-muted">
-        {inferred
-          ? "Inferred from GPS clusters. This is not a verified route, harbour, or terminal."
-          : "Both ends use names from the loaded geography file. The name is only as reliable as that file."}
-        {" "}
-        Medians leave out jumps above 40 reported speed or a clock that did not advance.
-      </p>
-      {state.networkTab === "routes" ? (
-        <p className="mt-2 rounded-md border border-warning bg-warning-soft px-2 py-1 text-xs">
-          A typed duration in Route Lab is a hypothetical check against this median. It is not a schedule.
-        </p>
-      ) : null}
+    </div>
+  );
+}
+
+function IndicatorDetail({ indicator, hypothetical }: { indicator: ConnectionIndicator; hypothetical: boolean }) {
+  const rate = passagesPerObservedDay(indicator);
+  const variability = durationVariability(indicator);
+  const small = indicator.passages < CONNECTIVITY.minPassagesForIqr;
+  return (
+    <div>
+      <p className="text-xs text-ocean">{indicator.scope === "month" ? "August summary" : "Loaded day"} · {indicator.evidence === "adequate" ? "Enough journeys to compare" : indicator.evidence === "limited" ? "Limited evidence" : "Small sample"}</p>
+      <p className="font-semibold">{indicator.origin.label} → {indicator.destination.label}</p>
+      <dl className="mt-2 space-y-1">
+        <Row label="Journeys" value={formatCount(indicator.passages)} />
+        <Row label="Tracked vessels" value={formatCount(indicator.vessels)} />
+        <Row label="Per observed day" value={rate == null ? "—" : rate.toFixed(1)} />
+        <Row label="Days with a journey" value={`${indicator.activeDays} of ${indicator.observationDays}`} />
+        <Row label="Typical time" value={indicator.medianDurationMs == null ? "—" : formatDuration(indicator.medianDurationMs)} />
+        <Row label="Middle half of times" value={indicator.iqrMs == null ? "Needs more journeys" : formatDuration(indicator.iqrMs)} />
+        <Row label="Longer journeys" value={indicator.p90Ms == null ? "Needs more journeys" : formatDuration(indicator.p90Ms)} />
+        <Row label="Straight-line separation" value={indicator.medianDistanceM == null ? "—" : formatKm(indicator.medianDistanceM)} />
+        <Row label="Tracked path vs separation" value={indicator.medianPathRatio == null ? "—" : `${indicator.medianPathRatio.toFixed(1)}×`} />
+        <Row label="Left out of the times" value={formatCount(indicator.excluded)} />
+      </dl>
+      {variability != null && !small ? <p className="mt-2 text-fg-secondary">The spread of times is {Math.round(variability * 100)}% of the typical time.</p> : null}
+      {small ? <p className="mt-2 text-xs text-fg-muted">Fewer than {CONNECTIVITY.minPassagesForIqr} journeys. Treat the typical time as a hint, not a stable figure.</p> : null}
+      <p className="mt-2 text-xs text-fg-muted">Times use journeys with continuous-enough tracking. A quiet day is not evidence that no boat sailed. The straight line is not a navigable route.</p>
+      {hypothetical ? <p className="mt-2 rounded-md border border-warning bg-warning-soft px-2 py-1 text-xs">A typed duration in Route Lab is a hypothetical check against this typical time. It is not a schedule.</p> : null}
+    </div>
+  );
+}
+
+function LocationDetail({ id }: { id: string }) {
+  const { indicators, monthIndicators, census } = useDataset();
+  const { state } = useWorkspace();
+  const source = state.network.scope === "month" ? monthIndicators : indicators;
+  const population = census ?? { populationForIsland: () => null };
+  const profile = buildLocationProfile(id, source.length > 0 ? source : [...indicators, ...monthIndicators], population);
+  if (!profile) return <p className="text-fg-muted">That place has no observed connection in this window.</p>;
+  return (
+    <div>
+      <p className="text-xs text-ocean">{profile.confidence === "inferred" ? "Inferred activity cluster" : profile.confidence === "near_harbour" ? "Near a harbour" : "Named place"}</p>
+      <p className="font-semibold">{profile.label}</p>
+      {profile.atoll ? <p className="text-fg-secondary">{profile.atoll}</p> : null}
+      <dl className="mt-2 space-y-1">
+        <Row label="Arrivals" value={formatCount(profile.arrivals)} />
+        <Row label="Departures" value={formatCount(profile.departures)} />
+        <Row label="Most vessels on one connection" value={formatCount(profile.vessels)} />
+        <Row label="Connected places" value={formatCount(profile.links.length)} />
+        <Row label="Window" value={`${profile.observationDays} ${profile.scope === "month" ? "days in the August summary" : "loaded day"}`} />
+        <Row label="Residents" value={profile.population == null ? "Not loaded" : formatCount(profile.population)} />
+      </dl>
+      {profile.population != null ? <p className="mt-2 text-xs text-fg-muted">Population is context from the loaded census table. Journeys per resident are not a passenger-service measure.</p> : null}
+      <ul className="mt-2 space-y-1">
+        {profile.links.slice(0, 6).map((link) => (
+          <li key={`${link.direction}:${link.indicator.id}`} className="text-fg-secondary">
+            {link.direction === "arrival" ? "From" : "To"} {link.other.label}: {formatCount(link.indicator.passages)} journeys, typical {link.indicator.medianDurationMs == null ? "—" : formatDuration(link.indicator.medianDurationMs)}
+          </li>
+        ))}
+      </ul>
+      {profile.warnings.map((warning) => <p key={warning} className="mt-2 text-xs text-fg-muted">{warning}</p>)}
     </div>
   );
 }

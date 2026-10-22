@@ -11,7 +11,11 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "data:connectivity": "tsx scripts/aggregate-connectivity.ts",
+    "data:reference": "node scripts/fetch-reference.mjs",
+    "data:census": "tsx scripts/import-census.ts",
+    "data:findings": "tsx scripts/report-findings.ts"
   },
   "dependencies": {
     "lucide-react": "^1.61.0",
@@ -29,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"

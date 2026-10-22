@@ -23,6 +23,9 @@ npm test
 npm run typecheck
 npm run lint
 npm run build
+npm run data:reference
+npm run data:connectivity
+npm run data:census -- path/to/census.csv
 ```
 
 `npm install`, `npm run dev`, and `npm run build` copy the MapLibre worker into `public/vendor/maplibre`.
@@ -33,7 +36,8 @@ npm run build
 2. Choose one FollowMe CSV, or a folder of daily files. Named columns are `poll_id`, `imei`, `timestamp`, `device_date`, `latitude`, `longitude`, `speed`, `heading`, `network`, `cellid`, and `gsm_level`. A headerless export is also accepted: IMEI, time, latitude, longitude, and speed must sit in columns 2, 4, 5, 6, and 7.
 3. `device_date` is the observation clock. `timestamp` is the database save time and only orders ties.
 4. In development, **Load local August files** reads `data/FollowMe/FollowMe_august_2025/1.csv` through `31.csv` one day at a time. The raw tracks are gitignored. The browser keeps two days in memory.
-5. Optionally choose island GeoJSON. Named polygons (`name`, `NAME`, or `island`) are used by Sea Network and Route Lab. Medical and Coast Guard sites are points, or polygons, with `kind` of `medical` or `coast_guard`. A medical site is used in the evacuation estimate only when `verified` is true.
+5. Optionally choose island GeoJSON. Named polygons are used as place names. Medical and Coast Guard sites are points or polygons with `kind` of `medical` or `coast_guard`. A medical site is used only when `verified` is true. If `public/reference/osm-islands.geojson` and `osm-harbours.geojson` exist, they load on their own. See [CONNECTIVITY_METHOD.md](CONNECTIVITY_METHOD.md).
+6. In development, Network can read `data/derived/connectivity-august-2025.json` after `npm run data:connectivity`. That summary is gitignored.
 
 **Load synthetic test data** reads `public/fixtures/synthetic-followme.csv` and `public/fixtures/synthetic-islands.geojson`. Those pages are labelled synthetic and are not observations.
 
@@ -44,8 +48,8 @@ The August FollowMe extract lives under `data/FollowMe`. See `QUALITY_AUDIT.md` 
 The map, the loaded day, and the playback clock stay mounted while you move between sections. Older addresses redirect: `/` and `/explorer` to `/explore`, `/emergency` to `/simulate`, and `/routes` to `/network?tab=routes`.
 
 - **Explore** — day quality, vessel search, and activity cells for the loaded day.
-- **Network** — inferred activity directions and named-polygon directions. Route Lab is the second tab: observed count, median, range, and a straight-line reference. A typed duration is a hypothetical.
-- **Simulate** — a hypothetical incident against historical positions. It does not dispatch a vessel.
+- **Network** — observed connections for the loaded day or, in development, the August summary. A place profile opens from a cluster on the map. Find opportunities ranks connections that clear an evidence bar. Route Lab compares the observed typical time with a typed hypothetical.
+- **Simulate** — experimental. A hypothetical incident against historical positions. It does not dispatch a vessel.
 
 The sidebar can be expanded, collapsed to an icon rail, or hidden. A details card describes the selected vessel, cell, connection, or scenario. Closing the card keeps that selection on the map. Hub hover shows only the unique-vessel count.
 
