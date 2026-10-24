@@ -9,6 +9,7 @@ import { ANOMALY } from "@/config/constants";
 import { useDataset } from "@/context/MaritimeContext";
 import { useWorkspace } from "@/context/WorkspaceContext";
 import { tallyPassageFlags } from "@/lib/analytics/anomalies";
+import { countReviewTiers, reviewFirst } from "@/lib/analytics/review-priority";
 import type { ConnectionIndicator } from "@/lib/analytics/connectivity";
 import { connectivityCsv, downloadText } from "@/lib/analytics/export-report";
 import { summarizeFrequency } from "@/lib/analytics/frequency";
@@ -19,6 +20,14 @@ export function FrequencyReport({ indicators }: { indicators: readonly Connectio
   const { state } = useWorkspace();
   const review = usePassageReview();
   const unusual = useMemo(() => tallyPassageFlags(review.summaries.values()), [review.summaries]);
+  const tiers = useMemo(
+    () => (state.network.scope === "day" ? countReviewTiers(review.day.outliers) : null),
+    [review.day.outliers, state.network.scope],
+  );
+  const reviewCards = useMemo(
+    () => (state.network.scope === "day" ? reviewFirst(review.day.outliers, 3).length : null),
+    [review.day.outliers, state.network.scope],
+  );
   const sample = indicators[0];
   const days = Math.max(1, sample?.observationDays ?? 1);
   const period = `${sample?.periodLabel ?? "none"}:${days}`;
@@ -70,6 +79,9 @@ export function FrequencyReport({ indicators }: { indicators: readonly Connectio
             : `${formatCount(unusual.connections)} ${unusual.connections === 1 ? "connection has" : "connections have"} journeys far outside the usual time: ${formatCount(unusual.outliers)} ${unusual.outliers === 1 ? "journey" : "journeys"} in total.`}
           {unusual.movementKnown && unusual.outliers > 0
             ? ` ${formatCount(unusual.stationary)} barely moved, ${formatCount(unusual.slowDirect)} ${unusual.slowDirect === 1 ? "was" : "were"} direct but slow, ${formatCount(unusual.longDetour)} took a much longer path, and ${formatCount(unusual.unusuallyLong)} ${unusual.unusuallyLong === 1 ? "was" : "were"} long without one of those patterns.`
+            : ""}
+          {tiers && reviewCards != null
+            ? ` Review first shows ${formatCount(reviewCards)} ${reviewCards === 1 ? "connection" : "connections"}. ${formatCount(tiers.data_issue)} ${tiers.data_issue === 1 ? "journey looks" : "journeys look"} like a stop or a gap in the track, and ${formatCount(tiers.insufficient)} ${tiers.insufficient === 1 ? "matches" : "match"} that vessel’s own usual time.`
             : ""}
         </p>
         <p className="text-xs leading-5 text-fg-muted">

@@ -5,15 +5,15 @@ import { useState } from "react";
 import { usePlaybackClock, usePlaybackSettings } from "@/context/MaritimeContext";
 import { useWorkspace } from "@/context/WorkspaceContext";
 import type { PassageFlagSummary, PassageOutlier } from "@/lib/analytics/anomalies";
+import { classifyOutlier, findingTitle } from "@/lib/analytics/review-priority";
 import { formatCount, formatDuration } from "@/lib/format";
 import type { Journey } from "@/types/maritime";
 
-const KIND_LABEL: Record<PassageOutlier["kind"], string> = {
-  stationary: "Barely moving",
-  slow_direct: "Direct but slow",
-  long_detour: "Much longer path",
-  unusually_long: "Long journey",
-};
+const TIER_LABEL = {
+  investigate: "Worth investigating",
+  data_issue: "Possible data issue",
+  insufficient: "Not enough to promote",
+} as const;
 
 export function UnusualPassages({
   outliers,
@@ -54,7 +54,7 @@ export function UnusualPassages({
                 aria-pressed={current?.journeyIndex === item.journeyIndex}
                 onClick={() => setOpened(item.journeyIndex)}
               >
-                {KIND_LABEL[item.kind]} · {formatDuration(item.durationMs)}
+                {findingTitle(item.kind)} · {formatDuration(item.durationMs)}
               </button>
             ))}
           </div>
@@ -71,6 +71,7 @@ export function UnusualPassages({
 function PassageStory({ item, journey }: { item: PassageOutlier; journey: Journey | null }) {
   return (
     <div className="space-y-2 rounded-lg border border-border bg-surface-sunken p-2 text-sm leading-6">
+      <p className="text-xs text-fg-muted">{TIER_LABEL[classifyOutlier(item).tier]}</p>
       <p><span className="font-medium">What happened. </span>{item.what}</p>
       <p><span className="font-medium">Why it was flagged. </span>{item.why}</p>
       <p><span className="font-medium">Evidence. </span>{item.evidence}</p>

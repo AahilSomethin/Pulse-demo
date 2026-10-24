@@ -8,11 +8,16 @@ function geoClass(indicator: ConnectionIndicator): NetworkFilters["geoClass"] {
   return "inferred";
 }
 
-export function filterIndicators(indicators: readonly ConnectionIndicator[], filters: NetworkFilters): ConnectionIndicator[] {
+export function filterIndicators(
+  indicators: readonly ConnectionIndicator[],
+  filters: NetworkFilters,
+  options?: { forAnomalyReview?: boolean },
+): ConnectionIndicator[] {
   return indicators.filter((indicator) => {
-    if (indicator.passages < filters.minPassages) return false;
-    if (filters.evidence === "adequate" && indicator.evidence !== "adequate") return false;
-    if (filters.evidence === "limited" && indicator.evidence === "insufficient") return false;
+    // The minimum-journeys box shortens the general lists. Anomaly review keeps its own 8-journey and 3-vessel rule.
+    if (!options?.forAnomalyReview && indicator.passages < filters.minPassages) return false;
+    if (!options?.forAnomalyReview && filters.evidence === "adequate" && indicator.evidence !== "adequate") return false;
+    if (!options?.forAnomalyReview && filters.evidence === "limited" && indicator.evidence === "insufficient") return false;
     const minutes = indicator.medianDurationMs == null ? null : indicator.medianDurationMs / 60_000;
     if (filters.minDurationMin > 0 && (minutes == null || minutes < filters.minDurationMin)) return false;
     if (filters.maxDurationMin > 0 && (minutes == null || minutes > filters.maxDurationMin)) return false;

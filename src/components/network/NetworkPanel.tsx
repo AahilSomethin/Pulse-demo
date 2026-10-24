@@ -13,13 +13,15 @@ import { connectionOverlay } from "@/lib/analytics/map-links";
 import { FrequencyReport } from "@/components/network/FrequencyReport";
 import { usePassageReview } from "@/components/network/usePassageReview";
 import { findOpportunities, DEFAULT_OPPORTUNITY_THRESHOLDS, type Opportunity } from "@/lib/analytics/opportunities";
+import { countReviewTiers, reviewFirst } from "@/lib/analytics/review-priority";
+import { ReviewFirst } from "@/components/network/ReviewFirst";
 import { formatCount, formatMinutes } from "@/lib/format";
 import { compareScenario, describeBaseline } from "@/lib/simulation/routes";
 import type { NetworkTab } from "@/lib/workspace/state";
 import type { ConnectionIndicator } from "@/lib/analytics/connectivity";
 
 export function NetworkPanel() {
-  const { dataset, indicators, month, monthIndicators, loadMonth, loading, sameIslandPassages, monthSameIslandPassages } = useDataset();
+  const { dataset, indicators, journeys, month, monthIndicators, loadMonth, loading, sameIslandPassages, monthSameIslandPassages } = useDataset();
   const { state, setNetworkTab, patchNetwork, patchRoute, openDetail, focusOn } = useWorkspace();
   const source = state.network.scope === "month" ? monthIndicators : indicators;
   const filtered = useMemo(() => filterIndicators(source, state.network), [source, state.network]);
@@ -29,6 +31,18 @@ export function NetworkPanel() {
     () => findOpportunities(filtered, DEFAULT_OPPORTUNITY_THRESHOLDS, review.summaries),
     [filtered, review.summaries],
   );
+  const reviewAllowed = useMemo(() => {
+    const byId = new Map<string, ConnectionIndicator>();
+    for (const indicator of [...monthIndicators, ...indicators]) byId.set(indicator.id, indicator);
+    for (const indicator of source) byId.set(indicator.id, indicator);
+    return new Set(filterIndicators([...byId.values()], state.network, { forAnomalyReview: true }).map((indicator) => indicator.id));
+  }, [monthIndicators, indicators, source, state.network]);
+  const reviewOutliers = useMemo(
+    () => (dataset ? review.day.outliers.filter((item) => reviewAllowed.has(item.connectionId)) : []),
+    [dataset, review.day.outliers, reviewAllowed],
+  );
+  const reviewPicks = useMemo(() => reviewFirst(reviewOutliers, 3), [reviewOutliers]);
+  const reviewTiers = useMemo(() => countReviewTiers(reviewOutliers), [reviewOutliers]);
   const overlay = useMemo(() => {
     if (state.networkTab === "routes") {
       const selected = filtered.find((indicator) => indicator.id === state.route.pair) ?? filtered[0] ?? null;
@@ -36,12 +50,18 @@ export function NetworkPanel() {
     }
     if (state.networkTab === "opportunities") {
       const flagged = opportunities.flagged.map((item) => item.indicator);
-      const selected = flagged.find((indicator) => indicator.id === activeId) ?? null;
-      return connectionOverlay(selected ? [selected] : flagged.slice(0, 8), selected?.id ?? null, "opportunity");
+      const preferred = reviewPicks.flatMap((item) => {
+        const indicator = source.find((candidate) => candidate.id === item.outlier.connectionId)
+          ?? indicators.find((candidate) => candidate.id === item.outlier.connectionId)
+          ?? monthIndicators.find((candidate) => candidate.id === item.outlier.connectionId);
+        return indicator ? [indicator] : [];
+      });
+      const selected = preferred.find((indicator) => indicator.id === activeId) ?? flagged.find((indicator) => indicator.id === activeId) ?? null;
+      return connectionOverlay(selected ? [selected] : preferred, selected?.id ?? null, "opportunity");
     }
     if (state.networkTab === "frequency") return connectionOverlay([], null, "selected");
     return connectionOverlay(filtered, activeId, "overview");
-  }, [state.networkTab, state.route.pair, filtered, activeId, opportunities]);
+  }, [state.networkTab, state.route.pair, filtered, activeId, opportunities, reviewPicks, source, indicators, monthIndicators]);
   const mapOverlay = useMemo(
     () => ({ clickMode: "vessel" as const, markers: [], lines: overlay.lines, locations: overlay.locations }),
     [overlay],
@@ -82,8 +102,8 @@ export function NetworkPanel() {
       <ConnectionFilters filters={state.network} atolls={atollsFor(source)} onChange={patchNetwork} />
       {state.network.scope === "month" && !month ? <Notice>The August summary is read from this computer. It is not included in the published app until redistribution of the derived file is confirmed.</Notice> : null}
       {state.networkTab === "observed" ? <p className="text-xs leading-5 text-fg-muted">Every matching connection stays in the list. The map draws them as thin lines and reveals more as you zoom in. A selected line stays visible.</p> : null}
-      {state.networkTab === "opportunities" ? <p className="text-xs leading-5 text-fg-muted">The map shows investigation candidates. The selected candidate stays in front, and other network lines stay off the map. Those connections are still in the data. Open one to read why a journey was flagged, then replay it on the map.</p> : null}
-      {state.networkTab === "opportunities" && state.network.scope === "day" && !month ? <p className="text-xs leading-5 text-fg-muted">Until the August summary is loaded, a journey is compared only with the loaded day. Most connections do not have enough repeated journeys for that. Switch the window to August, then return to this day to replay one journey against the month.</p> : null}
+      {state.networkTab === "opportunities" ? <p className="text-xs leading-5 text-fg-muted">Start with Review first. Investigate opens one journey and replays it. Minimum journeys only shortens the full list.</p> : null}
+      {state.networkTab === "opportunities" && dataset && state.network.scope === "day" && !month ? <p className="text-xs leading-5 text-fg-muted">Until the August summary is loaded, a journey is compared only with the loaded day. Most connections do not have enough repeated journeys for that. Switch the window to August, then return to this day to replay one journey against the month.</p> : null}
       {state.networkTab === "routes" ? <p className="text-xs leading-5 text-fg-muted">The map shows the selected connection. The rest of the network stays in the list.</p> : null}
       {(state.network.scope === "month" ? monthSameIslandPassages : sameIslandPassages) > 0 ? (
         <p className="text-xs leading-5 text-fg-muted">{formatCount(state.network.scope === "month" ? monthSameIslandPassages : sameIslandPassages)} passages moved between activity cells on the same named island. They stay in the record and are not shown as inter-island connections.</p>
@@ -96,12 +116,35 @@ export function NetworkPanel() {
       </div>
       {state.networkTab === "observed" ? <ConnectionList indicators={filtered} activeId={activeId} onChoose={choose} /> : null}
       {state.networkTab === "opportunities" ? (
-        <OpportunityList
-          flagged={opportunities.flagged}
-          withheld={opportunities.withheld.length}
-          activeId={activeId}
-          onChoose={choose}
-        />
+        <div className="space-y-3">
+          {dataset ? (
+            <ReviewFirst
+              findings={reviewPicks}
+              dataIssues={reviewTiers.data_issue}
+              insufficient={reviewTiers.insufficient}
+              hiddenByFilter={review.day.outliers.length > 0 && reviewOutliers.length === 0}
+              journeys={journeys}
+              indicatorFor={(id) => source.find((item) => item.id === id) ?? indicators.find((item) => item.id === id) ?? monthIndicators.find((item) => item.id === id) ?? null}
+              onChoose={choose}
+            />
+          ) : (
+            <section className="space-y-2" data-tour="review-first">
+              <h2 className="text-sm font-semibold">Review first</h2>
+              <p className="text-sm leading-6 text-fg-muted">Load a tracker day to review an unusual journey and replay it. The August summary stores times only, so it cannot separate a stop from slower travel.</p>
+            </section>
+          )}
+          <details className="rounded-lg border border-border px-3 py-2">
+            <summary className="cursor-pointer text-sm font-medium">View all findings</summary>
+            <div className="mt-2">
+              <OpportunityList
+                flagged={opportunities.flagged}
+                withheld={opportunities.withheld.length}
+                activeId={activeId}
+                onChoose={choose}
+              />
+            </div>
+          </details>
+        </div>
       ) : null}
       {state.networkTab === "routes" ? <RouteLab indicators={filtered} onChoose={choose} /> : null}
       {state.networkTab === "frequency" ? <FrequencyReport indicators={filtered} /> : null}

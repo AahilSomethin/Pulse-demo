@@ -49,6 +49,9 @@ export interface PassageOutlier {
   cohortPassages: number;
   cohortVessels: number;
   maxGapMs: number;
+  pingsBetween: number;
+  /** How many ends match an island or harbour name. Unnamed cells stay less useful to open first. */
+  namedEnds: number;
   baseline: AnomalyBaseline;
   what: string;
   why: string;
@@ -111,6 +114,11 @@ function kindOf(trackedKn: number, ratio: number, cohortKn: number | null): Outl
     return "slow_direct";
   }
   return "unusually_long";
+}
+
+function namedEnds(journey: Journey): number {
+  const named = (name: string | null, place: string | null) => (name || place ? 1 : 0);
+  return named(journey.origin.islandName, journey.origin.placeName) + named(journey.destination.islandName, journey.destination.placeName);
 }
 
 function ends(journey: Journey): string {
@@ -310,6 +318,8 @@ export function findPassageOutliers(journeys: readonly Journey[], cohorts: reado
         cohortPassages: passages,
         cohortVessels: vessels,
         maxGapMs: item.journey.maxGapMs,
+        pingsBetween: item.journey.pingsBetween,
+        namedEnds: namedEnds(item.journey),
         baseline,
         ...text,
       });

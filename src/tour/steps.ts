@@ -57,7 +57,7 @@ function opportunityCopy(snapshot: GuideSnapshot): string {
   if (snapshot.connectionCount === 0) {
     return "Find opportunities checks loaded connections for unusual travel times, uneven activity across days, or thin evidence. Nothing is loaded in the current window, so there is nothing to flag. A flag is an investigation candidate, not proof that a service failed.";
   }
-  return `Find opportunities checks the ${snapshot.connectionCount} connections in the current window. ${snapshot.opportunityCount} meet an investigation rule. A journey that is far longer than usual can be opened and replayed. A flag is a question for a planner, not proof that a service failed.`;
+  return `Find opportunities opens Review first for the ${snapshot.connectionCount} connections in this window. It shows up to three unusual journeys from the loaded day, with the usual time beside each one. Investigate replays one on the map. ${snapshot.opportunityCount} connections also meet another investigation rule, under all findings. A flag is a question for a planner, not proof that a service failed.`;
 }
 
 function profileCopy(snapshot: GuideSnapshot): { description: string; fallback: string; target: string | null } {
