@@ -1,0 +1,193 @@
+Atoll,Island,Total population 2014,Total Population 2022,Airport,Indicator,Capital,Hospital max level
+HA,Baarah,1173,1141,,,,health centre
+HA,Dhidhdhoo,2613,3412,,,TRUE,Hospital Grade 2
+HA,Filladhoo,562,559,,,,Health Centre Grade 1
+HA,Hoarafushi,1726,1841,Hoarafushi Airport,VRAH,,Health Centre Grade 4
+HA,Ihavandhoo,2461,2873,,,,health centre
+HA,Kelaa,1037,1115,,,,Health Centre Grade 3
+HA,Maarandhoo,647,668,,,,Health Centre Grade 2
+HA,Mulhadhoo,220,286,,,,Health Centre Grade 1
+HA,Muraidhoo,443,534,,,,Health Centre Grade 1
+HA,Thakandhoo,336,279,,,,Health Centre Grade 2
+HA,Thuraakunu,393,427,,,,Health Centre Grade 1
+HA,Uligamu,367,400,,,,Health Centre Grade 1
+HA,Utheemu,538,612,,,,Health Centre Grade 2
+HA,Vashafaru,423,476,,,,Health Centre Grade 2
+HDh,Finey,388,409,,,,Health Centre Grade 1
+HDh,Hanimaadhoo,1616,2664,Hanimaadhoo International Airport,VRMH,,Health Centre Grade 3
+HDh,Hirimaradhoo,314,293,,,,Health Centre Grade 1
+HDh,Kulhudhuffushi,8186,10131,Kulhudhuffushi Airport,VRBK,TRUE,Hospital Grade 3
+HDh,Kumundhoo,858,997,,,,Health Centre Grade 1
+HDh,Kuribi,444,492,,,,Health Centre Grade 1
+HDh,Makunudhoo,1213,1265,,,,Health Centre Grade 3
+HDh,Naivaadhoo,397,495,,,,Health Centre Grade 1
+HDh,Nellaidhoo,827,1038,,,,Health Centre Grade 2
+HDh,Neykurendhoo,706,641,,,,Health Centre Grade 3
+HDh,Nolhivaramu,1830,1985,,,,Health Centre Grade 3
+HDh,Nolhivaranfaru,990,1254,,,,Health Centre Grade 3
+HDh,Vaikaradhoo,746,776,,,,Health Centre Grade 3
+Sh,Bilehffahi,465,502,,,,Health Centre Grade 1
+Sh,Feevah,613,694,,,,Health Centre Grade 2
+Sh,Feydhoo,721,854,,,,Health Centre Grade 2
+Sh,Foakaidhoo,1319,1571,,,,Health Centre Grade 3
+Sh,Funadhoo,2015,2255,Funadhoo Airport,VRCF,TRUE,Hospital Grade 2
+Sh,Goidhoo,496,592,,,,Health Centre Grade 1
+Sh,Kaditheemu,1057,1193,,,,Health Centre Grade 2
+Sh,Komandoo,1054,921,,,,Health Centre Grade 3
+Sh,Lhaimagu,562,684,,,,Health Centre Grade 1
+Sh,Maaugoodhoo,774,944,,,,Health Centre Grade 2
+Sh,Maroshi,425,479,,,,Health Centre Grade 2
+Sh,Milandhoo,1782,2094,,,,Health Centre Grade 3
+Sh,Narudhoo,471,544,,,,Health Centre Grade 1
+Sh,Noomaraa,337,371,,,,Health Centre Grade 1
+N,Fodhdhoo,215,345,,,,Health Centre Grade 1
+N,Henbadhoo,475,638,,,,Health Centre Grade 1
+N,Holhudhoo,1508,1428,,,,Health Centre Grade 3
+N,Kedhikulhudhoo,1285,1556,,,,Health Centre Grade 2
+N,Kudafari,414,628,,,,Health Centre Grade 1
+N,Landhoo,652,757,,,,Health Centre Grade 2
+N,Lhohi,571,692,,,,Health Centre Grade 1
+N,Maafaru,697,919,Maafaru airport,VRDA,,Health Centre Grade 3
+N,Maalhendhoo,633,724,,,,Health Centre Grade 1
+N,Magoodhoo,252,305,,,,Health Centre Grade 1
+N,Manadhoo,1295,1745,,,TRUE,Hospital Grade 2
+N,Miladhoo,799,934,,,,Health Centre Grade 2
+N,Velidhoo,1687,1832,,,,Health Centre Grade 4
+R,Agolhitheemu,373,381,,,,Health Centre Grade 1
+R,Alifushi,1571,1859,,,,Health Centre Grade 3
+R,Dhuvaafaru,2920,3321,,,,Health Centre Grade 4
+R,Fainu,304,423,,,,Health Centre Grade 1
+R,Hulhudhuffaaru,1079,1228,,,,Health Centre Grade 3
+R,Iguraidhoo,1123,1278,,,,Health Centre Grade 3
+R,Innamaadhoo,504,663,,,,Health Centre Grade 1
+R,Kinolhas,432,543,,,,Health Centre Grade 1
+R,Maakurathu,765,956,,,,Health Centre Grade 2
+R,Maduvvari,1390,1760,,,,Health Centre Grade 3
+R,Meedhoo,1664,1872,,,,Health Centre Grade 3
+R,Rasgetheemu,484,537,,,,Health Centre Grade 1
+R,Rasmaadhoo,494,554,,,,Health Centre Grade 1
+R,Ugoofaaru,1384,1754,,,TRUE,Hospital Grade 3
+R,Vaadhoo,375,452,,,,Health Centre Grade 1
+B,Dharavandhoo,739,997,Dharavandhoo,VRMD,,Health Centre Grade 3
+B,Dhonfanu,359,398,,,,Health Centre Grade 1
+B,Eydhafushi,2530,2581,,,TRUE,Hospital Grade 2
+B,Fehendhoo,99,198,,,,Health Centre Grade 1
+B,Fulhadhoo,174,341,,,,Health Centre Grade 1
+B,Goidhoo,501,583,,,,Health Centre Grade 3
+B,Hithaadhoo,669,744,,,,Health Centre Grade 3
+B,Kamadhoo,353,552,,,,Health Centre Grade 1
+B,Kendhoo,829,1002,,,,Health Centre Grade 3
+B,Kihaadhoo,345,481,,,,Health Centre Grade 1
+B,Kudarikilu,410,557,,,,Health Centre Grade 1
+B,Maalhos,458,572,,,,Health Centre Grade 1
+B,Thulhaadhoo,1412,1625,,,,Health Centre Grade 4
+Lh,Hinnavaru,2422,2286,,,,Health Centre Grade 4
+Lh,Kurendhoo,1177,1171,,,,Health Centre Grade 3
+Lh,Naifaru,3806,4832,,,TRUE,Hospital Grade 2
+Lh,Olhuvelifushi,500,703,,,,Health Centre Grade 3
+K,Dhiffushi,966,1270,,,,Health Centre Grade 2
+K,Gaafaru,1010,1294,,,,Health Centre Grade 2
+K,Gulhi,831,976,,,,Health Centre Grade 2
+K,Guraidhoo,1569,1743,,,,Health Centre Grade 3
+K,Himmafushi,1328,2012,,,,Health Centre Grade 3
+K,Huraa,1014,1654,,,,Health Centre Grade 2
+K,Kaashidhoo,1715,2528,,,,Health Centre Grade 3
+K,Maafushi,2606,4471,,,,Health Centre Grade 3
+K,Thulusdhoo,1127,1801,,,TRUE,Health Centre Grade 3
+AA,Bodufolhudhoo,584,704,,,,Health Centre Grade 1
+AA,Feridhoo,413,544,,,,Health Centre Grade 2
+AA,Himandhoo,666,885,,,,Health Centre Grade 1
+AA,Maalhos,408,516,,,,Health Centre Grade 1
+AA,Mathiveri,623,878,,,,Health Centre Grade 3
+AA,Rasdhoo,943,1282,,,TRUE,Hospital Grade 1
+AA,Thoddoo,1347,1924,,,,Health Centre Grade 3
+AA,Ukulhas,921,1284,,,,Health Centre Grade 3
+ADh,Dhagethi,707,936,,,,Health Centre Grade 3
+ADh,Dhidhdhoo,137,141,,,,Health Centre Grade 1
+ADh,Dhigurah,522,761,,,,Health Centre Grade 2
+ADh,Fenfushi,726,1000,,,,Health Centre Grade 2
+ADh,Hangnameedhoo,480,484,,,,Health Centre Grade 1
+ADh,Kuburudhoo,437,509,,,,Health Centre Grade 1
+ADh,Maamigili,2077,2798,Villa International Airport Maamigili,VRMV,,Health Centre Grade 4
+ADh,Mahibadhoo,1925,2580,,,TRUE,Hospital Grade 1
+ADh,Mandhoo,294,418,,,,Health Centre Grade 1
+ADh,Omadhoo,840,913,,,,Health Centre Grade 2
+V,Felidhoo,473,620,,,,Hospital Grade 1
+V,Fulidhoo,323,400,,,,Health Centre Grade 1
+V,Keyodhoo,635,641,,,,Health Centre Grade 2
+V,Rakeedhoo,101,76,,,,Health Centre Grade 1
+V,Thinadhoo,69,258,,,TRUE,Health Centre Grade 1
+M,Dhiggaru,944,1099,,,,Health Centre Grade 4
+M,Kolhufushi,702,793,,,,Health Centre Grade 4
+M,Maduvvari,350,318,,,,Health Centre Grade 4
+M,Mulah,1194,1426,,,,Health Centre Grade 3
+M,Muli,775,949,Muli,VRKM,,Hospital Grade 1
+M,Naalaafushi,406,430,,,,Health Centre Grade 4
+M,Raimandhoo,111,171,,,,Health Centre Grade 4
+M,Veyvah,223,304,,,,Health Centre Grade 1
+F,Biledhdhoo,868,967,,,,Health Centre Grade 2
+F,Dharaboodhoo,383,455,,,,Health Centre Grade 1
+F,Feeali,808,922,,,,Health Centre Grade 2
+F,Magoodhoo,512,702,,,,Health Centre Grade 2
+F,Nilandhoo,1548,1823,,,,Hospital Grade 1
+Dh,Badidhoo,714,629,,,,Health Centre Grade 2
+Dh,Hulhudheli,681,764,,,,Health Centre Grade 1
+Dh,Kudahuvadhoo,2213,3131,Dhaalu,VRMU,TRUE,Hospital Grade 2
+Dh,Maaeboodhoo,591,679,,,,Health Centre Grade 1
+Dh,Meedhoo,856,1118,,,,Health Centre Grade 3
+Dh,Ribudhoo,250,316,,,,Health Centre Grade 1
+Th,Buruni,312,414,,,,Health Centre Grade 2
+Th,Dhiyamigili,511,649,,,,Health Centre Grade 2
+Th,Gaadhiffushi,239,317,,,,Health Centre Grade 1
+Th,Guraidhoo,1211,1293,,,,Health Centre Grade 3
+Th,Hirilandhoo,952,1146,,,,Health Centre Grade 3
+Th,Kadoodhoo,370,456,,,,Health Centre Grade 1
+Th,Kibidhoo,747,715,,,,Health Centre Grade 2
+Th,Madifushi,741,858,,,,Health Centre Grade 3
+Th,Omadhoo,415,417,,,,Health Centre Grade 2
+Th,Thimarafushi,1101,1229,Thimarafushi Airport,VRNT,,Health Centre Grade 3
+Th,Vandhoo,275,364,,,,Health Centre Grade 1
+Th,Veymandoo,1051,1321,,,TRUE,Hospital Grade 2
+Th,Vilufushi,976,1081,,,,Health Centre Grade 3
+L,Dhabidhoo,622,606,,,,Health Centre Grade 1
+L,Fonadhoo,2078,2986,,,TRUE,Health Centre Grade 3
+L,Gamu,2793,4815,,,,Hospital Grade 3
+L,Hithadhoo,989,1108,,,TRUE,Health Centre Grade 3
+L,Isdhoo,907,929,,,,Health Centre Grade 3
+L,Kalaidhoo,552,655,,,,health centre
+L,Kunahandhoo,628,601,,,,Health Centre Grade 1
+L,Maabaidhoo,607,565,,,,Health Centre Grade 3
+L,Maamendhoo,824,879,,,,Health Centre Grade 2
+L,Maavah,1399,1379,,,,Health Centre Grade 3
+L,Mundoo,222,176,,,,Health Centre Grade 1
+GA,Dhaandhoo,1009,1044,,,,Health Centre Grade 3
+GA,Dhevvadhoo,504,599,,,,Health Centre Grade 3
+GA,Gemanafushi,1147,1318,,,,Health Centre Grade 3
+GA,Kanduhulhudhoo,503,619,,,,Health Centre Grade 1
+GA,Kodey,258,328,,,,Health Centre Grade 1
+GA,Kolamaafushi,871,636,,,,Health Centre Grade 3
+GA,Maamendhoo,1053,1201,,,,Health Centre Grade 3
+GA,Nilandhoo,500,545,,,TRUE,Health Centre Grade 1
+GA,Viligili,2489,2900,,,,Hospital Grade 2
+GDh,Fares-Maathodaa,1024,858,Faresmaathodaa Airport,VRQF,,Health Centre Grade 3
+GDh,Fiyoari,689,637,,,,Health Centre Grade 2
+GDh,Gadhdhoo,1387,1414,,,,Health Centre Grade 4
+GDh,Hoadedhdhoo,800,885,,,,Health Centre Grade 2
+GDh,Madaveli,1145,1219,,,,Health Centre Grade 2
+GDh,Nadallaa,738,581,,,,Health Centre Grade 2
+GDh,Rathafandhoo,514,431,,,,Health Centre Grade 2
+GDh,Thinadhoo,4629,6217,,,,Hospital Grade 3
+GDh,Vaadhoo,661,516,,,,Health Centre Grade 3
+Gn,Fuvahmulah,7984,9177,Fuvahmulah Airport,VRMR,TRUE,Hospital Grade 2
+S,Feydhoo,3099,4289,,,,Health Centre Grade 3
+S,Hithadhoo,10114,13759,,,,Tertiary Hospital
+S,Hulhudhoo,1104,1182,,,,Health Centre Grade 3
+S,Maradhoo,2133,2542,,,,Health Centre Grade 3
+S,Maradhoo-Feydhoo,1153,1398,,,,health centre
+S,Meedhoo,1716,1892,,,,Health Centre Grade 3
+K,Hulhule,,802,Velana International Airport,VRMM,,,
+S,Gan,,,Gan International Airport,VRMG,,,
+GA,Kooddoo,,,Kooddoo Airport,VRMO,,,
+GDh,Kaadedhdhoo,,,Kaadedhdhoo Airport,VRMT,,,
+R,Ifuru,,,Ifuru Airport,VREI,,,
+K,Male' city,,211106,,,TRUE,Tertiary Hospital
