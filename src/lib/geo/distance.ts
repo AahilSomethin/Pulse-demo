@@ -10,6 +10,33 @@ export function distanceM(lon1: number, lat1: number, lon2: number, lat2: number
   return Math.hypot(dx, dy);
 }
 
+/** Metres from a point to a straight segment. The segment ends clamp the projection. */
+export function distanceToSegmentM(
+  lon: number,
+  lat: number,
+  lon1: number,
+  lat1: number,
+  lon2: number,
+  lat2: number,
+): number {
+  const midLat = ((lat1 + lat2) / 2) * (Math.PI / 180);
+  const cos = Math.cos(midLat);
+  const x = (value: number) => value * cos * M_PER_DEG_LNG;
+  const y = (value: number) => value * M_PER_DEG_LAT;
+  const px = x(lon);
+  const py = y(lat);
+  const ax = x(lon1);
+  const ay = y(lat1);
+  const bx = x(lon2);
+  const by = y(lat2);
+  const dx = bx - ax;
+  const dy = by - ay;
+  const length2 = dx * dx + dy * dy;
+  if (length2 === 0) return Math.hypot(px - ax, py - ay);
+  const t = Math.min(1, Math.max(0, ((px - ax) * dx + (py - ay) * dy) / length2));
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
+
 export function metersToNm(meters: number): number {
   return meters / M_PER_NM;
 }

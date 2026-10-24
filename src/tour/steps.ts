@@ -19,7 +19,7 @@ export interface GuideStep {
   fallbackDescription: string;
   /** `data-tour` value. Null means a centred explanation. */
   target: string | null;
-  route: "/explore" | "/network" | "/simulate" | null;
+  route: "/explore" | "/network" | "/simulate" | "/boat" | null;
   exploreTab: "data" | null;
   networkTab: "observed" | "opportunities" | "routes" | "frequency" | null;
   openConnection: boolean;
@@ -211,6 +211,18 @@ export function buildGuideSteps(snapshot: GuideSnapshot = EMPTY): GuideStep[] {
       route: "/network",
       exploreTab: null,
       networkTab: "frequency",
+      openConnection: false,
+      disableMap: false,
+    },
+    {
+      id: "boat",
+      title: "Boat operator",
+      description: "Boat operator, under Experimental, is a demo for one tracked device. It lists only that device's recorded routes. Place a hypothetical incident in Emergency Simulation. When the pin is near one of those straight lines, a consent card appears on this page and asks whether the operator passes that route. I pass this route stores an offer beside the incident. It does not dispatch a boat.",
+      fallbackDescription: "Boat operator is in the Experimental menu. Choose one tracked device to see only that device's recorded routes. A consent card appears after a hypothetical incident is placed near one of those routes. Nothing is loaded, so there is no route to offer.",
+      target: "boat-operator",
+      route: "/boat",
+      exploreTab: null,
+      networkTab: null,
       openConnection: false,
       disableMap: false,
     },

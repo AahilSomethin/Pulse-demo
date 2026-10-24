@@ -10,6 +10,7 @@ import {
   type ExploreTab,
   type NetworkFilters,
   type NetworkTab,
+  type RescueConsent,
   type RouteDraft,
   type ScenarioDraft,
   type SidebarMode,
@@ -36,6 +37,9 @@ interface WorkspaceApi {
   patchNetwork: (patch: Partial<NetworkFilters>) => void;
   patchScenario: (patch: Partial<ScenarioDraft>) => void;
   patchRoute: (patch: Partial<RouteDraft>) => void;
+  setBoatDevice: (device: number | null, source: string) => void;
+  recordConsent: (consent: RescueConsent) => void;
+  resetBoat: () => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceApi | null>(null);
@@ -130,6 +134,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     patchNetwork: (patch: Partial<NetworkFilters>) => dispatch({ type: "network", patch }),
     patchScenario: (patch: Partial<ScenarioDraft>) => dispatch({ type: "scenario", patch }),
     patchRoute: (patch: Partial<RouteDraft>) => dispatch({ type: "route", patch }),
+    setBoatDevice: (device: number | null, source: string) => dispatch({ type: "boat-device", device, source }),
+    recordConsent: (consent: RescueConsent) => dispatch({ type: "rescue-consent", consent }),
+    resetBoat: () => dispatch({ type: "reset-boat" }),
   }), [dispatch]);
   const api = useMemo<WorkspaceApi>(() => ({ state, ...actions }), [state, actions]);
 

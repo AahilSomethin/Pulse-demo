@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useMemo } from "react";
 
 import { useMapOverlay } from "@/components/layout/useMapOverlay";
@@ -9,6 +10,7 @@ import { useWorkspace } from "@/context/WorkspaceContext";
 import { distanceM } from "@/lib/geo/distance";
 import { formatKm, formatMinutes, formatNm, historicalLabel, maskDevice } from "@/lib/format";
 import { compareResponses } from "@/lib/simulation/emergency";
+import { boatLabel, boatRoster, incidentKey } from "@/lib/simulation/rescue";
 import type { MapLine, MapMarker } from "@/types/map";
 import type { ResponseOption } from "@/types/maritime";
 
@@ -100,7 +102,9 @@ export function SimulatePanel() {
           ))}
         </ul>
       )}
-      {!scenario.incident ? <p className="text-sm text-fg-muted">Choose “Place incident”, then click the map.</p> : null}
+      {!scenario.incident ? <p className="text-sm text-fg-muted">Choose “Place incident”, then click the map.</p> : (
+        <DemoAnswers incidentKey={incidentKey(scenario.incident)} />
+      )}
       <div className="space-y-2">
         {options.map((option, index) => (
           <button
@@ -118,6 +122,32 @@ export function SimulatePanel() {
         ))}
       </div>
     </>
+  );
+}
+
+function DemoAnswers({ incidentKey: pinKey }: { incidentKey: string }) {
+  const { dataset, journeys } = useDataset();
+  const { state } = useWorkspace();
+  const roster = useMemo(() => boatRoster(journeys), [journeys]);
+  const answers = state.consents.filter((item) => item.incidentKey === pinKey);
+  return (
+    <section className="rounded-lg border border-border bg-surface-sunken p-3">
+      <h2 className="text-sm font-semibold">Demo consents</h2>
+      <p className="mt-1 text-sm leading-6 text-fg-secondary">
+        <Link href="/boat" className="text-primary">Boat operator</Link> asks when a recorded route passes this pin. I pass this route stores an offer here. It does not dispatch a boat.
+      </p>
+      {answers.length === 0 ? <p className="mt-2 text-sm text-fg-muted">No boat has answered for this pin yet.</p> : (
+        <ul className="mt-2 space-y-2">
+          {answers.map((item) => (
+            <li key={`${item.device}:${item.routeKey}`} className="text-sm leading-6">
+              <p className="font-medium">{boatLabel(roster, item.device, dataset?.names[item.device] ?? "")}</p>
+              <p className="text-fg-secondary">{item.routeLabel}</p>
+              <p>{item.choice === "offer" ? "Offered this recorded route" : "Does not pass this route"}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

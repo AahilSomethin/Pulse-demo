@@ -31,6 +31,7 @@ describe("team guide steps", () => {
       "opportunities",
       "routes",
       "report",
+      "boat",
       "limits",
     ]);
     expect(steps.find((step) => step.id === "why")?.target).toBeNull();

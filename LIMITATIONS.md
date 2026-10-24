@@ -45,6 +45,7 @@ Each item is classified as resolved and verified, partially resolved, blocked by
 
 - **Coverage is the file.** 1,776 devices across August 2025 are the tracked set. They are not the Maldivian fleet. A place with no ping is not proof that it has no service. Census population is context beside that record, not proof of demand or of insufficient service.
 - **Straight-line distance.** Hubs, journeys, Route Lab, and Emergency use straight-line distance. Reefs, channels, traffic, and waiting are not in the data.
+- **Boat operator consent.** The Boat operator page is a demo. The operator is one tracked device chosen in the browser. Consent means that device has a recorded straight-line passage within the emergency radius of a hypothetical pin. It is not a live position, not a commitment to sail, and not a rescue assignment.
 - **Hubs are grid counts.** A hub is a cell of unique devices in the current window. One slow ping is enough. The cell is not a port.
 - **Activity cells remain a grid.** A 0.05° cell is about 5 km. Same-island pairs are no longer shown as crossings. Cells on an unnamed coast stay inferred.
 - **Playback window.** The window is `[t − W, t + 1)`. The bold trail is `(t − W, t]`. The selected vessel bypasses the speed filter and still counts toward hubs. Those are the original rules. Above 1× the clock commits one sample per frame, so GPS reports between samples are not drawn.
