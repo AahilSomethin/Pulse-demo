@@ -42,6 +42,15 @@ export interface RouteDraft {
   proposedMin: number;
 }
 
+/** A demo answer from one boat operator for one recorded passage and one pin. */
+export interface RescueConsent {
+  device: number;
+  routeKey: string;
+  incidentKey: string;
+  routeLabel: string;
+  choice: "offer" | "decline";
+}
+
 export interface WorkspaceState {
   sidebar: SidebarMode;
   detailsOpen: boolean;
@@ -57,6 +66,11 @@ export interface WorkspaceState {
   network: NetworkFilters;
   scenario: ScenarioDraft;
   route: RouteDraft;
+  /** Demo operator. A device index, not an account. */
+  boatDevice: number | null;
+  /** Tracker file the chosen boat belongs to. A new file clears the demo. */
+  boatSource: string | null;
+  consents: RescueConsent[];
 }
 
 export type WorkspaceAction =
@@ -75,7 +89,10 @@ export type WorkspaceAction =
   | { type: "network-tab"; tab: NetworkTab }
   | { type: "network"; patch: Partial<NetworkFilters> }
   | { type: "scenario"; patch: Partial<ScenarioDraft> }
-  | { type: "route"; patch: Partial<RouteDraft> };
+  | { type: "route"; patch: Partial<RouteDraft> }
+  | { type: "boat-device"; device: number | null; source: string }
+  | { type: "rescue-consent"; consent: RescueConsent }
+  | { type: "reset-boat" };
 
 export function initialWorkspaceState(): WorkspaceState {
   return {
@@ -112,6 +129,9 @@ export function initialWorkspaceState(): WorkspaceState {
       pair: "",
       proposedMin: 30,
     },
+    boatDevice: null,
+    boatSource: null,
+    consents: [],
   };
 }
 
@@ -167,6 +187,27 @@ export function reduceWorkspace(state: WorkspaceState, action: WorkspaceAction):
       return { ...state, scenario: { ...state.scenario, ...action.patch } };
     case "route":
       return { ...state, route: { ...state.route, ...action.patch } };
+    case "boat-device": {
+      const source = action.device == null ? null : action.source;
+      if (state.boatDevice === action.device && state.boatSource === source) return state;
+      return { ...state, boatDevice: action.device, boatSource: source };
+    }
+    case "rescue-consent": {
+      const index = state.consents.findIndex((item) => (
+        item.device === action.consent.device
+        && item.routeKey === action.consent.routeKey
+        && item.incidentKey === action.consent.incidentKey
+      ));
+      if (index >= 0 && state.consents[index].choice === action.consent.choice && state.consents[index].routeLabel === action.consent.routeLabel) {
+        return state;
+      }
+      const consents = state.consents.filter((_, itemIndex) => itemIndex !== index);
+      return { ...state, consents: [...consents, action.consent] };
+    }
+    case "reset-boat":
+      return state.boatDevice === null && state.boatSource === null && state.consents.length === 0
+        ? state
+        : { ...state, boatDevice: null, boatSource: null, consents: [] };
     default:
       return state;
   }

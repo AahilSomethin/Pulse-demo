@@ -25,6 +25,23 @@ describe("workspace state", () => {
     expect(reduceWorkspace(routes, { type: "network-tab", tab: "routes" })).toBe(routes);
   });
 
+  it("keeps one demo consent per boat, route, and incident", () => {
+    const selected = reduceWorkspace(initialWorkspaceState(), { type: "boat-device", device: 3, source: "day-1" });
+    const consent = {
+      device: 3,
+      routeKey: "3:1:2",
+      incidentKey: "4.00000,73.00000",
+      routeLabel: "North to South",
+      choice: "offer" as const,
+    };
+    const offered = reduceWorkspace(selected, { type: "rescue-consent", consent });
+    const declined = reduceWorkspace(offered, { type: "rescue-consent", consent: { ...consent, choice: "decline" } });
+    expect(declined.boatDevice).toBe(3);
+    expect(declined.consents).toEqual([{ ...consent, choice: "decline" }]);
+    expect(reduceWorkspace(declined, { type: "rescue-consent", consent: declined.consents[0] })).toBe(declined);
+    expect(reduceWorkspace(declined, { type: "reset-boat" }).consents).toEqual([]);
+  });
+
   it("hydrates only the stored preferences", () => {
     const next = reduceWorkspace(initialWorkspaceState(), {
       type: "hydrate",
