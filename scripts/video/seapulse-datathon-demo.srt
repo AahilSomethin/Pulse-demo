@@ -1,0 +1,19 @@
+1
+00:00:00,600 --> 00:00:10,011
+Across the Maldives, vessels move between islands every day. But understanding these connections from raw tracking data is challenging.
+
+2
+00:00:11,600 --> 00:00:17,987
+SeaPulse processes historical GPS observations to reveal patterns in maritime movement.
+
+3
+00:00:21,600 --> 00:00:30,243
+By reconstructing journeys and examining repeated movements, we can measure observed connections, journey times, and variability.
+
+4
+00:00:34,600 --> 00:00:41,803
+These measurements help identify connections with unusual patterns that transport planners can investigate further.
+
+5
+00:00:48,600 --> 00:00:59,530
+Authorised live tracking, ferry schedules, and passenger demand could later support predictive planning. Today, this prototype only shows how tracked vessels moved.

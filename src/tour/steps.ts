@@ -57,7 +57,7 @@ function opportunityCopy(snapshot: GuideSnapshot): string {
   if (snapshot.connectionCount === 0) {
     return "Find opportunities checks loaded connections for unusual travel times, uneven activity across days, or thin evidence. Nothing is loaded in the current window, so there is nothing to flag. A flag is an investigation candidate, not proof that a service failed.";
   }
-  return `Find opportunities checks the ${snapshot.connectionCount} connections in the current window. ${snapshot.opportunityCount} meet an investigation rule. A flag is a question for a planner, not proof that a service failed.`;
+  return `Find opportunities checks the ${snapshot.connectionCount} connections in the current window. ${snapshot.opportunityCount} meet an investigation rule. A journey that is far longer than usual can be opened and replayed. A flag is a question for a planner, not proof that a service failed.`;
 }
 
 function profileCopy(snapshot: GuideSnapshot): { description: string; fallback: string; target: string | null } {
@@ -182,7 +182,7 @@ export function buildGuideSteps(snapshot: GuideSnapshot = EMPTY): GuideStep[] {
       id: "opportunities",
       title: "Find opportunities",
       description: opportunityCopy(snapshot),
-      fallbackDescription: "Find opportunities is the primary action in Network. It lists investigation candidates from the loaded window and holds back connections that do not have enough repeated journeys.",
+      fallbackDescription: "Find opportunities is the primary action in Network. It lists investigation candidates from the loaded window, including journeys that took much longer than usual, and holds back connections that do not have enough repeated journeys. Nothing is loaded, so there is nothing to flag.",
       target: "find-opportunities",
       route: "/network",
       exploreTab: null,
@@ -205,8 +205,8 @@ export function buildGuideSteps(snapshot: GuideSnapshot = EMPTY): GuideStep[] {
     {
       id: "report",
       title: "Connectivity report",
-      description: "Export CSV or print the frequency view for the current filters. The file includes the period, method, evidence rules, and limitations. It omits coordinates, device identifiers, and trajectories.",
-      fallbackDescription: "The frequency view can export a CSV or a printed summary of the current filters. Coordinates and device identifiers are left out.",
+      description: "Export CSV or print the frequency view for the current filters. The file includes the period, method, evidence rules, unusual-journey counts, and limitations. It omits coordinates, device identifiers, and trajectories.",
+      fallbackDescription: "The frequency view can export a CSV or a printed summary of the current filters, including how many journeys were far outside the usual time. Coordinates and device identifiers are left out.",
       target: "network-report",
       route: "/network",
       exploreTab: null,

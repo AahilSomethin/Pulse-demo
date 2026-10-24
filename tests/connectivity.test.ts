@@ -5,7 +5,8 @@ import { connectivityCsv } from "@/lib/analytics/export-report";
 import { summarizeFrequency } from "@/lib/analytics/frequency";
 import { connectionOverlay, visibleConnectionLines } from "@/lib/analytics/map-links";
 import { emptyCarry, finish, ingest } from "@/lib/analytics/passages";
-import { findOpportunities } from "@/lib/analytics/opportunities";
+import type { PassageFlagSummary } from "@/lib/analytics/anomalies";
+import { DEFAULT_OPPORTUNITY_THRESHOLDS, findOpportunities, unusualPassageRule } from "@/lib/analytics/opportunities";
 import { indicatorsFromMonth, sameIslandPassageCount, type StoredConnection, type StoredMonth } from "@/lib/analytics/month";
 import { countSameIslandJourneys } from "@/lib/analytics/same-island";
 import { searchPlaces } from "@/lib/search/query";
@@ -184,6 +185,33 @@ describe("opportunities", () => {
       attempted: 12,
     });
     expect(findOpportunities([steady]).flagged).toHaveLength(0);
+  });
+
+  it("lists a small day sample when the August cohort has repeated long journeys", () => {
+    const summary: PassageFlagSummary = {
+      connectionId: "small",
+      outliers: 3,
+      stationary: 2,
+      slowDirect: 1,
+      longDetour: 0,
+      unusuallyLong: 0,
+      cohortPassages: 100,
+      cohortVessels: 12,
+      medianMs: 30 * 60_000,
+      baseline: "august_summary",
+      movementKnown: true,
+    };
+    const result = findOpportunities(
+      [indicator({ id: "small", evidence: "insufficient", passages: 2, vessels: 1 })],
+      DEFAULT_OPPORTUNITY_THRESHOLDS,
+      new Map([["small", summary]]),
+    );
+    expect(result.withheld).toHaveLength(0);
+    expect(result.flagged[0].rules.map((rule) => rule.id)).toEqual(["unusual_passages"]);
+    expect(result.flagged[0].rules[0].detail).toContain("barely moved");
+    expect(result.flagged[0].rules[0].question).toContain("replay");
+    expect(result.flagged[0].caveats.some((line) => line.includes("not a confirmed delay"))).toBe(true);
+    expect(unusualPassageRule({ ...summary, outliers: 1 })).toBeNull();
   });
 });
 
@@ -468,6 +496,8 @@ describe("search and frequency", () => {
     }] : [], summary);
     expect(csv).not.toMatch(/latitude|longitude|imei/i);
     expect(csv).toContain("passages_in_selected_days");
+    expect(csv).toContain("unusual_passages");
+    expect(csv).toContain("Not a confirmed delay");
     expect(csv).toContain("not a ferry timetable");
   });
 });

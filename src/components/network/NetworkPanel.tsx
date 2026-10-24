@@ -11,7 +11,8 @@ import { useWorkspace } from "@/context/WorkspaceContext";
 import { filterIndicators } from "@/lib/analytics/filters";
 import { connectionOverlay } from "@/lib/analytics/map-links";
 import { FrequencyReport } from "@/components/network/FrequencyReport";
-import { findOpportunities, type Opportunity } from "@/lib/analytics/opportunities";
+import { usePassageReview } from "@/components/network/usePassageReview";
+import { findOpportunities, DEFAULT_OPPORTUNITY_THRESHOLDS, type Opportunity } from "@/lib/analytics/opportunities";
 import { formatCount, formatMinutes } from "@/lib/format";
 import { compareScenario, describeBaseline } from "@/lib/simulation/routes";
 import type { NetworkTab } from "@/lib/workspace/state";
@@ -23,7 +24,11 @@ export function NetworkPanel() {
   const source = state.network.scope === "month" ? monthIndicators : indicators;
   const filtered = useMemo(() => filterIndicators(source, state.network), [source, state.network]);
   const activeId = state.detail?.type === "connection" ? state.detail.id : state.route.pair || null;
-  const opportunities = useMemo(() => findOpportunities(filtered), [filtered]);
+  const review = usePassageReview();
+  const opportunities = useMemo(
+    () => findOpportunities(filtered, DEFAULT_OPPORTUNITY_THRESHOLDS, review.summaries),
+    [filtered, review.summaries],
+  );
   const overlay = useMemo(() => {
     if (state.networkTab === "routes") {
       const selected = filtered.find((indicator) => indicator.id === state.route.pair) ?? filtered[0] ?? null;
@@ -77,7 +82,8 @@ export function NetworkPanel() {
       <ConnectionFilters filters={state.network} atolls={atollsFor(source)} onChange={patchNetwork} />
       {state.network.scope === "month" && !month ? <Notice>The August summary is read from this computer. It is not included in the published app until redistribution of the derived file is confirmed.</Notice> : null}
       {state.networkTab === "observed" ? <p className="text-xs leading-5 text-fg-muted">Every matching connection stays in the list. The map draws them as thin lines and reveals more as you zoom in. A selected line stays visible.</p> : null}
-      {state.networkTab === "opportunities" ? <p className="text-xs leading-5 text-fg-muted">The map shows investigation candidates. The selected candidate stays in front, and other network lines stay off the map. Those connections are still in the data.</p> : null}
+      {state.networkTab === "opportunities" ? <p className="text-xs leading-5 text-fg-muted">The map shows investigation candidates. The selected candidate stays in front, and other network lines stay off the map. Those connections are still in the data. Open one to read why a journey was flagged, then replay it on the map.</p> : null}
+      {state.networkTab === "opportunities" && state.network.scope === "day" && !month ? <p className="text-xs leading-5 text-fg-muted">Until the August summary is loaded, a journey is compared only with the loaded day. Most connections do not have enough repeated journeys for that. Switch the window to August, then return to this day to replay one journey against the month.</p> : null}
       {state.networkTab === "routes" ? <p className="text-xs leading-5 text-fg-muted">The map shows the selected connection. The rest of the network stays in the list.</p> : null}
       {(state.network.scope === "month" ? monthSameIslandPassages : sameIslandPassages) > 0 ? (
         <p className="text-xs leading-5 text-fg-muted">{formatCount(state.network.scope === "month" ? monthSameIslandPassages : sameIslandPassages)} passages moved between activity cells on the same named island. They stay in the record and are not shown as inter-island connections.</p>

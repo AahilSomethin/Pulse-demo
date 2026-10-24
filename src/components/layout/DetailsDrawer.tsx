@@ -7,6 +7,9 @@ import { useDataset, usePlaybackClock, usePlaybackSettings } from "@/context/Mar
 import { useWorkspace } from "@/context/WorkspaceContext";
 import { formatCount, formatDuration, formatKm, formatMinutes, formatMvt, formatUtc, historicalLabel, maskDevice } from "@/lib/format";
 import { durationVariability, passagesPerObservedDay, type ConnectionIndicator } from "@/lib/analytics/connectivity";
+import { UnusualPassages } from "@/components/network/UnusualPassages";
+import { TrackingQualityNote } from "@/components/network/TrackingQuality";
+import { usePassageReview } from "@/components/network/usePassageReview";
 import { connectivityCsv, downloadText } from "@/lib/analytics/export-report";
 import { summarizeFrequency } from "@/lib/analytics/frequency";
 import { buildIslandProfile, buildLocationProfile } from "@/lib/analytics/profile";
@@ -96,6 +99,8 @@ function VesselDetail({ device }: { device: number }) {
       )}
       <p className="mt-2 text-fg-secondary">{windowCount} pings fall in the bold trail window. {formatCount(dataset.tracks[device]?.length ?? 0)} pings are in this day.</p>
       <p className="text-xs text-fg-muted">The trail is the tracker’s own reports. Playback speed does not change these values.</p>
+      <TrackingQualityNote dataset={dataset} device={device} />
+      <DevicePassages device={device} />
     </div>
   );
 }
@@ -128,7 +133,8 @@ function HubDetail({ fx, fy }: { fx: number; fy: number }) {
 function ConnectionDetail({ id }: { id: string }) {
   const { links, areaLinks, journeys, indicators, monthIndicators } = useDataset();
   const { state } = useWorkspace();
-  const indicator = [...monthIndicators, ...indicators].find((item) => item.id === id) ?? null;
+  const scoped = (state.network.scope === "month" ? monthIndicators : indicators).find((item) => item.id === id) ?? null;
+  const indicator = scoped ?? [...monthIndicators, ...indicators].find((item) => item.id === id) ?? null;
   if (indicator) return <IndicatorDetail indicator={indicator} hypothetical={state.networkTab === "routes"} />;
   const link = findLink([...areaLinks, ...links], id);
   if (!link) return <p className="text-fg-muted">That connection is not in the current window.</p>;
@@ -147,7 +153,17 @@ function ConnectionDetail({ id }: { id: string }) {
   );
 }
 
+function DevicePassages({ device }: { device: number }) {
+  const { journeys } = useDataset();
+  const review = usePassageReview();
+  const rows = review.day.outliers.filter((item) => item.device === device);
+  if (rows.length === 0) return null;
+  return <UnusualPassages outliers={rows} journeys={journeys} device={device} />;
+}
+
 function IndicatorDetail({ indicator, hypothetical }: { indicator: ConnectionIndicator; hypothetical: boolean }) {
+  const { journeys } = useDataset();
+  const review = usePassageReview();
   const rate = passagesPerObservedDay(indicator);
   const variability = durationVariability(indicator);
   const small = indicator.passages < CONNECTIVITY.minPassagesForIqr;
@@ -171,7 +187,12 @@ function IndicatorDetail({ indicator, hypothetical }: { indicator: ConnectionInd
       {variability != null && !small ? <p className="mt-2 text-fg-secondary">The spread of times is {Math.round(variability * 100)}% of the typical time.</p> : null}
       {small ? <p className="mt-2 text-xs text-fg-muted">Fewer than {CONNECTIVITY.minPassagesForIqr} journeys. Treat the typical time as a hint, not a stable figure.</p> : null}
       <p className="mt-2 text-xs text-fg-muted">Times use journeys with continuous-enough tracking. A quiet day is not evidence that no boat sailed. The straight line is not a navigable route. The recorded speed has no documented unit. The 40-knot check uses straight-line distance over time and does not convert that column.</p>
-      <button type="button" className="btn mt-2 no-print" onClick={() => downloadText("seapulse-connection.csv", connectivityCsv([indicator], summarizeFrequency({ indicators: [indicator] })))}>Export this connection</button>
+      <UnusualPassages
+        outliers={review.day.byConnection.get(indicator.id) ?? []}
+        journeys={journeys}
+        monthSummary={review.month.get(indicator.id)}
+      />
+      <button type="button" className="btn mt-2 no-print" onClick={() => downloadText("seapulse-connection.csv", connectivityCsv([indicator], summarizeFrequency({ indicators: [indicator] }), review.summaries))}>Export this connection</button>
       {hypothetical ? <p className="mt-2 rounded-md border border-warning bg-warning-soft px-2 py-1 text-xs">A typed duration in Route Lab is a hypothetical check against this typical time. It is not a schedule.</p> : null}
     </div>
   );

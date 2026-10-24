@@ -57,8 +57,9 @@ Find opportunities ranks only `adequate` connections. There is no single score a
 - Tracked path is long relative to the separation: median path ratio at least 1.8, with at least 5 journeys.
 - Activity changes across days: coefficient of variation of daily counts, including zeros, is at least 1, and the window has at least 7 days. This uses the population standard deviation.
 - Tracking gaps: at least 30% of passages between the cells were flagged, with at least 5 passages attempted.
+- Unusual journey times: at least two credible journeys whose duration is above a robust score of 3.5 and above the third quartile plus 3 interquartile ranges. The robust score is `0.6745 × (duration − median) / MAD`. A median absolute deviation of zero flags nothing, so one long journey in an otherwise identical set stays unflagged. The cohort needs the same 8 journeys and 3 vessels. On a loaded day the comparison uses the August summary when that file is loaded, and otherwise the day itself. Each flagged journey is then described as barely moving (tracked pace under 2, from distance over time), direct but slow (path ratio under 1.3 and at most half the usual pace), a much longer path (path ratio at least 1.8), or simply long. The connection card states the cohort size and a replay starts the existing playback at the departure. The August summary can count long durations only, because it does not keep each path.
 
-Each rule stores the comparison it made and a planning question. The card also states that weather, vessel type, cargo, waiting, and GPS gaps can produce the same pattern. Connections below the evidence line are counted as held back and are not ranked.
+Each rule stores the comparison it made and a planning question. The card also states that weather, vessel type, cargo, waiting, and GPS gaps can produce the same pattern. A small day sample can still be listed for unusual journey times when the August cohort is large enough. Other rules still hold those connections back. There is no combined score.
 
 ## Route Lab
 

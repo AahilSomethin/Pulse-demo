@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SeaPulse datathon explainer</title>
+  <style>
+    :root {
+      --background: #0b1c28;
+      --surface: #132a3a;
+      --border: #2c4a60;
+      --fg: #e8f2f6;
+      --fg-secondary: #c5d5e0;
+      --fg-muted: #a9bcc9;
+      --ocean: #7ec8e3;
+      --cyan: #3dcec0;
+      --selected: #2dd4bf;
+      --warning: #e0a44a;
+      --warning-soft: rgba(224, 164, 74, 0.16);
+      --primary-soft: rgba(126, 200, 227, 0.16);
+      --sea: #102d40;
+      --land: #395c57;
+      --coast: #7f9aa6;
+      --vessel: #8ebeff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: var(--sea);
+      color: var(--fg);
+      font-family: "Segoe UI", "Nirmala UI", sans-serif;
+    }
+
+    #stage { position: relative; width: 1920px; height: 1080px; }
+    canvas { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+
+    .overlay { position: absolute; inset: 0; pointer-events: none; }
+
+    #progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: var(--ocean);
+      transform-origin: left center;
+    }
+
+    #brand, #banner {
+      position: absolute;
+      top: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+
+    #brand { left: 48px; font-size: 22px; }
+    #banner {
+      right: 48px;
+      max-width: 760px;
+      justify-content: flex-end;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--fg-muted);
+      text-align: right;
+    }
+
+    #brand svg { color: var(--ocean); }
+
+    #title {
+      position: absolute;
+      left: 48px;
+      bottom: 168px;
+      width: 920px;
+      text-align: left;
+    }
+
+    #title .kicker {
+      margin: 0 0 18px;
+      font-size: 18px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ocean);
+    }
+
+    #title h1 {
+      margin: 0;
+      font-size: 64px;
+      line-height: 1.12;
+      font-weight: 650;
+      letter-spacing: -0.03em;
+    }
+
+    #title h1 span { color: var(--ocean); }
+
+    .scrim {
+      background: rgba(11, 28, 40, 0.72);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
+    }
+
+    #facts {
+      position: absolute;
+      left: 48px;
+      top: 110px;
+      width: 560px;
+      padding: 32px 36px 28px;
+    }
+
+    #facts .kicker, .panel .kicker, #future .kicker {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ocean);
+    }
+
+    #facts h2, .panel h2 {
+      margin: 10px 0 0;
+      font-size: 34px;
+      line-height: 1.2;
+      font-weight: 650;
+      letter-spacing: -0.03em;
+    }
+
+    .metric { margin-top: 22px; }
+    .metric b {
+      display: block;
+      font-size: 52px;
+      line-height: 1;
+      font-weight: 650;
+      letter-spacing: -0.04em;
+      font-variant-numeric: tabular-nums;
+    }
+    .metric span { display: block; margin-top: 6px; color: var(--fg-secondary); font-size: 20px; }
+    .note { margin: 22px 0 0; color: var(--fg-muted); font-size: 18px; line-height: 1.45; }
+
+    .panel {
+      position: absolute;
+      top: 100px;
+      right: 48px;
+      width: 640px;
+      padding: 28px 32px 26px;
+    }
+
+    .places { margin-top: 14px; }
+    .places p { margin: 0; font-size: 28px; line-height: 1.25; font-weight: 650; letter-spacing: -0.02em; }
+    .places .local { margin-top: 4px; font-size: 22px; font-weight: 500; color: var(--fg-secondary); font-family: "Nirmala UI", "Segoe UI", sans-serif; }
+    .places .meta { font-size: 18px; font-weight: 500; color: var(--fg-muted); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 20px;
+      margin-top: 20px;
+    }
+    .stats div { min-width: 0; }
+    .stats b {
+      display: block;
+      font-size: 28px;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.03em;
+    }
+    .stats span { display: block; margin-top: 3px; color: var(--fg-muted); font-size: 16px; }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .compare article {
+      padding: 14px 14px 12px;
+      border-radius: 14px;
+      background: rgba(11, 28, 40, 0.45);
+      border: 1px solid var(--border);
+    }
+    .compare article.flagged { border-color: rgba(224, 164, 74, 0.7); background: var(--warning-soft); }
+    .compare h3 { margin: 0 0 8px; font-size: 16px; font-weight: 650; color: var(--fg-secondary); }
+    .compare p { margin: 0; font-size: 18px; line-height: 1.45; }
+
+    .rules { margin: 16px 0 0; padding: 0; list-style: none; }
+    .rules li { margin-top: 6px; font-size: 18px; line-height: 1.35; color: var(--fg-secondary); }
+    .rules li::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 99px; background: var(--warning); }
+
+    .question { margin: 14px 0 0; font-size: 20px; line-height: 1.4; color: var(--fg); }
+    .chip {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--ocean);
+      font-size: 16px;
+    }
+    .chip.warn { background: var(--warning-soft); color: var(--warning); }
+
+    #future {
+      position: absolute;
+      left: 50%;
+      top: 148px;
+      width: 1080px;
+      transform: translateX(-50%);
+      padding: 32px 36px 28px;
+    }
+    #future h2 { margin: 8px 0 0; font-size: 40px; letter-spacing: -0.03em; }
+    #future ol {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin: 22px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    #future li {
+      padding: 16px 18px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(11, 28, 40, 0.45);
+      font-size: 24px;
+      line-height: 1.25;
+      font-weight: 650;
+    }
+    #future li span {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 16px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--warning);
+      font-weight: 650;
+    }
+
+    #endcard {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: rgba(11, 28, 40, 0.9);
+    }
+    #endcard .mark { display: flex; align-items: center; gap: 14px; font-size: 84px; font-weight: 650; letter-spacing: -0.04em; }
+    #endcard .mark svg { width: 64px; height: 64px; color: var(--ocean); }
+    #endcard .line { margin: 18px 0 0; max-width: 1100px; font-size: 32px; line-height: 1.3; color: var(--ocean); }
+    #endcard .next { margin: 10px 0 0; max-width: 980px; font-size: 28px; line-height: 1.35; color: var(--fg-secondary); }
+    #endcard .event { margin: 18px 0 0; font-size: 22px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-muted); }
+    #endcard .future-note { margin: 14px 0 0; font-size: 18px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warning); }
+
+    #subtitle {
+      position: absolute;
+      left: 200px;
+      right: 200px;
+      bottom: 42px;
+      text-align: center;
+      font-size: 30px;
+      line-height: 1.35;
+    }
+    #subtitle span {
+      background: rgba(11, 28, 40, 0.78);
+      box-decoration-break: clone;
+      padding: 8px 16px;
+      border-radius: 10px;
+    }
+
+    #credit {
+      position: absolute;
+      left: 48px;
+      bottom: 16px;
+      font-size: 16px;
+      color: var(--fg-muted);
+    }
+
+    .tag {
+      position: absolute;
+      transform: translate(-50%, -140%);
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(19, 42, 58, 0.92);
+      border: 1px solid var(--border);
+      font-size: 18px;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="map" width="1920" height="1080"></canvas>
+    <div class="overlay">
+      <div id="progress"></div>
+      <div id="brand">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="5" r="2"></circle>
+          <path d="M12 7v14"></path>
+          <path d="M5 12h14"></path>
+          <path d="M8 19c1.2 1.3 2.5 2 4 2s2.8-.7 4-2"></path>
+        </svg>
+        SeaPulse
+      </div>
+      <div id="banner"></div>
+      <div id="title" class="scrim" style="padding: 36px 48px 32px">
+        <p class="kicker">Historical · August 2025</p>
+        <h1>Thousands of vessel movements.<br /><span>One connected nation.</span></h1>
+      </div>
+      <section id="facts" class="scrim">
+        <p class="kicker">August 2025 — FollowMe</p>
+        <h2>Historical GPS observations</h2>
+        <div class="metric"><b id="obs-count">0</b><span>observations kept</span></div>
+        <div class="metric"><b id="dev-count">0</b><span>tracked devices</span></div>
+        <p class="note" id="facts-note"></p>
+      </section>
+      <section id="panel-steady" class="panel scrim"></section>
+      <section id="panel-finding" class="panel scrim"></section>
+      <div id="tag-a" class="tag"></div>
+      <div id="tag-b" class="tag"></div>
+      <section id="future" class="scrim">
+        <p class="kicker">Future vision</p>
+        <h2>Not in this prototype</h2>
+        <ol>
+          <li><span>Future</span>Authorised live vessel tracking</li>
+          <li><span>Future</span>Official ferry schedules</li>
+          <li><span>Future</span>Passenger demand</li>
+          <li><span>Future</span>Predictive maritime analytics</li>
+        </ol>
+      </section>
+      <div id="endcard">
+        <div class="mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="5" r="2"></circle>
+            <path d="M12 7v14"></path>
+            <path d="M5 12h14"></path>
+            <path d="M8 19c1.2 1.3 2.5 2 4 2s2.8-.7 4-2"></path>
+          </svg>
+          SeaPulse
+        </div>
+        <p class="line">Today: how tracked vessels moved.</p>
+        <p class="next">Tomorrow, with the right data partnerships, maritime transport can work better.</p>
+        <p class="event">Maldives Datathon 2026</p>
+        <p class="future-note">Future vision. Not in this prototype.</p>
+      </div>
+      <div id="subtitle"></div>
+      <div id="credit">© OpenStreetMap contributors</div>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById("map");
+    const ctx = canvas.getContext("2d");
+    const FPS = 30;
+    const WIDTH = 1920;
+    const HEIGHT = 1080;
+
+    let story = null;
+    let cues = [];
+    let islands = [];
+
+    function mercY(lat) {
+      const clamped = Math.max(-80, Math.min(80, lat));
+      const rad = clamped * Math.PI / 180;
+      return Math.log(Math.tan(Math.PI / 4 + rad / 2));
+    }
+
+    function inverseMerc(y) {
+      return (2 * Math.atan(Math.exp(y)) - Math.PI / 2) * 180 / Math.PI;
+    }
+
+    function smooth(t) {
+      const x = Math.min(1, Math.max(0, t));
+      return x * x * (3 - 2 * x);
+    }
+
+    function fade(t, a, b, c, d) {
+      if (t <= a || t >= d) return 0;
+      if (t < b) return (t - a) / (b - a);
+      if (t <= c) return 1;
+      return 1 - (t - c) / (d - c);
+    }
+
+    function wideView() {
+      const south = -0.7;
+      const north = 7.15;
+      const mid = (mercY(south) + mercY(north)) / 2;
+      const dy = mercY(north) - mercY(south);
+      return {
+        centerLon: 73.15,
+        centerLat: inverseMerc(mid),
+        lonSpan: dy * (WIDTH / HEIGHT) * (180 / Math.PI) * 1.12,
+      };
+    }
+
+    function framePair(a, b, pad) {
+      const dx = Math.abs(a.lon - b.lon) * Math.PI / 180;
+      const dy = Math.abs(mercY(a.lat) - mercY(b.lat));
+      const lonSpanRad = Math.max(dx * pad, dy * pad * (WIDTH / HEIGHT), 0.12 * Math.PI / 180);
+      return {
+        centerLon: (a.lon + b.lon) / 2,
+        centerLat: (a.lat + b.lat) / 2,
+        lonSpan: lonSpanRad * 180 / Math.PI,
+      };
+    }
+
+    function cameraAt(t) {
+      const central = { centerLon: 73.48, centerLat: 4.15, lonSpan: 2.35 };
+      const steady = framePair(story.steady.origin, story.steady.destination, 2.35);
+      const finding = framePair(story.finding.flagged.origin, story.finding.flagged.destination, 3.4);
+      const keys = [
+        { t: 0, ...wideView() },
+        { t: 2, ...wideView() },
+        { t: 10, ...central },
+        { t: 21, ...central },
+        { t: 25, ...steady },
+        { t: 32.5, ...steady },
+        { t: 36.5, ...finding },
+        { t: 48, ...finding },
+        { t: 54, centerLon: 73.5, centerLat: 4.05, lonSpan: 1.7 },
+        { t: 60, centerLon: 73.5, centerLat: 4.05, lonSpan: 1.7 },
+      ];
+      let next = keys[keys.length - 1];
+      let prev = keys[0];
+      for (let i = 0; i < keys.length - 1; i += 1) {
+        if (t >= keys[i].t && t <= keys[i + 1].t) {
+          prev = keys[i];
+          next = keys[i + 1];
+          break;
+        }
+      }
+      const span = next.t - prev.t;
+      const u = span <= 0 ? 1 : smooth((t - prev.t) / span);
+      return {
+        centerLon: prev.centerLon + (next.centerLon - prev.centerLon) * u,
+        centerLat: prev.centerLat + (next.centerLat - prev.centerLat) * u,
+        lonSpan: Math.exp(Math.log(prev.lonSpan) + (Math.log(next.lonSpan) - Math.log(prev.lonSpan)) * u),
+      };
+    }
+
+    function project(lon, lat, view, shiftX) {
+      const scale = WIDTH / (view.lonSpan * Math.PI / 180);
+      const x = (lon - view.centerLon) * Math.PI / 180 * scale + WIDTH / 2 + shiftX;
+      const y = (mercY(view.centerLat) - mercY(lat)) * scale + HEIGHT / 2;
+      return [x, y];
+    }
+
+    function drawMap(view, shiftX, t) {
+      const gradient = ctx.createRadialGradient(WIDTH / 2, HEIGHT / 2, 240, WIDTH / 2, HEIGHT / 2, 1100);
+      gradient.addColorStop(0, "#143648");
+      gradient.addColorStop(1, "#0b1c28");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+      ctx.lineJoin = "round";
+      ctx.lineWidth = view.lonSpan > 6 ? 1.2 : 1.4;
+      const wide = view.lonSpan > 5;
+      ctx.strokeStyle = wide ? "#d7f3fa" : "#7f9aa6";
+      ctx.fillStyle = wide ? "#7f9aa6" : "#395c57";
+      const margin = view.lonSpan * 0.15;
+      for (const island of islands) {
+        if (island.east < view.centerLon - view.lonSpan / 2 - margin) continue;
+        if (island.west > view.centerLon + view.lonSpan / 2 + margin) continue;
+        if (island.north < view.centerLat - view.lonSpan * 0.4) continue;
+        if (island.south > view.centerLat + view.lonSpan * 0.4) continue;
+        ctx.beginPath();
+        let started = false;
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+        for (const ring of island.rings) {
+          for (let i = 0; i < ring.length; i += 1) {
+            const [x, y] = project(ring[i][0], ring[i][1], view, shiftX);
+            if (wide) {
+              minX = Math.min(minX, x);
+              maxX = Math.max(maxX, x);
+              minY = Math.min(minY, y);
+              maxY = Math.max(maxY, y);
+            }
+            if (!started) {
+              ctx.moveTo(x, y);
+              started = true;
+            } else ctx.lineTo(x, y);
+          }
+          ctx.closePath();
+        }
+        ctx.fill();
+        if (wide && maxX - minX < 2.4 && maxY - minY < 2.4) {
+          ctx.beginPath();
+          ctx.arc((minX + maxX) / 2, (minY + maxY) / 2, 1.7, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.stroke();
+      }
+
+      const cellAlpha = fade(t, 11.2, 12.2, 22.4, 24.2);
+      if (cellAlpha > 0.01) {
+        const reveal = smooth(Math.min(1, Math.max(0, (t - 11.6) / 6)));
+        const count = Math.max(1, Math.round(reveal * story.cellOrder.length));
+        const maxPassages = story.cells[0]?.passages || 1;
+        for (let i = 0; i < count; i += 1) {
+          const dot = story.cellOrder[i];
+          if (!dot) continue;
+          const [x, y] = project(dot.lon, dot.lat, view, shiftX);
+          if (x < -20 || x > WIDTH + 20 || y < -20 || y > HEIGHT + 20) continue;
+          const radius = 3.2 + 6.5 * Math.sqrt(dot.passages / maxPassages);
+          ctx.beginPath();
+          ctx.fillStyle = `rgba(142, 190, 255, ${0.85 * cellAlpha})`;
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      const steadyDraw = fade(t, 23.2, 26, 31.4, 33.2);
+      const findingDraw = smooth(Math.min(1, Math.max(0, (t - 34.2) / 2.2))) * fade(t, 34, 34.4, 46.4, 47.8);
+      if (steadyDraw > 0.01) drawLink(story.steady.origin, story.steady.destination, Math.min(1, (t - 23.2) / 2.4), steadyDraw, view, shiftX);
+      if (findingDraw > 0.01) {
+        drawLink(story.finding.opposite.origin, story.finding.opposite.destination, Math.min(1, (t - 34.2) / 2.2), findingDraw * 0.45, view, shiftX);
+        drawLink(story.finding.flagged.origin, story.finding.flagged.destination, Math.min(1, (t - 34.6) / 2.2), findingDraw, view, shiftX);
+      }
+    }
+
+    function drawLink(a, b, progress, alpha, view, shiftX) {
+      const [x1, y1] = project(a.lon, a.lat, view, shiftX);
+      const [x2, y2] = project(b.lon, b.lat, view, shiftX);
+      const x = x1 + (x2 - x1) * Math.max(0, Math.min(1, progress));
+      const y = y1 + (y2 - y1) * Math.max(0, Math.min(1, progress));
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#3dcec0";
+      ctx.lineWidth = 10;
+      ctx.globalAlpha = alpha * 0.35;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      ctx.globalAlpha = alpha;
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      for (const [px, py] of [[x1, y1], [x, y]]) {
+        ctx.beginPath();
+        ctx.fillStyle = "#2dd4bf";
+        ctx.arc(px, py, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#0b1c28";
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function show(el, opacity) {
+      el.style.opacity = String(Math.max(0, Math.min(1, opacity)));
+      el.style.visibility = opacity > 0.01 ? "visible" : "hidden";
+    }
+
+    function placeTag(el, place, view, shiftX, opacity, lift) {
+      const [x, y] = project(place.lon, place.lat, view, shiftX);
+      el.style.left = `${Math.max(80, Math.min(WIDTH - 80, x))}px`;
+      el.style.top = `${y - lift}px`;
+      show(el, opacity);
+    }
+
+    function subtitleAt(t) {
+      const cue = cues.find((item) => t >= item.start && t < item.end);
+      const el = document.getElementById("subtitle");
+      el.replaceChildren();
+      if (!cue) return;
+      const span = document.createElement("span");
+      span.textContent = cue.text;
+      el.appendChild(span);
+    }
+
+    function formatInt(value) {
+      return Math.round(value).toLocaleString("en-US");
+    }
+
+    function fillStatic() {
+      document.getElementById("banner").textContent = story.banner;
+      document.getElementById("facts-note").textContent = `${story.observationDays} days in the file. Activity cells mark where tracked devices stopped. This is not a live feed, and these devices are not the national fleet.`;
+      document.getElementById("panel-steady").append(panelSteady());
+      document.getElementById("panel-finding").append(panelFinding());
+    }
+
+    function placeBlock(place) {
+      const wrap = document.createElement("div");
+      const title = document.createElement("p");
+      title.textContent = place.title;
+      wrap.append(title);
+      if (place.localName) {
+        const local = document.createElement("p");
+        local.className = "local";
+        local.textContent = place.localName;
+        wrap.append(local);
+      }
+      const meta = document.createElement("p");
+      meta.className = "meta";
+      meta.textContent = [place.confidence, place.cell].filter(Boolean).join(" · ");
+      wrap.append(meta);
+      return wrap;
+    }
+
+    function stat(value, label) {
+      const div = document.createElement("div");
+      const strong = document.createElement("b");
+      strong.textContent = value;
+      const span = document.createElement("span");
+      span.textContent = label;
+      div.append(strong, span);
+      return div;
+    }
+
+    function panelSteady() {
+      const frag = document.createDocumentFragment();
+      const kicker = document.createElement("p");
+      kicker.className = "kicker";
+      kicker.textContent = "One repeated connection";
+      const places = document.createElement("div");
+      places.className = "places";
+      const arrow = document.createElement("p");
+      arrow.textContent = `${story.steady.origin.title} → ${story.steady.destination.title}`;
+      places.append(arrow);
+      const meta = document.createElement("p");
+      meta.className = "meta";
+      meta.textContent = `${story.steady.origin.confidence} → ${story.steady.destination.confidence}`;
+      places.append(meta);
+      const grid = document.createElement("div");
+      grid.className = "stats";
+      const stats = story.steady.stats;
+      grid.append(
+        stat(stats.journeys, "Observed journeys"),
+        stat(stats.vessels, "Tracked devices"),
+        stat(stats.typical, "Typical time"),
+        stat(stats.separation, "Straight-line separation"),
+        stat(stats.path, "Tracked path vs separation"),
+        stat(stats.excluded, "Left out of the times"),
+      );
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.textContent = stats.evidence;
+      const note = document.createElement("p");
+      note.className = "note";
+      note.textContent = "Times use journeys with continuous-enough tracking. The straight line is not a navigable route. Devices on credible journeys are not separated in the August file.";
+      frag.append(kicker, places, grid, chip, note);
+      return frag;
+    }
+
+    function column(title, stats, flagged) {
+      const article = document.createElement("article");
+      if (flagged) article.className = "flagged";
+      const heading = document.createElement("h3");
+      heading.textContent = title;
+      const body = document.createElement("p");
+      body.textContent = `${stats.journeys} journeys · ${stats.typical} typical`;
+      const more = document.createElement("p");
+      more.textContent = `${stats.longer} longer · ${stats.vessels} devices`;
+      const gap = document.createElement("p");
+      gap.textContent = `${stats.excluded} left out of the times`;
+      article.append(heading, body, more, gap);
+      return article;
+    }
+
+    function panelFinding() {
+      const frag = document.createDocumentFragment();
+      const flagged = story.finding.flagged;
+      const opposite = story.finding.opposite;
+      const ends = story.finding.ends;
+      const kicker = document.createElement("p");
+      kicker.className = "kicker";
+      kicker.textContent = "August summary · worth a closer look";
+      const places = document.createElement("div");
+      places.className = "places";
+      const title = document.createElement("p");
+      title.textContent = `${ends.a.title} ↔ ${ends.b.title}`;
+      places.append(title);
+      if (ends.a.localName || ends.b.localName) {
+        const local = document.createElement("p");
+        local.className = "local";
+        local.textContent = [ends.a.localName, ends.b.localName].filter(Boolean).join(" ↔ ");
+        places.append(local);
+      }
+      const meta = document.createElement("p");
+      meta.className = "meta";
+      meta.textContent = `${flagged.stats.separation} apart · ${flagged.stats.path} tracked path · ${flagged.stats.evidence}`;
+      places.append(meta);
+      const compare = document.createElement("div");
+      compare.className = "compare";
+      compare.append(
+        column(`Toward ${ends.b.title}`, flagged.stats, true),
+        column(`Toward ${ends.a.title}`, opposite.stats, false),
+      );
+      const rules = document.createElement("ul");
+      rules.className = "rules";
+      const ruleLabel = document.createElement("p");
+      ruleLabel.className = "meta";
+      ruleLabel.textContent = `Flags toward ${ends.b.title}`;
+      for (const rule of story.finding.rules) {
+        const li = document.createElement("li");
+        li.textContent = rule.title;
+        rules.append(li);
+      }
+      const question = document.createElement("p");
+      question.className = "question";
+      const gaps = story.finding.rules.find((rule) => rule.id === "gaps") ?? story.finding.rules[0];
+      question.textContent = gaps ? gaps.question : "";
+      const note = document.createElement("p");
+      note.className = "note";
+      note.textContent = [story.finding.labelNote, story.finding.caveat, story.finding.fleetCaveat, "Devices on credible journeys are not separated in this file."].filter(Boolean).join(" ");
+      frag.append(kicker, places, compare, ruleLabel, rules, question, note);
+      return frag;
+    }
+
+    window.renderFrame = function renderFrame(index) {
+      const t = index / FPS;
+      const view = cameraAt(t);
+      const panel = Math.max(fade(t, 23.4, 24.6, 31.2, 32.8), fade(t, 34.4, 35.6, 46.2, 47.6));
+      const shiftX = -220 * panel;
+      drawMap(view, shiftX, t);
+      document.getElementById("progress").style.width = `${(t / 60) * 100}%`;
+      show(document.getElementById("title"), fade(t, 0.4, 1.3, 8.6, 10.4));
+      show(document.getElementById("facts"), fade(t, 11.2, 12.2, 19.4, 20.6));
+      show(document.getElementById("panel-steady"), fade(t, 24, 25.2, 31, 32.6));
+      show(document.getElementById("panel-finding"), fade(t, 34.6, 35.8, 46, 47.4));
+      const futureOpacity = fade(t, 48.1, 48.8, 54.2, 55);
+      show(document.getElementById("future"), futureOpacity);
+      document.querySelectorAll("#future li").forEach((item, index) => {
+        const start = 48.4 + index * 0.7;
+        item.style.opacity = String(fade(t, start, start + 0.4, 54.2, 55));
+      });
+      show(document.getElementById("endcard"), fade(t, 54.6, 55.6, 60, 60.05));
+      show(document.getElementById("brand"), t < 54.8 ? 1 : fade(t, 54.6, 54.6, 54.9, 55.5));
+      const countT = smooth(Math.min(1, Math.max(0, (t - 11.4) / 3.6)));
+      document.getElementById("obs-count").textContent = formatInt(story.observationsRaw * countT);
+      document.getElementById("dev-count").textContent = formatInt(story.devicesRaw * countT);
+      const tagOpacity = Math.max(fade(t, 24.2, 25.4, 31.2, 32.8), fade(t, 35, 36.2, 46.2, 47.6));
+      const tagged = t < 33.4 ? [story.steady.origin, story.steady.destination] : [story.finding.ends.a, story.finding.ends.b];
+      document.getElementById("tag-a").textContent = tagged[0].title;
+      document.getElementById("tag-b").textContent = tagged[1].title;
+      placeTag(document.getElementById("tag-a"), tagged[0], view, shiftX, tagOpacity, 18);
+      placeTag(document.getElementById("tag-b"), tagged[1], view, shiftX, tagOpacity, 18);
+      subtitleAt(t);
+    };
+
+    function simplifyRing(ring) {
+      if (ring.length <= 64) return ring;
+      const step = Math.ceil(ring.length / 64);
+      const simplified = [];
+      for (let i = 0; i < ring.length; i += step) simplified.push(ring[i]);
+      const last = ring[ring.length - 1];
+      const tail = simplified[simplified.length - 1];
+      if (!tail || tail[0] !== last[0] || tail[1] !== last[1]) simplified.push(last);
+      return simplified;
+    }
+
+    function prepareIslands(geojson) {
+      const features = Array.isArray(geojson.features) ? geojson.features : [];
+      const prepared = [];
+      for (const feature of features) {
+        const geometry = feature.geometry;
+        if (!geometry) continue;
+        const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.type === "MultiPolygon" ? geometry.coordinates : [];
+        const rings = [];
+        let west = Infinity;
+        let east = -Infinity;
+        let south = Infinity;
+        let north = -Infinity;
+        for (const polygon of polygons) {
+          const ring = polygon[0];
+          if (!ring) continue;
+          rings.push(ring);
+          for (const pair of ring) {
+            west = Math.min(west, pair[0]);
+            east = Math.max(east, pair[0]);
+            south = Math.min(south, pair[1]);
+            north = Math.max(north, pair[1]);
+          }
+        }
+        if (rings.length > 0) prepared.push({ rings: rings.map(simplifyRing), west, east, south, north });
+      }
+      return prepared;
+    }
+
+    Promise.all([
+      fetch("/story.json").then((response) => response.json()),
+      fetch("/cues.json").then((response) => response.json()),
+      fetch("/islands.geojson").then((response) => response.json()),
+      document.fonts.ready,
+    ]).then(([loadedStory, loadedCues, geojson]) => {
+      story = loadedStory;
+      cues = loadedCues.cues ?? [];
+      islands = prepareIslands(geojson);
+      story.cellOrder = [...story.cells].sort((a, b) => b.lat - a.lat);
+      fillStatic();
+      window.__ready = true;
+    }).catch((error) => {
+      window.__error = String(error);
+    });
+  </script>
+</body>
+</html>

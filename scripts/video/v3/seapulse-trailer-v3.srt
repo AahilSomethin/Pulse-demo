@@ -1,0 +1,39 @@
+1
+00:00:00,600 --> 00:00:05,643
+Across the Maldives, millions of location records tell a story of movement.
+
+2
+00:00:06,500 --> 00:00:08,363
+Meet SeaPulse.
+
+3
+00:00:10,600 --> 00:00:14,011
+Press play, and a historical day starts to move.
+
+4
+00:00:25,000 --> 00:00:27,499
+Search a place, and the map goes there.
+
+5
+00:00:34,600 --> 00:00:37,579
+Open a crossing those tracked devices repeated.
+
+6
+00:00:48,600 --> 00:00:51,027
+Then see how often that movement shows up.
+
+7
+00:00:57,600 --> 00:00:59,691
+Some patterns are worth a closer look.
+
+8
+00:01:05,800 --> 00:01:08,995
+From raw observations to a clearer question.
+
+9
+00:01:10,900 --> 00:01:15,991
+Live feeds, schedules, and forecasts are planned. Not in this prototype.
+
+10
+00:01:18,200 --> 00:01:21,299
+SeaPulse. Every movement tells a story.

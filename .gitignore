@@ -49,3 +49,7 @@ next-env.d.ts
 # Derived passage samples. Cell centres come from a private extract.
 # Redistribution is not confirmed, so this stays on the machine that built it.
 /data/derived/
+
+# Local explainer render. Frames and the cut include derived activity-cell
+# locations, which are not cleared for redistribution.
+/video-output/

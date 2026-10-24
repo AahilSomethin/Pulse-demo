@@ -1,4 +1,4 @@
-import { CONNECTIVITY } from "@/config/constants";
+import { ANOMALY, CONNECTIVITY } from "@/config/constants";
 import {
   DISTANCE_BANDS,
   dayCountVariation,
@@ -6,10 +6,11 @@ import {
   durationVariability,
   type ConnectionIndicator,
 } from "@/lib/analytics/connectivity";
+import type { PassageFlagSummary } from "@/lib/analytics/anomalies";
 import { quantile } from "@/lib/analytics/stats";
 
 export interface OpportunityRule {
-  id: "variable" | "slow" | "indirect" | "inconsistent" | "gaps";
+  id: "variable" | "slow" | "indirect" | "inconsistent" | "gaps" | "unusual_passages";
   title: string;
   detail: string;
   question: string;
@@ -62,21 +63,55 @@ function bandBaseline(indicators: readonly ConnectionIndicator[]): Map<number, n
   return baselines;
 }
 
+const PASSAGE_CAVEAT = "An unusual time is a reason to replay the track. It is not a confirmed delay, a tracking fault, or an incident on its own.";
+
+/** Plain-language rule for journeys that clear both the robust score and the quartile fence. */
+export function unusualPassageRule(summary: PassageFlagSummary): OpportunityRule | null {
+  if (summary.outliers < ANOMALY.minOutliers) return null;
+  const where = summary.baseline === "august_summary"
+    ? `the August summary (${summary.cohortPassages} journeys, ${summary.cohortVessels} vessels)`
+    : `this loaded day (${summary.cohortPassages} journeys, ${summary.cohortVessels} vessels)`;
+  const movement = summary.movementKnown
+    ? `${summary.stationary} barely moved, ${summary.slowDirect} stayed direct but much slower than usual, ${summary.longDetour} took a much longer tracked path, and ${summary.unusuallyLong} were long without one of those patterns.`
+    : "The August summary stores journey times, not each path, so this count cannot yet say whether the vessel was stopped or still moving.";
+  return {
+    id: "unusual_passages",
+    title: "Some journeys took much longer than usual",
+    detail: `${summary.outliers} journeys were far above both the typical time and the normal spread. ${movement} Compared with ${where}.`,
+    question: summary.movementKnown
+      ? "Open the connection, read one journey, and replay it. Check whether the extra time was a stop, a slower vessel, or a gap in the track."
+      : "Load that day in Explore and replay a journey before treating the long time as real travel.",
+  };
+}
+
 /**
- * Ranks only connections with adequate evidence. Each flag is a separate rule
- * with its threshold. There is no combined score.
+ * Ranks connections with adequate evidence. A connection can also be listed
+ * when individual journeys are far outside a large enough cohort. Each flag
+ * is a separate rule. There is no combined score.
  */
 export function findOpportunities(
   indicators: readonly ConnectionIndicator[],
   thresholds: OpportunityThresholds = DEFAULT_OPPORTUNITY_THRESHOLDS,
+  passageFlags: ReadonlyMap<string, PassageFlagSummary> = new Map(),
 ): { flagged: Opportunity[]; withheld: ConnectionIndicator[] } {
   const baselines = bandBaseline(indicators);
   const flagged: Opportunity[] = [];
   const withheld: ConnectionIndicator[] = [];
 
   for (const indicator of indicators) {
+    const summary = passageFlags.get(indicator.id);
+    const passageRule = summary ? unusualPassageRule(summary) : null;
     if (indicator.evidence !== "adequate") {
-      withheld.push(indicator);
+      if (passageRule) {
+        flagged.push({
+          indicator,
+          rules: [passageRule],
+          caveats: [
+            "A flag is a reason to look, not a finding that the connection is inefficient or unserved.",
+            PASSAGE_CAVEAT,
+          ],
+        });
+      } else withheld.push(indicator);
       continue;
     }
     const rules: OpportunityRule[] = [];
@@ -135,16 +170,15 @@ export function findOpportunities(
         question: "Is the missing track a GPS gap, or time spent outside the watched movement?",
       });
     }
+    if (passageRule) rules.push(passageRule);
     if (rules.length === 0) continue;
-    flagged.push({
-      indicator,
-      rules,
-      caveats: [
-        "A flag is a reason to look, not a finding that the connection is inefficient or unserved.",
-        "A long or uneven journey can come from weather, vessel type, cargo handling, waiting, or gaps in the tracker.",
-        "Tracked vessels are not the whole fleet. Absence of a passage is not evidence that no service exists.",
-      ],
-    });
+    const caveats = [
+      "A flag is a reason to look, not a finding that the connection is inefficient or unserved.",
+      "A long or uneven journey can come from weather, vessel type, cargo handling, waiting, or gaps in the tracker.",
+      "Tracked vessels are not the whole fleet. Absence of a passage is not evidence that no service exists.",
+    ];
+    if (passageRule) caveats.push(PASSAGE_CAVEAT);
+    flagged.push({ indicator, rules, caveats });
   }
 
   flagged.sort((a, b) => b.rules.length - a.rules.length || b.indicator.passages - a.indicator.passages || a.indicator.id.localeCompare(b.indicator.id));

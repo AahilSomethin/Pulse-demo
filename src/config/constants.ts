@@ -72,6 +72,30 @@ export const CONNECTIVITY = {
   mapLinkCap: 60,
 } as const;
 
+/**
+ * Investigation thresholds for unusual journey times and tracking-quality notes.
+ * A flag is a reason to look. It is not a delay, an incident, or a collision.
+ */
+export const ANOMALY = {
+  /** Scales median absolute deviation toward a normal standard deviation. */
+  robustScale: 0.6745,
+  robustZ: 3.5,
+  iqrFence: 3,
+  minPassages: CONNECTIVITY.minPassagesAdequate,
+  minVessels: CONNECTIVITY.minVesselsAdequate,
+  minOutliers: 2,
+  stationaryKn: 2,
+  slowDirectPathRatio: 1.3,
+  slowDirectPaceShare: 0.5,
+  detourPathRatio: CONNECTIVITY.pathRatio,
+  jumpMinM: 200,
+  fastReported: 30,
+  contradictedReported: 15,
+  outAndBackShare: 0.2,
+  lowRateMedianSec: 15 * 60,
+  minDevicePassages: 3,
+} as const;
+
 /** Grid for inferred activity areas. A cell is not a harbour. */
 export const AREA_CELL_DEG = 0.05;
 

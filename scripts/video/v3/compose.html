@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SeaPulse trailer V3</title>
+  <style>
+    :root {
+      --sea: #07141c;
+      --ocean: #7ec8e3;
+      --cyan: #3dcec0;
+      --fg: #f4fafc;
+      --muted: #c5d5e0;
+      --warn: #e0a44a;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: var(--sea);
+      color: var(--fg);
+      font-family: "Segoe UI", "Segoe UI Variable Text", Aptos, sans-serif;
+    }
+
+    #stage { position: relative; width: 1920px; height: 1080px; }
+    canvas { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+
+    .layer {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    #hook-line, #reveal, #payoff, #future, #end {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    #hook-line {
+      align-items: center;
+      text-align: center;
+      padding: 0 120px 40px;
+    }
+
+    #hook-line h1 {
+      margin: 0;
+      max-width: 1500px;
+      font-size: 84px;
+      line-height: 0.96;
+      letter-spacing: -0.045em;
+      font-weight: 650;
+    }
+
+    #reveal { align-items: center; text-align: center; }
+    #reveal .mark, #end .mark {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--ocean);
+    }
+    #reveal .mark svg, #end .mark svg { width: 72px; height: 72px; }
+    #reveal h1 {
+      margin: 28px 0 0;
+      font-size: 92px;
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      font-weight: 650;
+    }
+    #reveal p {
+      margin: 22px 0 0;
+      font-size: 40px;
+      color: var(--ocean);
+      letter-spacing: -0.03em;
+    }
+
+    #card {
+      left: 420px;
+      right: 72px;
+      bottom: 156px;
+      top: auto;
+      width: auto;
+      height: auto;
+      max-width: 1040px;
+      padding: 22px 28px 20px;
+      border-radius: 18px;
+      background: rgba(7, 18, 28, 0.84);
+      border: 1px solid rgba(126, 200, 227, 0.38);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38);
+    }
+    #card .step {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      font-weight: 650;
+    }
+    #card h2 {
+      margin: 8px 0 0;
+      font-size: 64px;
+      line-height: 0.95;
+      letter-spacing: -0.045em;
+      font-weight: 650;
+    }
+    #card .why {
+      margin: 10px 0 0;
+      font-size: 30px;
+      line-height: 1.25;
+      color: var(--fg);
+    }
+    #card .result {
+      margin: 6px 0 0;
+      font-size: 26px;
+      line-height: 1.3;
+      color: var(--ocean);
+    }
+    #card .meta {
+      margin: 12px 0 0;
+      font-size: 16px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #a9bcc9;
+    }
+
+    #payoff { align-items: center; text-align: center; padding: 0 120px; }
+    #payoff h2 {
+      margin: 0;
+      font-size: 92px;
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      font-weight: 650;
+    }
+    #chips {
+      display: flex;
+      gap: 18px;
+      margin-top: 36px;
+    }
+    #chips div {
+      min-width: 240px;
+      padding: 16px 22px 14px;
+      border-radius: 16px;
+      background: rgba(7, 18, 28, 0.78);
+      border: 1px solid rgba(126, 200, 227, 0.4);
+    }
+    #chips b {
+      display: block;
+      font-size: 36px;
+      letter-spacing: -0.04em;
+    }
+    #chips span {
+      display: block;
+      margin-top: 4px;
+      font-size: 18px;
+      color: var(--muted);
+    }
+    #payoff .note {
+      margin: 22px 0 0;
+      font-size: 22px;
+      color: var(--muted);
+    }
+
+    #future { align-items: flex-start; padding: 120px 140px 0; }
+    #future .eyebrow {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ocean);
+      font-weight: 650;
+    }
+    #future .badge {
+      margin: 14px 0 0;
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--warn);
+      color: var(--warn);
+      font-size: 20px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    #future h2 {
+      margin: 36px 0 0;
+      max-width: 1400px;
+      font-size: 88px;
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      font-weight: 650;
+    }
+    #future .body {
+      margin: 24px 0 0;
+      max-width: 1100px;
+      font-size: 36px;
+      line-height: 1.3;
+      color: var(--muted);
+    }
+    #future .planned {
+      position: absolute;
+      right: 120px;
+      bottom: 88px;
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 0.2em;
+      color: var(--warn);
+      font-weight: 700;
+    }
+
+    #end { align-items: center; text-align: center; }
+    #end h1 {
+      margin: 18px 0 0;
+      font-size: 128px;
+      line-height: 0.9;
+      letter-spacing: -0.055em;
+      font-weight: 650;
+    }
+    #end .tag {
+      margin: 18px 0 0;
+      font-size: 40px;
+      color: var(--ocean);
+    }
+    #end .cta {
+      margin: 28px 0 0;
+      font-size: 26px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--fg);
+    }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="map" width="1920" height="1080"></canvas>
+    <div id="hook-line" class="layer"><h1></h1></div>
+    <section id="reveal" class="layer">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="5" r="2"></circle>
+          <path d="M12 7v14"></path>
+          <path d="M5 12h14"></path>
+          <path d="M8 19c1.2 1.3 2.5 2 4 2s2.8-.7 4-2"></path>
+        </svg>
+      </div>
+      <h1>INTRODUCING SEAPULSE</h1>
+      <p>Every Movement Tells a Story.</p>
+    </section>
+    <aside id="card" class="layer">
+      <p class="step"></p>
+      <h2></h2>
+      <p class="why"></p>
+      <p class="result"></p>
+      <p class="meta">August 2025 historical records · internal review</p>
+    </aside>
+    <section id="payoff" class="layer">
+      <h2></h2>
+      <div id="chips">
+        <div><b id="chip-a"></b><span>Journeys observed</span></div>
+        <div><b id="chip-b"></b><span>Typical time</span></div>
+        <div><b id="chip-c"></b><span>Evidence</span></div>
+      </div>
+      <p class="note">Historical August 2025. A straight line summarises the crossing. It is not a route.</p>
+    </section>
+    <section id="future" class="layer">
+      <p class="eyebrow">Features in development</p>
+      <p class="badge">Future vision / planned integrations</p>
+      <h2></h2>
+      <p class="body"></p>
+      <p class="planned">PLANNED</p>
+    </section>
+    <section id="end" class="layer">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="5" r="2"></circle>
+          <path d="M12 7v14"></path>
+          <path d="M5 12h14"></path>
+          <path d="M8 19c1.2 1.3 2.5 2 4 2s2.8-.7 4-2"></path>
+        </svg>
+      </div>
+      <h1>SEAPULSE</h1>
+      <p class="tag">Every Movement Tells a Story.</p>
+      <p class="cta">Explore the demo</p>
+    </section>
+  </div>
+  <script>
+    const WIDTH = 1920;
+    const HEIGHT = 1080;
+    const canvas = document.getElementById("map");
+    const ctx = canvas.getContext("2d");
+    let timeline = null;
+    let story = null;
+    let manifest = null;
+    let islands = [];
+    let plateSrc = "";
+    let plateImage = null;
+
+    function smooth(value) {
+      const u = Math.max(0, Math.min(1, value));
+      return u * u * (3 - 2 * u);
+    }
+
+    function fade(t, a, b, c, d) {
+      if (t <= a || t >= d) return 0;
+      if (t < b) return (t - a) / Math.max(0.001, b - a);
+      if (t > c) return 1 - (t - c) / Math.max(0.001, d - c);
+      return 1;
+    }
+
+    function show(id, opacity, shift = 0) {
+      const el = document.getElementById(id);
+      el.style.opacity = String(Math.max(0, Math.min(1, opacity)));
+      el.style.visibility = opacity > 0.02 ? "visible" : "hidden";
+      el.style.transform = `translateY(${(1 - Math.max(0, Math.min(1, opacity))) * shift}px)`;
+    }
+
+    function hideOverlays() {
+      for (const id of ["hook-line", "reveal", "card", "payoff", "future", "end"]) show(id, 0);
+    }
+
+    function sceneAt(t) {
+      return timeline.scenes.find((scene) => t >= scene.start && t < scene.end) ?? timeline.scenes[timeline.scenes.length - 1];
+    }
+
+    function formatCount(value) {
+      return Math.round(value).toLocaleString("en-US");
+    }
+
+    function placeLabel() {
+      const title = story.steady?.destination?.title ?? "";
+      const word = title.split(/\s+/).find((part) => /^[A-Za-z][A-Za-z'-]{3,}$/.test(part));
+      return (word ?? "PLACE").toUpperCase();
+    }
+
+    function fill(template) {
+      return template
+        .replaceAll("{observations}", `${(story.observationsRaw / 1_000_000).toFixed(2)} MILLION`)
+        .replaceAll("{devices}", formatCount(story.devicesRaw))
+        .replaceAll("{days}", `${story.observationDays} DAYS`)
+        .replaceAll("{place}", placeLabel());
+    }
+
+    function activeCue(cues, local) {
+      let current = cues[0];
+      for (const cue of cues) {
+        if (local >= cue.at) current = cue;
+      }
+      return current;
+    }
+
+    function mercY(lat) {
+      const phi = lat * Math.PI / 180;
+      return Math.log(Math.tan(Math.PI / 4 + phi / 2));
+    }
+
+    function project(lon, lat, view) {
+      const scale = WIDTH / (view.lonSpan * Math.PI / 180);
+      const x = (lon - view.centerLon) * Math.PI / 180 * scale + WIDTH / 2;
+      const y = (mercY(view.centerLat) - mercY(lat)) * scale + HEIGHT / 2;
+      return [x, y];
+    }
+
+    function paintSea() {
+      const gradient = ctx.createRadialGradient(WIDTH / 2, HEIGHT / 2, 180, WIDTH / 2, HEIGHT / 2, 1100);
+      gradient.addColorStop(0, "#143648");
+      gradient.addColorStop(1, "#07141c");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    }
+
+    function drawIslands(view, alpha, pointsOnly) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.lineJoin = "round";
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = "#d7f3fa";
+      ctx.fillStyle = pointsOnly ? "#7ec8e3" : "#395c57";
+      for (const island of islands) {
+        if (island.east < view.centerLon - view.lonSpan) continue;
+        if (island.west > view.centerLon + view.lonSpan) continue;
+        if (pointsOnly) {
+          const [x, y] = project(island.cx, island.cy, view);
+          ctx.beginPath();
+          ctx.arc(x, y, island.wide ? 2.4 : 1.5, 0, Math.PI * 2);
+          ctx.fill();
+          continue;
+        }
+        ctx.beginPath();
+        for (const ring of island.rings) {
+          ring.forEach((pair, index) => {
+            const [x, y] = project(pair[0], pair[1], view);
+            if (index === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          });
+          ctx.closePath();
+        }
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function hookView(t) {
+      const span = 8.4 - smooth(Math.min(1, t / 5.4)) * 3.2;
+      return { centerLon: 73.35, centerLat: 3.4, lonSpan: span };
+    }
+
+    function drawHook(t) {
+      const view = hookView(t);
+      paintSea();
+      const pointAlpha = smooth(Math.min(1, Math.max(0, (t - 0.35) / 1.5)));
+      const shapeAlpha = smooth(Math.min(1, Math.max(0, (t - 1.6) / 2.2)));
+      drawIslands(view, pointAlpha * (1 - shapeAlpha * 0.85), true);
+      drawIslands(view, shapeAlpha, false);
+      if (t > 4.35 && t < 5.9) {
+        const x = 180 + (WIDTH - 360) * smooth((t - 4.35) / 1.35);
+        const band = ctx.createLinearGradient(x - 70, 0, x + 70, 0);
+        band.addColorStop(0, "rgba(126,200,227,0)");
+        band.addColorStop(0.5, "rgba(126,200,227,0.45)");
+        band.addColorStop(1, "rgba(126,200,227,0)");
+        ctx.fillStyle = band;
+        ctx.fillRect(x - 70, 0, 140, HEIGHT);
+      }
+      const line = timeline.hook.find((item) => t >= item.at && t < item.until);
+      const heading = document.querySelector("#hook-line h1");
+      heading.textContent = line ? line.text : "";
+      const opacity = line ? fade(t, line.at, line.at + 0.28, line.until - 0.28, line.until) : 0;
+      show("hook-line", opacity, 18);
+    }
+
+    function drawReveal(t) {
+      const view = hookView(Math.min(t, 5.8));
+      paintSea();
+      drawIslands(view, 0.85, false);
+      ctx.fillStyle = `rgba(7, 20, 28, ${smooth(Math.min(1, (t - 6) / 1.1)) * 0.72})`;
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      const opacity = smooth(Math.min(1, Math.max(0, (t - 6.35) / 0.55)));
+      show("reveal", opacity, 20);
+      const tagline = document.querySelector("#reveal p");
+      tagline.style.opacity = String(smooth(Math.min(1, Math.max(0, (t - 8.5) / 0.45))));
+    }
+
+    async function loadPlate(src) {
+      if (src === plateSrc && plateImage) return plateImage;
+      const image = await new Promise((resolve, reject) => {
+        const next = new Image();
+        next.onload = () => resolve(next);
+        next.onerror = () => reject(new Error(`Missing capture frame ${src}`));
+        next.src = src;
+      });
+      plateSrc = src;
+      plateImage = image;
+      return image;
+    }
+
+    function frameFile(beat, index) {
+      return `/capture/${beat}/f_${String(index).padStart(5, "0")}.jpg`;
+    }
+
+    function frameIndex(beat, amount, from = 0, to = 1) {
+      const info = manifest.beats.find((item) => item.id === beat);
+      if (!info) throw new Error(`Missing beat ${beat}`);
+      const span = from + (to - from) * Math.max(0, Math.min(0.999, amount));
+      return 1 + Math.min(info.frames - 1, Math.floor(span * info.frames));
+    }
+
+    function vignette() {
+      const shade = ctx.createRadialGradient(WIDTH / 2, HEIGHT * 0.42, 280, WIDTH / 2, HEIGHT / 2, 1100);
+      shade.addColorStop(0, "rgba(0,0,0,0)");
+      shade.addColorStop(1, "rgba(0,0,0,0.28)");
+      ctx.fillStyle = shade;
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    }
+
+    async function drawApp(id, local, duration) {
+      const index = frameIndex(id, local / duration);
+      const image = await loadPlate(frameFile(id, index));
+      ctx.drawImage(image, 0, 0, WIDTH, HEIGHT);
+      vignette();
+      const cue = activeCue(timeline.cards[id], local);
+      const card = document.getElementById("card");
+      card.querySelector(".step").textContent = cue.step;
+      card.querySelector("h2").textContent = fill(cue.title);
+      card.querySelector(".why").textContent = cue.why;
+      card.querySelector(".result").textContent = cue.result;
+      show("card", smooth(Math.min(1, local / 0.28)), 16);
+    }
+
+    async function drawPayoff(local, duration) {
+      const index = frameIndex("connections", local / duration, 0.92, 1);
+      const image = await loadPlate(frameFile("connections", index));
+      ctx.drawImage(image, 0, 0, WIDTH, HEIGHT);
+      ctx.fillStyle = "rgba(7, 16, 24, 0.62)";
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      const cue = activeCue(timeline.payoff, local);
+      document.querySelector("#payoff h2").textContent = cue.title;
+      document.getElementById("chip-a").textContent = story.steady.stats.journeys;
+      document.getElementById("chip-b").textContent = story.steady.stats.typical;
+      document.getElementById("chip-c").textContent = story.steady.stats.evidence === "Enough journeys to compare" ? "Enough to compare" : story.steady.stats.evidence;
+      show("payoff", smooth(Math.min(1, local / 0.25)), 16);
+    }
+
+    function drawFuture(t, local) {
+      const view = { centerLon: 73.4, centerLat: 3.6, lonSpan: 6.2 - local * 0.15 };
+      paintSea();
+      drawIslands(view, 0.28, false);
+      ctx.fillStyle = "rgba(7, 16, 24, 0.72)";
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      const cue = activeCue(timeline.future, local);
+      const section = document.getElementById("future");
+      section.querySelector("h2").textContent = cue.title;
+      section.querySelector(".body").textContent = cue.body;
+      const scene = timeline.scenes.find((item) => item.id === "future");
+      show("future", fade(t, scene.start, scene.start + 0.35, scene.end - 0.4, scene.end), 18);
+    }
+
+    function drawEnd(t) {
+      paintSea();
+      drawIslands({ centerLon: 73.4, centerLat: 3.2, lonSpan: 7.4 }, 0.22, true);
+      ctx.fillStyle = "rgba(7, 16, 24, 0.55)";
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      const scene = timeline.scenes.find((item) => item.id === "end");
+      show("end", smooth(Math.min(1, Math.max(0, (t - scene.start) / 0.45))), 18);
+    }
+
+    window.renderFrame = async function renderFrame(index) {
+      const t = index / timeline.fps;
+      const scene = sceneAt(t);
+      const local = t - scene.start;
+      const duration = scene.end - scene.start;
+      hideOverlays();
+      if (scene.id === "hook") drawHook(t);
+      else if (scene.id === "reveal") drawReveal(t);
+      else if (scene.id === "future") drawFuture(t, local);
+      else if (scene.id === "end") drawEnd(t);
+      else if (scene.id === "payoff") await drawPayoff(local, duration);
+      else await drawApp(scene.id, local, duration);
+      return true;
+    };
+
+    function simplifyRing(ring) {
+      if (ring.length <= 48) return ring;
+      const step = Math.ceil(ring.length / 48);
+      const simplified = [];
+      for (let i = 0; i < ring.length; i += step) simplified.push(ring[i]);
+      return simplified;
+    }
+
+    function prepareIslands(geojson) {
+      const prepared = [];
+      for (const feature of geojson.features ?? []) {
+        const geometry = feature.geometry;
+        if (!geometry) continue;
+        const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.type === "MultiPolygon" ? geometry.coordinates : [];
+        const rings = [];
+        let west = Infinity;
+        let east = -Infinity;
+        let south = Infinity;
+        let north = -Infinity;
+        for (const polygon of polygons) {
+          if (!polygon?.[0]) continue;
+          rings.push(simplifyRing(polygon[0]));
+          for (const pair of polygon[0]) {
+            west = Math.min(west, pair[0]);
+            east = Math.max(east, pair[0]);
+            south = Math.min(south, pair[1]);
+            north = Math.max(north, pair[1]);
+          }
+        }
+        if (rings.length === 0) continue;
+        prepared.push({
+          rings,
+          west,
+          east,
+          south,
+          north,
+          cx: (west + east) / 2,
+          cy: (south + north) / 2,
+          wide: east - west > 0.04,
+        });
+      }
+      return prepared;
+    }
+
+    Promise.all([
+      fetch("/timeline.json").then((response) => response.json()),
+      fetch("/story.json").then((response) => response.json()),
+      fetch("/manifest.json").then((response) => response.json()),
+      fetch("/islands.geojson").then((response) => response.json()),
+    ]).then(([loadedTimeline, loadedStory, loadedManifest, geojson]) => {
+      timeline = loadedTimeline;
+      story = loadedStory;
+      manifest = loadedManifest;
+      islands = prepareIslands(geojson);
+      if (story.observationsRaw !== 17243987 || story.devicesRaw !== 1776 || story.observationDays !== 31) {
+        throw new Error("Headline counts do not match the verified August quality file.");
+      }
+      window.__ready = true;
+    }).catch((error) => {
+      window.__error = error instanceof Error ? error.message : String(error);
+    });
+  </script>
+</body>
+</html>

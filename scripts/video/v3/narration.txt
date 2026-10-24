@@ -1,0 +1,33 @@
+# SeaPulse trailer V3 narration
+# Spoken lines only. On-screen titles are separate and must stay understandable when muted.
+# Timings are the intended starts. render.mjs measures the real cue length.
+
+# 0.6
+Across the Maldives, millions of location records tell a story of movement.
+
+# 6.5
+Meet SeaPulse.
+
+# 10.6
+Press play, and a historical day starts to move.
+
+# 25.0
+Search a place, and the map goes there.
+
+# 34.6
+Open a crossing those tracked devices repeated.
+
+# 48.6
+Then see how often that movement shows up.
+
+# 57.6
+Some patterns are worth a closer look.
+
+# 65.8
+From raw observations to a clearer question.
+
+# 70.9
+Live feeds, schedules, and forecasts are planned. Not in this prototype.
+
+# 78.2
+SeaPulse. Every movement tells a story.

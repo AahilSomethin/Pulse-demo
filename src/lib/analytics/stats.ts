@@ -18,6 +18,13 @@ export function quartileRange(values: readonly number[], minimum: number): numbe
   return upper - lower;
 }
 
+/** Median absolute deviation from the median. Null when the list is empty. Zero means no spread. */
+export function medianAbsoluteDeviation(values: readonly number[]): number | null {
+  const mid = quantile(values, 0.5);
+  if (mid == null) return null;
+  return quantile(values.map((value) => Math.abs(value - mid)), 0.5);
+}
+
 /** Population coefficient of variation. Null when the mean is not positive. */
 export function coefficientOfVariation(values: readonly number[]): number | null {
   if (values.length === 0) return null;

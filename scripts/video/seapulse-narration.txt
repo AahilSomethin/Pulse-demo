@@ -1,0 +1,13 @@
+# SeaPulse datathon narration
+# Five spoken lines, in scene order. render.mjs places each line inside its scene.
+# On-screen headlines are separate. Do not add claims that are not in this script.
+
+Across the Maldives, vessels move between islands every day. But understanding these connections from raw tracking data is challenging.
+
+SeaPulse processes historical GPS observations to reveal patterns in maritime movement.
+
+By reconstructing journeys and examining repeated movements, we can measure observed connections, journey times, and variability.
+
+These measurements help identify connections with unusual patterns that transport planners can investigate further.
+
+Authorised live tracking, ferry schedules, and passenger demand could later support predictive planning. Today, this prototype only shows how tracked vessels moved.

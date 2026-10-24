@@ -2,17 +2,23 @@
 
 import { useMemo, useState } from "react";
 
+import { TrackingQualityNote } from "@/components/network/TrackingQuality";
+import { usePassageReview } from "@/components/network/usePassageReview";
 import { Notice } from "@/components/ui/Metrics";
+import { ANOMALY } from "@/config/constants";
 import { useDataset } from "@/context/MaritimeContext";
 import { useWorkspace } from "@/context/WorkspaceContext";
+import { tallyPassageFlags } from "@/lib/analytics/anomalies";
 import type { ConnectionIndicator } from "@/lib/analytics/connectivity";
 import { connectivityCsv, downloadText } from "@/lib/analytics/export-report";
 import { summarizeFrequency } from "@/lib/analytics/frequency";
 import { formatCount, formatDuration } from "@/lib/format";
 
 export function FrequencyReport({ indicators }: { indicators: readonly ConnectionIndicator[] }) {
-  const { journeys, sameIslandPassages, monthSameIslandPassages } = useDataset();
+  const { dataset, journeys, month, sameIslandPassages, monthSameIslandPassages } = useDataset();
   const { state } = useWorkspace();
+  const review = usePassageReview();
+  const unusual = useMemo(() => tallyPassageFlags(review.summaries.values()), [review.summaries]);
   const sample = indicators[0];
   const days = Math.max(1, sample?.observationDays ?? 1);
   const period = `${sample?.periodLabel ?? "none"}:${days}`;
@@ -31,7 +37,7 @@ export function FrequencyReport({ indicators }: { indicators: readonly Connectio
   }), [indicators, journeys, state.network.scope, monthSameIslandPassages, sameIslandPassages, dayFrom, dayTo, placeId]);
 
   function exportCsv() {
-    downloadText("seapulse-connectivity.csv", connectivityCsv(indicators, summary));
+    downloadText("seapulse-connectivity.csv", connectivityCsv(indicators, summary, review.summaries));
   }
 
   return (
@@ -56,6 +62,21 @@ export function FrequencyReport({ indicators }: { indicators: readonly Connectio
       </dl>
       <p className="text-xs leading-5 text-fg-muted">{summary.distinctVesselNote}</p>
       <p className="text-xs leading-5 text-fg-muted">{summary.durationNote}</p>
+      <section className="space-y-1">
+        <h3 className="text-sm font-semibold">Unusual journey times</h3>
+        <p className="text-sm leading-6 text-fg-secondary">
+          {unusual.connections === 0
+            ? "No connection in this window had two or more journeys far outside the usual time."
+            : `${formatCount(unusual.connections)} ${unusual.connections === 1 ? "connection has" : "connections have"} journeys far outside the usual time: ${formatCount(unusual.outliers)} ${unusual.outliers === 1 ? "journey" : "journeys"} in total.`}
+          {unusual.movementKnown && unusual.outliers > 0
+            ? ` ${formatCount(unusual.stationary)} barely moved, ${formatCount(unusual.slowDirect)} ${unusual.slowDirect === 1 ? "was" : "were"} direct but slow, ${formatCount(unusual.longDetour)} took a much longer path, and ${formatCount(unusual.unusuallyLong)} ${unusual.unusuallyLong === 1 ? "was" : "were"} long without one of those patterns.`
+            : ""}
+        </p>
+        <p className="text-xs leading-5 text-fg-muted">
+          A journey is flagged when its connection has at least {ANOMALY.minPassages} journeys and {ANOMALY.minVessels} vessels, the spread is above zero, the robust score is above {ANOMALY.robustZ}, and the time is above the third quartile plus {ANOMALY.iqrFence} times the middle half. One long journey in an otherwise identical set is not flagged. {state.network.scope === "month" ? "The August summary counts times only. Load a day to see whether a vessel was stopped or moving, and to replay it." : month ? "Open a flagged connection to replay one journey. The comparison uses the August summary." : "This day is compared with itself until the August summary is loaded. Switch the window to August, then return here to replay a journey against the month."} These counts are leads. They are not confirmed delays or incidents.
+        </p>
+      </section>
+      {dataset ? <TrackingQualityNote dataset={dataset} /> : <p className="text-xs leading-5 text-fg-muted">Load a day to separate fast recorded movement from possible GPS jumps.</p>}
       <p className="text-xs leading-5 text-fg-muted">The recorded speed has no documented unit and is not converted. A stop under 0.5 uses that recorded number. The 40-knot check is straight-line distance over time.</p>
       {days > 1 ? (
         <div className="no-print flex flex-wrap gap-2">

@@ -1,3 +1,4 @@
+import type { PassageFlagSummary } from "@/lib/analytics/anomalies";
 import type { ConnectionIndicator } from "@/lib/analytics/connectivity";
 import { passagesPerObservedDay } from "@/lib/analytics/connectivity";
 import type { FrequencySummary } from "@/lib/analytics/frequency";
@@ -23,10 +24,15 @@ const METHOD = [
   "Census population, when shown elsewhere, is geographic context. It is not transport demand.",
   "Coordinates, device identifiers, and raw trajectories are omitted. Connection-level geography from the private extract is not redistributed.",
   "A selected day range, when present, applies to passage counts only. Duration columns stay on the full window.",
+  "Unusual passages are credible journeys above a robust score of 3.5 and above the third quartile plus 3 interquartile ranges, on a connection with at least 8 journeys and 3 vessels. A median absolute deviation of 0 flags nothing. Counts only. Not a confirmed delay or an incident.",
 ];
 
 /** Aggregate CSV. No coordinates, device ids, or trajectories. */
-export function connectivityCsv(indicators: readonly ConnectionIndicator[], summary: FrequencySummary): string {
+export function connectivityCsv(
+  indicators: readonly ConnectionIndicator[],
+  summary: FrequencySummary,
+  unusual?: ReadonlyMap<string, PassageFlagSummary>,
+): string {
   const notes = ["# SeaPulse connectivity export", `# Period: ${summary.periodLabel}`, `# Scope: ${summary.scope}`, ...METHOD.map((line) => `# ${line}`)];
   const header = [
     "period",
@@ -49,8 +55,13 @@ export function connectivityCsv(indicators: readonly ConnectionIndicator[], summ
     "excluded",
     "evidence",
     "scope",
+    "unusual_passages",
+    "barely_moving",
+    "slow_direct",
+    "long_detour",
   ];
   const rows = indicators.map((indicator) => {
+    const flagged = unusual?.get(indicator.id);
     const rate = passagesPerObservedDay(indicator);
     const inRange = summary.rangeIsFullWindow
       ? indicator.passages
@@ -76,6 +87,10 @@ export function connectivityCsv(indicators: readonly ConnectionIndicator[], summ
       indicator.excluded,
       indicator.evidence,
       indicator.scope,
+      flagged?.outliers ?? 0,
+      flagged && flagged.movementKnown ? flagged.stationary : "",
+      flagged && flagged.movementKnown ? flagged.slowDirect : "",
+      flagged && flagged.movementKnown ? flagged.longDetour : "",
     ].map(csvCell).join(",");
   });
   return [...notes, header.join(","), ...rows].join("\n");

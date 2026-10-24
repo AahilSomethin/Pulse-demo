@@ -1,0 +1,66 @@
+{
+  "fps": 30,
+  "duration": 82,
+  "scenes": [
+    { "id": "hook", "start": 0, "end": 6.2 },
+    { "id": "reveal", "start": 6.2, "end": 10.2 },
+    { "id": "explore", "start": 10.2, "end": 24.6 },
+    { "id": "search", "start": 24.6, "end": 34.2 },
+    { "id": "connections", "start": 34.2, "end": 48.2 },
+    { "id": "frequency", "start": 48.2, "end": 57.2 },
+    { "id": "patterns", "start": 57.2, "end": 65.4 },
+    { "id": "payoff", "start": 65.4, "end": 70.6 },
+    { "id": "future", "start": 70.6, "end": 77.8 },
+    { "id": "end", "start": 77.8, "end": 82 }
+  ],
+  "narration": [
+    { "start": 0.6, "text": "Across the Maldives, millions of location records tell a story of movement." },
+    { "start": 6.5, "text": "Meet SeaPulse." },
+    { "start": 10.6, "text": "Press play, and a historical day starts to move." },
+    { "start": 25.0, "text": "Search a place, and the map goes there." },
+    { "start": 34.6, "text": "Open a crossing those tracked devices repeated." },
+    { "start": 48.6, "text": "Then see how often that movement shows up." },
+    { "start": 57.6, "text": "Some patterns are worth a closer look." },
+    { "start": 65.8, "text": "From raw observations to a clearer question." },
+    { "start": 70.9, "text": "Live feeds, schedules, and forecasts are planned. Not in this prototype." },
+    { "start": 78.2, "text": "SeaPulse. Every movement tells a story." }
+  ],
+  "hook": [
+    { "at": 1.2, "until": 3.35, "text": "THOUSANDS OF MOVEMENTS." },
+    { "at": 3.55, "until": 5.85, "text": "MILLIONS OF OBSERVATIONS." }
+  ],
+  "cards": {
+    "explore": [
+      { "at": 0, "step": "01   Explore", "title": "EXPLORE", "why": "Press play. One historical day starts moving on the map.", "result": "Recorded positions, not a live feed." },
+      { "at": 4.2, "step": "01   Explore", "title": "{observations}", "why": "GPS observations kept in the August extract.", "result": "The map is replaying one loaded day." },
+      { "at": 6.8, "step": "01   Explore", "title": "{devices}", "why": "Tracked devices across all 31 days.", "result": "The header count is only the day on the map." },
+      { "at": 9.4, "step": "01   Explore", "title": "{days}", "why": "Days of August 2025 movement.", "result": "The browser loads one day at a time." }
+    ],
+    "search": [
+      { "at": 0, "step": "02   Search", "title": "SEARCH", "why": "Type an island or an atoll.", "result": "Matches are places, not private voyages." },
+      { "at": 3.3, "step": "02   Search", "title": "{place}", "why": "The map moves to the place you chose.", "result": "Start from a location, not a device id." }
+    ],
+    "connections": [
+      { "at": 0, "step": "03   Connections", "title": "CONNECTIONS", "why": "Open Network and switch to the August summary.", "result": "A month of repeated crossings." },
+      { "at": 10, "step": "03   Connections", "title": "ONE CROSSING", "why": "Select a connection. The map highlights it.", "result": "A straight summary, not a navigable route." }
+    ],
+    "frequency": [
+      { "at": 0, "step": "04   Traffic", "title": "TRAFFIC", "why": "Open the frequency report.", "result": "How often tracked vessels moved, and a typical time." },
+      { "at": 4.3, "step": "04   Traffic", "title": "EXPORT", "why": "Save that report.", "result": "Coordinates and device ids stay out of the file." }
+    ],
+    "patterns": [
+      { "at": 0, "step": "05   Patterns", "title": "PATTERNS", "why": "Open Find opportunities.", "result": "Each row is a question to investigate." },
+      { "at": 3.0, "step": "05   Patterns", "title": "A QUESTION", "why": "Highlight one pattern and look at the map.", "result": "Not a verdict that an island is underserved." }
+    ]
+  },
+  "payoff": [
+    { "at": 0, "title": "FROM RAW DATA" },
+    { "at": 1.7, "title": "TO MEASURABLE PATTERNS" },
+    { "at": 3.4, "title": "TO BETTER QUESTIONS" }
+  ],
+  "future": [
+    { "at": 0, "title": "LIVE INTELLIGENCE", "body": "Authorised live vessel feeds and continuously updated movement patterns." },
+    { "at": 2.4, "title": "SMARTER CONTEXT", "body": "Historical weather and waves, official ferry schedules, and passenger demand." },
+    { "at": 4.8, "title": "PREDICTIVE ANALYTICS", "body": "Traffic forecasting and evidence-informed planning simulations." }
+  ]
+}

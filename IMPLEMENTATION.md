@@ -17,7 +17,9 @@ SeaPulse lives under `src/`. The original HTML file and the Insight project are 
 - `src/lib/analytics/frequency.ts` — passage counts by day for the current filter. A shorter day range does not recalculate durations.
 - `src/lib/analytics/export-report.ts` — CSV of those aggregates. No coordinates, device ids, or trajectories.
 - `src/lib/search/query.ts` — grouped search over islands, atolls, harbour points, loaded-day vessels, and inferred areas.
-- `src/lib/analytics/opportunities.ts` — evidence gate and separate investigation rules. No combined score.
+- `src/lib/analytics/opportunities.ts` — evidence gate and separate investigation rules, including unusual journey times. No combined score.
+- `src/lib/analytics/anomalies.ts` — robust passage outliers. Median absolute deviation and an interquartile fence. Movement is described from the tracked path, not from the speed column.
+- `src/lib/analytics/track-quality.ts` — straight-line jumps over 200 m and 40 knots, classed by the reported speed and by whether the next point returns. A separate note counts devices whose typical gap is 15 minutes or more.
 - `src/lib/analytics/network.ts` — named directions and inferred-area directions. Credible passages only.
 - `src/lib/analytics/month.ts` — reads the local August summary and recomputes quantiles from stored seconds.
 - `src/lib/reference/census.ts` — exact code, atoll plus name, or a unique name. The lookup records which of those three matched. No fuzzy match.
